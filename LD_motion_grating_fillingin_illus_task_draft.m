@@ -247,7 +247,8 @@ for n = 1:(length(experiment.allFlips)-1)
         % draw & increment stims
         for motionFlip = flipTimes
             % top stim
-            Screen('DrawTexture', win, topWave, [], [], params.stim.orientation, [], [], [], [], [], [topPhase, params.stim.spatialFreqDeg/params.ppd, params.stim.contrast, 0]);
+            dstRect = OffsetRect(topRect, rect(3)/2-topRect(3)/2, rect(3)/4);
+            Screen('DrawTexture', win, topWave, [], dstRect, params.stim.orientation, [], [], [], [], [], [topPhase, params.stim.spatialFreqDeg/params.ppd, params.stim.contrast, 0]);
   
             % bottom stim
             if conditions(thisCond).phase < 2; % draw center if it's randomized or incognruent
