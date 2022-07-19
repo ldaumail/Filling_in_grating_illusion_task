@@ -65,7 +65,7 @@ params.phaseFlicker = .2;           % in seconds (on for Xs, off for Xs, phase c
 %%%% gabor properties
 params.stim.spatialFreqDeg = 1.5;                                           % cycles per degree
 params.stim.contrast =  .3;                                                 % in %, maybe??
-params.stim.orientation = 90;                                                % in degrees
+params.stim.orientation = 0;                                                % in degrees
 params.stim.guassianSpaceConstant = .4;                                     % approx equal to the number of radians covered by one standard deviation of the radius of the gaussian mask.
 params.stim.fromFixation = .6;                                              % in degrees
 params.stim.gaborSizeDeg = 4;                                               % in degrees
@@ -222,9 +222,9 @@ save LGNsurroundParams.mat params;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %%%% start recording the response
-KbQueueStart();
-experiment.numCorrect = 0;
-experiment.correctTarget = [];
+% KbQueueStart();
+% experiment.numCorrect = 0;
+% experiment.correctTarget = [];
 flipCount = 1;
 
 %%%%%%% START task TASK/FLIPPING
@@ -239,7 +239,8 @@ for n = 1:(length(experiment.allFlips)-1)
             if conditions(thisCond).phase == 2 % 1 = oppPhase, 2 = inPhase
                 bottomPhase = topPhase; 
             else
-                bottomPhase = mod(topPhase - 180,360); end % opp phase for incongruent and oppPhase
+                bottomPhase = mod(topPhase - 180,360); % opp phase for oppPhase
+            end
         end
         
         % surroundPhase = 0; centerPhase = 0;
@@ -247,16 +248,14 @@ for n = 1:(length(experiment.allFlips)-1)
         % draw & increment stims
         for motionFlip = flipTimes
             % top stim
-            dstRect = OffsetRect(topRect, rect(3)/2-topRect(3)/2, rect(3)/4);
-            Screen('DrawTexture', win, topWave, [], dstRect, params.stim.orientation, [], [], [], [], [], [topPhase, params.stim.spatialFreqDeg/params.ppd, params.stim.contrast, 0]);
-  
-            % bottom stim
-            if conditions(thisCond).phase < 2; % draw center if it's randomized or incognruent
-            Screen('DrawTexture', win, bottomWave, [], [], params.stim.orientation, [], [],...
-                [], [], [], [bottomPhase, params.stim.spatialFreqDeg/params.ppd, params.stim.contrast, 0]);
+            dstRect = OffsetRect(topRect, rect(3)/2-topRect(3)/2, rect(3)/4-topRect(3));
+            Screen('DrawTexture', win, topWave, [], dstRect, params.stim.orientation, [], [], ...
+                [], [], [], [topPhase, params.stim.spatialFreqDeg/params.ppd, params.stim.contrast, 0]);
             
-            Screen('DrawTexture', win, bottomWave, [], [], params.stim.orientation, [], [],...
-                [], [], [], [bottomPhase, params.stim.spatialFreqDeg/params.ppd, params.stim.contrast, 0]);
+            % bottom stim
+            if strcmp(conditions(thisCond).name, 'double-inPhase') || strcmp(conditions(thisCond).name, 'double-oppPhase')  % draw second stim if it is 'double-inPhase' or 'double-oppPhase' %if it's randomized or incognruent
+                Screen('DrawTexture', win, bottomWave, [], [], params.stim.orientation, [], [],...
+                    [], [], [], [bottomPhase, params.stim.spatialFreqDeg/params.ppd, params.stim.contrast, 0]);
             end
             % Draws the grating 'gratingid' into window 'windowPtr', at position 'dstRect'
             % or in the center if dstRect is set to []. Make sure 'dstRect' has the
@@ -284,7 +283,7 @@ for n = 1:(length(experiment.allFlips)-1)
             flipCount = flipCount+1;
             
             %%%% increment phase to show motion
-            if strcmp(conditions(thisCond).name,'double') ==1
+            if strfind(conditions(thisCond).name{:},'double') ==1
                 if strcmp(conditions(thisCond).stimTop,'left') == 1
                     topPhase = mod(topPhase + params.stim.motionPerFlip,360);
                     bottomPhase = mod(bottomPhase - params.stim.motionPerFlip,360);
@@ -292,7 +291,7 @@ for n = 1:(length(experiment.allFlips)-1)
                     topPhase = mod(topPhase - params.stim.motionPerFlip,360);
                     bottomPhase = mod(bottomPhase + params.stim.motionPerFlip,360);
                 end
-            else % single stimulus condition
+            elseif strfind(conditions(thisCond).name{:},'single') ==1 % single stimulus condition
                 if strcmp(conditions(thisCond).stimTop,'left') == 1
                     topPhase = mod(topPhase + params.stim.motionPerFlip,360);
                    % bottomPhase = mod(bottomPhase + params.stim.motionPerFlip,360);
@@ -329,7 +328,7 @@ experiment.runTime = GetSecs - experiment.startRun;
 eval(['save data/motion_' experiment.subject '_run' num2str(experiment.scanNum) '_' experiment.date '.mat params conditions experiment']);
 
 
-KbQueueRelease();
+% KbQueueRelease();
 ShowCursor;
 Screen('Close');
 Screen('CloseAll');
