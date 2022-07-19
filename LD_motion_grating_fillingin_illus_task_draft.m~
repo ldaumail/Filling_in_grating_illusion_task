@@ -223,7 +223,7 @@ save LGNsurroundParams.mat params;
 
 %%%% start recording the response
 %KbQueueStart();
-[touch,tpress, keyCode]= KbCheck;
+[touch,tpress, keyCode]= kbCheck;
 % experiment.numCorrect = 0;
 % experiment.correctTarget = [];
 flipCount = 1;
@@ -333,7 +333,7 @@ eval(['save data/motion_' experiment.subject '_run' num2str(experiment.scanNum) 
 ShowCursor;
 Screen('Close');
 Screen('CloseAll');
-%fprintf('Hit rate this run: %.2f%%\n',100*experiment.performance)
+fprintf('Hit rate this run: %.2f%%\n',100*experiment.performance)
 fclose all;
 clear all;
 
