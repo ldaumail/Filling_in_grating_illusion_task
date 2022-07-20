@@ -203,11 +203,11 @@ for f = 1:length(flipTimes)
     bottomPhase = mod(bottomPhase - params.stim.motionPerFlip,360);
     
     topWave(f,:,:) = makeSineGrating(params.gaborHeight,params.gaborWidth,params.stim.spatialFreqDeg,...
-        params.stim.orientation,topPhase,params.stim.contrastOffset(1),params.stim.contrastMultiplicator,0,params.backgroundColor(1));
+        params.stim.orientation,topPhase*pi/360,params.stim.contrastOffset(1),params.stim.contrastMultiplicator,0,params.backgroundColor(1));
     bottomWave(f,:,:) = makeSineGrating(params.gaborHeight,params.gaborWidth,params.stim.spatialFreqDeg,...
-        params.stim.orientation,bottomPhase,params.stim.contrastOffset(1),params.stim.contrastMultiplicator,0,params.backgroundColor(1));
-    %figure();
-    %imshow(squeeze(topWave(f,:,:)));
+        params.stim.orientation,bottomPhase*pi/360,params.stim.contrastOffset(1),params.stim.contrastMultiplicator,0,params.backgroundColor(1));
+    figure();
+    imshow(squeeze(topWave(f,:,:)));
     
     
 end
