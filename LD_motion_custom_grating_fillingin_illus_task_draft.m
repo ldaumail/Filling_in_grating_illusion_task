@@ -1,15 +1,9 @@
-
-% SP 2.1.2015
-% present two orientation patches at each side of fixation, with a
-% full-field context orientation surrounding them
+% LD 7.20.2022
+% present two rectangular orientation patches on left side of fixation, with a
+% uniform field surrounding them
 % RSVP task at fixation throughout
 % block design
-% VERSION2: uses create procedural sine rather than math to make the
-% gratings, hopefully to fix timing issues
-% Dec 2015 update: adds another condition: congruent in-phase
-% Dec 2015: motion version
-% Dec 15 update: instead of random phase in 3rd cond, we do opposite phase
-% (old version is _rPhase.m)
+
 
 %clear all;
 % Clear the workspace and the screen
@@ -58,17 +52,18 @@ experiment.date = datestr(now,30);
 %%%% timing
 params.blockLength = 16;            % in seconds
 params.betweenBlocks = 16;          % in seconds
-params.initialFixation = 16;        % in seconds
+params.initialFixation = 1;%16;     % in seconds
 params.finalFixation = 16;          % in seconds
 params.phaseFlicker = .2;           % in seconds (on for Xs, off for Xs, phase changes
 
 %%%% gabor properties
 params.stim.spatialFreqDeg = 1.5;                                           % cycles per degree
 params.stim.contrast =  .3;                                                 % in %, maybe??
-params.stim.orientation = 0;                                                % in degrees
+params.stim.orientation = pi/2;                                                % in degrees
 params.stim.guassianSpaceConstant = .4;                                     % approx equal to the number of radians covered by one standard deviation of the radius of the gaussian mask.
 params.stim.fromFixation = .6;                                              % in degrees
-params.stim.gaborSizeDeg = 4;                                               % in degrees
+params.stim.gaborHDeg = 4;                                                  % in degrees
+params.stim.gaborWDeg = 6; 
 params.stim.ringPix = 3;                                                    % in pixels, thickness of greyscale ring separating
 params.stim.contrastMultiplicator = .5;                                     % for procedural gabor
 params.stim.contrastOffset = [.5 .5 .5 0];                                  % for procedural gabor
@@ -76,7 +71,7 @@ params.stim.motionRate = 360*5;                                             % in
 
 %%%% conditions & layout
 params.numMotions = 2;
-params.motions = {'left','right'};
+params.motions = {'left','right'}; %back and forth starts from the left side, back and forth starts from the right side
 params.conds = {'single','double-inPhase','double-oppPhase'};
 params.numConds = params.numMotions * length(params.conds);
 params.fixSizeDeg =  .5;            % in degrees, the size of the biggest white dot in the fixation
@@ -149,11 +144,14 @@ experiment.longFormFlicker = repmat([1 1]',round((experiment.totalTime/params.ph
 % if params.RSVPrate < params.phaseFlicker
 %     experiment.letterSequence = expand(experiment.letterSequence,params.RSVPrate/params.phaseFlicker,1);
 % end
+
+
+
 %%%%%%%%%%%%%%%
 % open screen %
 %%%%%%%%%%%%%%%
 
-HideCursor;
+% HideCursor;
 Priority(9);
 
 %%%% open screen
@@ -179,7 +177,8 @@ flipTimes = flipTimes(1:length(flipTimes)-1);
 %%%% scale the stims for the screen
 params.ppd = pi* rect(3) / (atan(params.screenWidth/params.viewingDist/2)) / 360;
 params.freq =  (params.stim.spatialFreqDeg)*2*pi/params.ppd;
-params.gaborSize = round(params.stim.gaborSizeDeg*params.ppd);                 % in degrees, the size of our objects
+params.gaborHeight = round(params.stim.gaborHDeg*params.ppd);                 % in pixels, the size of our objects
+params.gaborWidth = round(params.stim.gaborWDeg*params.ppd);                 % in pixels, the size of our objects
 params.fromFix = round(params.stim.fromFixation*params.ppd);
 params.fixSize = round(params.fixSizeDeg*params.ppd);
 params.littleFix = round(params.littleFixDeg*params.ppd);
@@ -190,27 +189,33 @@ yc = rect(4)/2+params.vertOffset;
 
 
 % create sine wave gratings
-[topWave, topRect] = CreateProceduralSineGrating(win, round(params.gaborSize/2), round(params.gaborSize/2), params.stim.contrastOffset, [], params.stim.contrastMultiplicator);
-[bottomWave, bottomRect] = CreateProceduralSineGrating(win, round(params.gaborSize/2), round(params.gaborSize/2), params.stim.contrastOffset, [], params.stim.contrastMultiplicator);
+%[topWave, topRect] = CreateProceduralSineGrating(win, round(params.gaborSize/2), round(params.gaborSize/2), params.stim.contrastOffset, [], params.stim.contrastMultiplicator);
+%[bottomWave, bottomRect] = CreateProceduralSineGrating(win, round(params.gaborSize/2), round(params.gaborSize/2), params.stim.contrastOffset, [], params.stim.contrastMultiplicator);
 
-% rects to draw the circle outline
-%params.leftRect = CenterRectOnPoint(centerRect,(xc-params.fromFix-floor(params.gaborSize/2)),yc);
-%params.rightRect = CenterRectOnPoint(centerRect,(xc+params.fromFix+floor(params.gaborSize/2)),yc);
-
-% critical for the phase stuff! must account for the fact that we can
-% offset the center for the scan subject
-%surroundRect = CenterRectOnPoint(surroundRect,xc,yc);
-
-%params.leftCircle = [(xc-params.fromFix-params.gaborSize) (yc-round(params.gaborSize/2)) (xc-params.fromFix) (yc+round(params.gaborSize/2))];
-%params.rightCircle = [(xc+params.fromFix) (yc-round(params.gaborSize/2)) (xc+params.fromFix+params.gaborSize) (yc+round(params.gaborSize/2))];
+%%% create sine wave gratings and store all phase transitions in matrix
+topPhase = randi(360);
+bottomPhase = topPhase;
+topWave = nan(length(flipTimes),params.gaborHeight,params.gaborWidth);
+bottomWave = nan(length(flipTimes),params.gaborHeight,params.gaborWidth);
+for f = 1:length(flipTimes)
+    
+    topPhase = mod(topPhase + params.stim.motionPerFlip,360);
+    bottomPhase = mod(bottomPhase - params.stim.motionPerFlip,360);
+    
+    topWave(f,:,:) = makeSineGrating(params.gaborHeight,params.gaborWidth,params.stim.spatialFreqDeg,...
+        params.stim.orientation,topPhase,params.stim.contrastOffset(1),params.stim.contrastMultiplicator,0,params.backgroundColor(1));
+    bottomWave(f,:,:) = makeSineGrating(params.gaborHeight,params.gaborWidth,params.stim.spatialFreqDeg,...
+        params.stim.orientation,bottomPhase,params.stim.contrastOffset(1),params.stim.contrastMultiplicator,0,params.backgroundColor(1));
+    %figure();
+    %imshow(squeeze(topWave(f,:,:)));
+    
+    
+end
 
 
 %%%% initial window - wait for backtick
 Screen(win, 'DrawText', 'Waiting for Backtick.', 10,10,[0 0 0]);
 Screen(win, 'Flip', 0);
-
-% KbTriggerWait(53, deviceNumber);
-% KbQueueCreate(deviceNumber,responseKeys);
 
 %%% for the loc
 save LGNsurroundParams.mat params;
@@ -222,8 +227,8 @@ save LGNsurroundParams.mat params;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %%%% start recording the response
-%KbQueueStart();
-[touch,tpress, keyCode]= kbCheck;
+
+[touch,tpress, keyCode]= KbCheck;
 % experiment.numCorrect = 0;
 % experiment.correctTarget = [];
 flipCount = 1;
@@ -235,45 +240,31 @@ for n = 1:(length(experiment.allFlips)-1)
     %%%% draw gabors
     if thisCond > 0 && experiment.longFormFlicker(n) > 0% zeros correspond to blanks, in which case we skip this next section
         
-        if experiment.longFormConds(n-1)==0 % if this is the beginning of a block, we need to randomize the phases
-            topPhase = randi(360);
-            if conditions(thisCond).phase == 2 % 1 = oppPhase, 2 = inPhase
-                bottomPhase = topPhase; 
-            else
-                bottomPhase = mod(topPhase - 180,360); % opp phase for oppPhase
-            end
-        end
+%         if experiment.longFormConds(n-1)==0 % if this is the beginning of a block, we need to randomize the phases
+%             topPhase = randi(360);
+%             if conditions(thisCond).phase == 2 % 1 = oppPhase, 2 = inPhase
+%                 bottomPhase = topPhase; 
+%             else
+%                 bottomPhase = mod(topPhase - 180,360); % opp phase for oppPhase
+%             end
+%         end
         
-        % surroundPhase = 0; centerPhase = 0;
         
         % draw & increment stims
+        stimFlipCnt = 0;
         for motionFlip = flipTimes
+            stimFlipCnt = stimFlipCnt+ 1; 
             % top stim
-            dstRect = OffsetRect(topRect, rect(3)/2-topRect(3)/2, rect(3)/4-topRect(3));
-            Screen('DrawTexture', win, topWave, [], dstRect, params.stim.orientation, [], [], ...
-                [], [], [], [topPhase, params.stim.spatialFreqDeg/params.ppd, params.stim.contrast, 0]);
-            
+             topWaveID = Screen('MakeTexture', win, squeeze(topWave(stimFlipCnt,:,:))*255);
+             Screen('DrawTexture', win, topWaveID);
+             %[topWaveID,stimFlipCnt]
+
             % bottom stim
             if strcmp(conditions(thisCond).name, 'double-inPhase') || strcmp(conditions(thisCond).name, 'double-oppPhase')  % draw second stim if it is 'double-inPhase' or 'double-oppPhase' %if it's randomized or incognruent
-                Screen('DrawTexture', win, bottomWave, [], [], params.stim.orientation, [], [],...
-                    [], [], [], [bottomPhase, params.stim.spatialFreqDeg/params.ppd, params.stim.contrast, 0]);
+                Screen('MakeTexture', win, squeeze(bottomWave(stimFlipCnt,:,:)));
             end
-            % Draws the grating 'gratingid' into window 'windowPtr', at position 'dstRect'
-            % or in the center if dstRect is set to []. Make sure 'dstRect' has the
-            % size of 'gratingrect' to avoid spatial distortions! You could do, e.g.,
-            % dstRect = OffsetRect(gratingrect, xc, yc) to place the grating centered at
-            % screen position (xc,yc). 'Angle' is the optional orientation angle,
-            % default is zero degrees. 'modulateColor' is the base color of the grating
-            % patch - it defaults to white, ie. the grating has only luminance, but no
-            % color. If you'd set it to [255 0 0] you'd get a reddish grating. 'phase' is
-            % the phase of the grating in degrees, 'freq' is its spatial frequency in
-            % cycles per pixel, 'contrast' is the contrast of your grating.
-            
-            %Screen('FrameOval',win,params.backgroundColor,params.leftCircle,[],[]);
-            %Screen('FrameOval',win,params.backgroundColor,params.rightCircle,[],[]);
-            
-            
-            
+          
+
             % draw fixation and RSVP letter
             Screen('FillOval', win,[255 255 255], [xc-round(params.fixSize/2) yc-round(params.fixSize/2) xc+round(params.fixSize/2) yc+round(params.fixSize/2)]); % white fixation ring
 %             [width,height] = RectSize(Screen('TextBounds',win,experiment.letterSequence{n}));
@@ -284,23 +275,23 @@ for n = 1:(length(experiment.allFlips)-1)
             flipCount = flipCount+1;
             
             %%%% increment phase to show motion
-            if strfind(conditions(thisCond).name{:},'double') ==1
-                if strcmp(conditions(thisCond).stimTop,'left') == 1
-                    topPhase = mod(topPhase + params.stim.motionPerFlip,360);
-                    bottomPhase = mod(bottomPhase - params.stim.motionPerFlip,360);
-                elseif strcmp(conditions(thisCond).stimTop,'right') == 1
-                    topPhase = mod(topPhase - params.stim.motionPerFlip,360);
-                    bottomPhase = mod(bottomPhase + params.stim.motionPerFlip,360);
-                end
-            elseif strfind(conditions(thisCond).name{:},'single') ==1 % single stimulus condition
-                if strcmp(conditions(thisCond).stimTop,'left') == 1
-                    topPhase = mod(topPhase + params.stim.motionPerFlip,360);
-                   % bottomPhase = mod(bottomPhase + params.stim.motionPerFlip,360);
-                elseif strcmp(conditions(thisCond).stimTop,'right') == 1
-                    topPhase = mod(topPhase - params.stim.motionPerFlip,360);
-                   % bottomPhase = mod(bottomPhase - params.stim.motionPerFlip,360);
-                end
-            end
+%             if strfind(conditions(thisCond).name{:},'double') ==1
+%                 if strcmp(conditions(thisCond).stimTop,'left') == 1
+%                     topPhase = mod(topPhase + params.stim.motionPerFlip,360);
+%                     bottomPhase = mod(bottomPhase - params.stim.motionPerFlip,360);
+%                 elseif strcmp(conditions(thisCond).stimTop,'right') == 1
+%                     topPhase = mod(topPhase - params.stim.motionPerFlip,360);
+%                     bottomPhase = mod(bottomPhase + params.stim.motionPerFlip,360);
+%                 end
+%             elseif strfind(conditions(thisCond).name{:},'single') ==1 % single stimulus condition
+%                 if strcmp(conditions(thisCond).stimTop,'left') == 1
+%                     topPhase = mod(topPhase + params.stim.motionPerFlip,360);
+%                    % bottomPhase = mod(bottomPhase + params.stim.motionPerFlip,360);
+%                 elseif strcmp(conditions(thisCond).stimTop,'right') == 1
+%                     topPhase = mod(topPhase - params.stim.motionPerFlip,360);
+%                    % bottomPhase = mod(bottomPhase - params.stim.motionPerFlip,360);
+%                 end
+%             end
         end
     else % if phase is 0 or it's blank
         % draw fixation and RSVP letter
@@ -333,7 +324,7 @@ eval(['save data/motion_' experiment.subject '_run' num2str(experiment.scanNum) 
 ShowCursor;
 Screen('Close');
 Screen('CloseAll');
-fprintf('Hit rate this run: %.2f%%\n',100*experiment.performance)
+%fprintf('Hit rate this run: %.2f%%\n',100*experiment.performance)
 fclose all;
 clear all;
 
