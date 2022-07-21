@@ -57,12 +57,12 @@ params.finalFixation = 16;          % in seconds
 params.phaseFlicker = 1; %.2;       % in seconds (on for Xs, off for Xs, phase changes
 
 %%%% gabor properties
-params.stim.spatialFreqDeg = 1.5;                                           % cycles per degree
+params.stim.spatialFreqDeg = 1.5;                                           % cycles per degree of visual angle
 params.stim.contrast =  .3;                                                 % in %, maybe??
 params.stim.orientation = 90;                                                % in degrees
 %params.stim.guassianSpaceConstant = .4;                                     % approx equal to the number of radians covered by one standard deviation of the radius of the gaussian mask.
-params.stim.fromFixation = .6;                                              % in degrees
-params.stim.gaborHDeg = 4;                                                  % in degrees
+params.stim.fromFixation = .6;                                              % in degrees of visual angle
+params.stim.gaborHDeg = 4;                                                  % in degrees of visual angle
 params.stim.gaborWDeg = 6; 
 params.stim.ringPix = 3;                                                    % in pixels, thickness of greyscale ring separating
 params.stim.contrastMultiplicator = .5;                                     % for procedural gabor
@@ -176,7 +176,7 @@ flipTimes = flipTimes(1:length(flipTimes)-1);
 
 %%%% scale the stims for the screen
 params.ppd = pi* rect(3) / (atan(params.screenWidth/params.viewingDist/2)) / 360; %2pi*(rect(3)/2)= pi*rect(3)
-params.freq =  (params.stim.spatialFreqDeg)*2*pi/params.ppd;                  %converts cycles per degree to cycles *(rad)/ pixel
+%params.freq =  (params.stim.spatialFreqDeg)*2*pi/params.ppd;                  %converts cycles per degree to cycles *(rad)/ pixel
 params.gaborHeight = round(params.stim.gaborHDeg*params.ppd);                 % in pixels, the size of our objects
 params.gaborWidth = round(params.stim.gaborWDeg*params.ppd);                 % in pixels, the size of our objects
 params.fromFix = round(params.stim.fromFixation*params.ppd);
@@ -198,13 +198,24 @@ for f = 1:length(flipTimes)
     
     topPhase = mod(topPhase + params.stim.motionPerFlip,360);
     bottomPhase = mod(bottomPhase - params.stim.motionPerFlip,360);
+    %ih in pixels
+    %iw im pixels
+    %spatial freq in cycles per dva
+    %tilt/orientation of the rating in degrees
+    %phase in degrees (not degrees of visual angle)
+    %contrast offset in %
+    %contrast multiplicator
+    %ppd = 0 if freq already in cycles per dva
+    %background color
     
     topWave(f,:,:) = makeSineGrating(params.gaborHeight,params.gaborWidth,params.stim.spatialFreqDeg,...
-        params.stim.orientation,topPhase,params.stim.contrastOffset(1),params.stim.contrastMultiplicator,0,params.backgroundColor(1));
+        params.stim.orientation,topPhase,params.stim.contrastOffset(1),params.stim.contrastMultiplicator,...
+        params.ppd,params.backgroundColor(1));
     bottomWave(f,:,:) = makeSineGrating(params.gaborHeight,params.gaborWidth,params.stim.spatialFreqDeg,...
-        params.stim.orientation,bottomPhase,params.stim.contrastOffset(1),params.stim.contrastMultiplicator,0,params.backgroundColor(1));
- %    figure();
- %    imshow(squeeze(topWave(f,:,:)));
+        params.stim.orientation,bottomPhase,params.stim.contrastOffset(1),params.stim.contrastMultiplicator,...
+        params.ppd, params.backgroundColor(1));
+    figure();
+    imshow(squeeze(topWave(f,:,:)));
 %     
     
 end
