@@ -54,20 +54,20 @@ params.blockLength = 16;            % in seconds
 params.betweenBlocks = 16;          % in seconds
 params.initialFixation = 1;%16;     % in seconds
 params.finalFixation = 16;          % in seconds
-params.phaseFlicker = .2;           % in seconds (on for Xs, off for Xs, phase changes
+params.phaseFlicker = 1; %.2;       % in seconds (on for Xs, off for Xs, phase changes
 
 %%%% gabor properties
 params.stim.spatialFreqDeg = 1.5;                                           % cycles per degree
 params.stim.contrast =  .3;                                                 % in %, maybe??
-params.stim.orientation = pi/2;                                                % in degrees
-params.stim.guassianSpaceConstant = .4;                                     % approx equal to the number of radians covered by one standard deviation of the radius of the gaussian mask.
+params.stim.orientation = 90;                                                % in degrees
+%params.stim.guassianSpaceConstant = .4;                                     % approx equal to the number of radians covered by one standard deviation of the radius of the gaussian mask.
 params.stim.fromFixation = .6;                                              % in degrees
 params.stim.gaborHDeg = 4;                                                  % in degrees
 params.stim.gaborWDeg = 6; 
 params.stim.ringPix = 3;                                                    % in pixels, thickness of greyscale ring separating
 params.stim.contrastMultiplicator = .5;                                     % for procedural gabor
 params.stim.contrastOffset = [.5 .5 .5 0];                                  % for procedural gabor
-params.stim.motionRate = 360*5;                                             % in degrees/second
+params.stim.motionRate = 1.3*360 ;                                          % 1.3 cycles per second = 360 deg of phase *1.3 per sec
 
 %%%% conditions & layout
 params.numMotions = 2;
@@ -169,14 +169,14 @@ Screen(win, 'TextSize', params.fontSize);
 %%%% timing optimization
 flipInt = Screen('GetFlipInterval',win);
 slack = flipInt/2;
-params.stim.motionPerFlip = params.stim.motionRate * flipInt;
+params.stim.motionPerFlip = params.stim.motionRate * flipInt; %degrees per flip
 flipTimes = [0:flipInt:params.phaseFlicker];
 flipTimes = flipTimes(1:length(flipTimes)-1);
 
 
 %%%% scale the stims for the screen
-params.ppd = pi* rect(3) / (atan(params.screenWidth/params.viewingDist/2)) / 360;
-params.freq =  (params.stim.spatialFreqDeg)*2*pi/params.ppd;
+params.ppd = pi* rect(3) / (atan(params.screenWidth/params.viewingDist/2)) / 360; %2pi*(rect(3)/2)= pi*rect(3)
+params.freq =  (params.stim.spatialFreqDeg)*2*pi/params.ppd;                  %converts cycles per degree to cycles *(rad)/ pixel
 params.gaborHeight = round(params.stim.gaborHDeg*params.ppd);                 % in pixels, the size of our objects
 params.gaborWidth = round(params.stim.gaborWDeg*params.ppd);                 % in pixels, the size of our objects
 params.fromFix = round(params.stim.fromFixation*params.ppd);
@@ -188,9 +188,6 @@ xc = rect(3)/2; % rect and center, with the flixibility to resize & shift center
 yc = rect(4)/2+params.vertOffset;
 
 
-% create sine wave gratings
-%[topWave, topRect] = CreateProceduralSineGrating(win, round(params.gaborSize/2), round(params.gaborSize/2), params.stim.contrastOffset, [], params.stim.contrastMultiplicator);
-%[bottomWave, bottomRect] = CreateProceduralSineGrating(win, round(params.gaborSize/2), round(params.gaborSize/2), params.stim.contrastOffset, [], params.stim.contrastMultiplicator);
 
 %%% create sine wave gratings and store all phase transitions in matrix
 topPhase = randi(360);
@@ -203,12 +200,12 @@ for f = 1:length(flipTimes)
     bottomPhase = mod(bottomPhase - params.stim.motionPerFlip,360);
     
     topWave(f,:,:) = makeSineGrating(params.gaborHeight,params.gaborWidth,params.stim.spatialFreqDeg,...
-        params.stim.orientation,topPhase*pi/360,params.stim.contrastOffset(1),params.stim.contrastMultiplicator,0,params.backgroundColor(1));
+        params.stim.orientation,topPhase,params.stim.contrastOffset(1),params.stim.contrastMultiplicator,0,params.backgroundColor(1));
     bottomWave(f,:,:) = makeSineGrating(params.gaborHeight,params.gaborWidth,params.stim.spatialFreqDeg,...
-        params.stim.orientation,bottomPhase*pi/360,params.stim.contrastOffset(1),params.stim.contrastMultiplicator,0,params.backgroundColor(1));
-    figure();
-    imshow(squeeze(topWave(f,:,:)));
-    
+        params.stim.orientation,bottomPhase,params.stim.contrastOffset(1),params.stim.contrastMultiplicator,0,params.backgroundColor(1));
+ %    figure();
+ %    imshow(squeeze(topWave(f,:,:)));
+%     
     
 end
 
