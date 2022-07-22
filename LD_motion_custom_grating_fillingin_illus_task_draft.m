@@ -56,13 +56,13 @@ params.finalFixation = 16;          % in seconds
 params.phaseFlicker = 1; %.2;       % in seconds (on for Xs, off for Xs, phase changes
 
 %%%% gabor properties
-params.stim.spatialFreqDeg = 1.5;                                           % cycles per degree of visual angle
+params.stim.spatialFreqDeg = 1;                                           % cycles per degree of visual angle
 params.stim.contrast =  .3;                                                 % in %, maybe??
 params.stim.orientation = 90;                                                % in degrees
 %params.stim.guassianSpaceConstant = .4;                                     % approx equal to the number of radians covered by one standard deviation of the radius of the gaussian mask.
 params.stim.fromFixation = .6;                                              % in degrees of visual angle
 params.stim.gaborHDeg = 4;                                                  % in degrees of visual angle
-params.stim.gaborWDeg = 6; 
+params.stim.gaborWDeg = 4; 
 params.stim.ringPix = 3;                                                    % in pixels, thickness of greyscale ring separating
 params.stim.contrastMultiplicator = .2;                                     % for sine wave 0.5 = 100% contrast, 0.2 = 40%
 params.stim.contrastOffset = [.5 .5 .5 0];                                  % for procedural gabor
@@ -82,7 +82,7 @@ experiment.totalTime = params.initialFixation+(params.numConds*params.repsPerRun
 experiment.totalMins = experiment.totalTime/60;
 
 %%%% screen
-params.backgroundColor = [127 127 127];  % color
+params.backgroundColor = [50 50 50];%[127 127 127];  % color
 params.fontSize = 20;
 
 
