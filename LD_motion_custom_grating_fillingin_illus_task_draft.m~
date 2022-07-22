@@ -64,7 +64,7 @@ params.stim.fromFixation = .6;                                              % in
 params.stim.gaborHDeg = 4;                                                  % in degrees of visual angle
 params.stim.gaborWDeg = 6; 
 params.stim.ringPix = 3;                                                    % in pixels, thickness of greyscale ring separating
-params.stim.contrastMultiplicator = .5;                                     % for procedural gabor
+params.stim.contrastMultiplicator = .2;                                     % for sine wave 0.5 = 100% contrast, 0.2 = 40%
 params.stim.contrastOffset = [.5 .5 .5 0];                                  % for procedural gabor
 params.stim.motionRate = 1.3*360 ;                                          % 1.3 cycles per second = 360 deg of phase *1.3 per sec
 
@@ -169,7 +169,7 @@ Screen(win, 'TextSize', params.fontSize);
 flipInt = Screen('GetFlipInterval',win);
 slack = flipInt/2;
 params.stim.motionPerFlip = params.stim.motionRate * flipInt; %degrees per flip
-flipTimes = [0:flipInt:params.phaseFlicker];
+flipTimes = [0:flipInt*5:params.phaseFlicker]; %multiply flipInt by 5 to flip the image  
 flipTimes = flipTimes(1:length(flipTimes)-1);
 
 
@@ -228,11 +228,16 @@ for f = 1:length(flipTimes)
 end
 
 %% Sine wave gratings locations
-xc = rect(3)/4; % rect and center, with the flixibility to resize & shift center - change vars to zero if not used.
-yc = rect(4)/2;
+xc = rect(3)/2; % rect and center, with the flixibility to resize & shift center - change vars to zero if not used.
+yc = rect(4)/2; %+params.vertOffset;
 
-params.topRect =  CenterRectOnPoint([0 0 params.gaborWidth params.gaborHeight],xc,yc);
-%params.bottomlocation = rect;
+xtop = rect(3)/4;
+ytop = rect(4)/4;
+params.topRect =  CenterRectOnPoint([0 0 params.gaborWidth params.gaborHeight],xtop,ytop);
+
+xbottom = rect(3)/4;
+ybottom = rect(4)/4*3;
+params.bottomRect =  CenterRectOnPoint([0 0 params.gaborWidth params.gaborHeight],xbottom,ybottom);
 
 
 %%%% initial window - wait for backtick
@@ -281,7 +286,7 @@ for n = 1:(length(experiment.allFlips)-1)
              
              % bottom stim
              if strcmp(conditions(thisCond).name, 'double-inPhase') || strcmp(conditions(thisCond).name, 'double-oppPhase')  % draw second stim if it is 'double-inPhase' or 'double-oppPhase' %if it's randomized or incognruent
-                 Screen('DrawTexture', win, params.bottomWaveID(stimFlipCnt));
+                 Screen('DrawTexture', win, params.bottomWaveID(stimFlipCnt), [], params.bottomRect);
              end
              
 

@@ -168,9 +168,9 @@ Screen(win, 'TextSize', params.fontSize);
 %%%% timing optimization
 flipInt = Screen('GetFlipInterval',win);
 slack = flipInt/2;
-params.stim.motionPerFlip = params.stim.motionRate * flipInt; %degrees per flip
-flipTimes = [0:flipInt:params.phaseFlicker];
+flipTimes = [0:flipInt*5:params.phaseFlicker]; %multiply flipInt by 5 to flip the image every 5 frames 
 flipTimes = flipTimes(1:length(flipTimes)-1);
+params.stim.motionPerFlip = params.stim.motionRate * flipInt*5; %degrees per flip, here we multiply by five to move the phase 5 times more after each flip
 
 
 %%%% scale the stims for the screen
