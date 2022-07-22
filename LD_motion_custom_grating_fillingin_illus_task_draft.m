@@ -190,36 +190,48 @@ yc = rect(4)/2+params.vertOffset;
 
 
 %%% create sine wave gratings and store all phase transitions in matrix
+%%% along with pointers
 topPhase = randi(360);
 bottomPhase = topPhase;
-topWave = nan(length(flipTimes),params.gaborHeight,params.gaborWidth);
-bottomWave = nan(length(flipTimes),params.gaborHeight,params.gaborWidth);
+stim.topWave = nan(length(flipTimes),params.gaborHeight,params.gaborWidth);
+stim.bottomWave = nan(length(flipTimes),params.gaborHeight,params.gaborWidth);
+stim.topWaveID = nan(length(flipTimes),1);
+stim.bottomWaveID = nan(length(flipTimes),1);
+
 for f = 1:length(flipTimes)
     
+    if f < length(flipTimes)/2
+        
     topPhase = mod(topPhase + params.stim.motionPerFlip,360);
-    bottomPhase = mod(bottomPhase - params.stim.motionPerFlip,360);
-    %ih in pixels
-    %iw im pixels
-    %spatial freq in cycles per dva
-    %tilt/orientation of the rating in degrees
-    %phase in degrees (not degrees of visual angle)
-    %contrast offset in %
-    %contrast multiplicator
-    %ppd = 0 if freq already in cycles per dva
-    %background color
+    bottomPhase = mod(bottomPhase + params.stim.motionPerFlip,360);
+    %ih in pixels %iw in pixels %spatial freq in cycles per dva
+    %tilt/orientation of the grating in degrees %phase in degrees (not degrees of visual angle)
+    %contrast offset in percent    %contrast multiplicator  %ppd = 0 if freq already in cycles per stimulus
+    %background color (unused if the grating is not an annulus)
     
-    topWave(f,:,:) = makeSineGrating(params.gaborHeight,params.gaborWidth,params.stim.spatialFreqDeg,...
+    stim.topWave(f,:,:) = makeSineGrating(params.gaborHeight,params.gaborWidth,params.stim.spatialFreqDeg,...
         params.stim.orientation,topPhase,params.stim.contrastOffset(1),params.stim.contrastMultiplicator,...
-        params.ppd,params.backgroundColor(1));
-    bottomWave(f,:,:) = makeSineGrating(params.gaborHeight,params.gaborWidth,params.stim.spatialFreqDeg,...
+        params.ppd);
+    stim.bottomWave(f,:,:) = makeSineGrating(params.gaborHeight,params.gaborWidth,params.stim.spatialFreqDeg,...
         params.stim.orientation,bottomPhase,params.stim.contrastOffset(1),params.stim.contrastMultiplicator,...
-        params.ppd, params.backgroundColor(1));
-    figure();
-    imshow(squeeze(topWave(f,:,:)));
+        params.ppd);
+%    figure();
+ %   imshow(squeeze(topWave(f,:,:)));
 %     
-    
+    elseif f >= length(flipTimes)/2
+        topPhase = mod(topPhase - params.stim.motionPerFlip,360);
+        bottomPhase = mod(bottomPhase - params.stim.motionPerFlip,360);   
+        stim.topWave(f,:,:) = makeSineGrating(params.gaborHeight,params.gaborWidth,params.stim.spatialFreqDeg,...
+            params.stim.orientation,topPhase,params.stim.contrastOffset(1),params.stim.contrastMultiplicator,...
+            params.ppd);
+        stim.bottomWave(f,:,:) = makeSineGrating(params.gaborHeight,params.gaborWidth,params.stim.spatialFreqDeg,...
+            params.stim.orientation,bottomPhase,params.stim.contrastOffset(1),params.stim.contrastMultiplicator,...
+            params.ppd);
+    end
+    stim.topWaveID(f) = Screen('MakeTexture', win, squeeze(stim.topWave(f,:,:)));
+    stim.bottomWaveID(f) = Screen('MakeTexture', win, squeeze(stim.bottomWave(f,:,:)));
+            
 end
-
 
 %%%% initial window - wait for backtick
 Screen(win, 'DrawText', 'Waiting for Backtick.', 10,10,[0 0 0]);
@@ -263,13 +275,14 @@ for n = 1:(length(experiment.allFlips)-1)
         for motionFlip = flipTimes
             stimFlipCnt = stimFlipCnt+ 1; 
             % top stim
-             topWaveID = Screen('MakeTexture', win, squeeze(topWave(stimFlipCnt,:,:))*255);
-             Screen('DrawTexture', win, topWaveID);
+             %topWaveID = Screen('MakeTexture', win, squeeze(topWave(stimFlipCnt,:,:)));
+             Screen('DrawTexture', win, stim.topWaveID(stimFlipCnt));
              %[topWaveID,stimFlipCnt]
 
             % bottom stim
             if strcmp(conditions(thisCond).name, 'double-inPhase') || strcmp(conditions(thisCond).name, 'double-oppPhase')  % draw second stim if it is 'double-inPhase' or 'double-oppPhase' %if it's randomized or incognruent
-                Screen('MakeTexture', win, squeeze(bottomWave(stimFlipCnt,:,:)));
+                %bottomWaveID = Screen('MakeTexture', win, squeeze(bottomWave(stimFlipCnt,:,:)));
+                Screen('DrawTexture', win, bottomWaveID(stimFlipCnt));
             end
           
 
