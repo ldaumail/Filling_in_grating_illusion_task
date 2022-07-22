@@ -13,7 +13,6 @@ clear;
 
 Screen('Preference', 'SkipSyncTests', 0);
 
-
 input('Hit enter to proceed.');
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -184,22 +183,18 @@ params.fixSize = round(params.fixSizeDeg*params.ppd);
 params.littleFix = round(params.littleFixDeg*params.ppd);
 
 
-xc = rect(3)/2; % rect and center, with the flixibility to resize & shift center - change vars to zero if not used.
-yc = rect(4)/2+params.vertOffset;
-
-
-
-%%% create sine wave gratings and store all phase transitions in matrix
+%%% create sine wave gratings and store all phase transitions in structure
+%%% along with pointers
 topPhase = randi(360);
 bottomPhase = topPhase;
-stim.topWave = nan(length(flipTimes),params.gaborHeight,params.gaborWidth);
-stim.bottomWave = nan(length(flipTimes),params.gaborHeight,params.gaborWidth);
-stim.topWaveID = nan(length(flipTimes),1);
-stim.bottomWaveID = nan(length(flipTimes),1);
+params.topWave = nan(length(flipTimes),params.gaborHeight,params.gaborWidth);
+params.bottomWave = nan(length(flipTimes),params.gaborHeight,params.gaborWidth);
+params.topWaveID = nan(length(flipTimes),1);
+params.bottomWaveID = nan(length(flipTimes),1);
 
 for f = 1:length(flipTimes)
     
-    if f < length(flipTimes)/2
+    if f <= length(flipTimes)/2
         
     topPhase = mod(topPhase + params.stim.motionPerFlip,360);
     bottomPhase = mod(bottomPhase + params.stim.motionPerFlip,360);
@@ -208,29 +203,37 @@ for f = 1:length(flipTimes)
     %contrast offset in percent    %contrast multiplicator  %ppd = 0 if freq already in cycles per stimulus
     %background color (unused if the grating is not an annulus)
     
-    stim.topWave(f,:,:) = makeSineGrating(params.gaborHeight,params.gaborWidth,params.stim.spatialFreqDeg,...
+    params.topWave(f,:,:) = makeSineGrating(params.gaborHeight,params.gaborWidth,params.stim.spatialFreqDeg,...
         params.stim.orientation,topPhase,params.stim.contrastOffset(1),params.stim.contrastMultiplicator,...
         params.ppd);
-    stim.bottomWave(f,:,:) = makeSineGrating(params.gaborHeight,params.gaborWidth,params.stim.spatialFreqDeg,...
+    params.bottomWave(f,:,:) = makeSineGrating(params.gaborHeight,params.gaborWidth,params.stim.spatialFreqDeg,...
         params.stim.orientation,bottomPhase,params.stim.contrastOffset(1),params.stim.contrastMultiplicator,...
         params.ppd);
 %    figure();
  %   imshow(squeeze(topWave(f,:,:)));
 %     
-    elseif f >= length(flipTimes)/2
+    elseif f > length(flipTimes)/2
         topPhase = mod(topPhase - params.stim.motionPerFlip,360);
         bottomPhase = mod(bottomPhase - params.stim.motionPerFlip,360);   
-        stim.topWave(f,:,:) = makeSineGrating(params.gaborHeight,params.gaborWidth,params.stim.spatialFreqDeg,...
+        params.topWave(f,:,:) = makeSineGrating(params.gaborHeight,params.gaborWidth,params.stim.spatialFreqDeg,...
             params.stim.orientation,topPhase,params.stim.contrastOffset(1),params.stim.contrastMultiplicator,...
             params.ppd);
-        stim.bottomWave(f,:,:) = makeSineGrating(params.gaborHeight,params.gaborWidth,params.stim.spatialFreqDeg,...
+        params.bottomWave(f,:,:) = makeSineGrating(params.gaborHeight,params.gaborWidth,params.stim.spatialFreqDeg,...
             params.stim.orientation,bottomPhase,params.stim.contrastOffset(1),params.stim.contrastMultiplicator,...
             params.ppd);
     end
-    stim.topWaveID = Screen('MakeTexture', win, squeeze(topWave(stimFlipCnt,:,:)));
-    stim.bottomWaveID = Screen('MakeTexture', win, squeeze(bottomWave(stimFlipCnt,:,:)));
+    params.topWaveID(f) = Screen('MakeTexture', win, squeeze(params.topWave(f,:,:)));
+    params.bottomWaveID(f) = Screen('MakeTexture', win, squeeze(params.bottomWave(f,:,:)));
             
 end
+
+%% Sine wave gratings locations
+xc = rect(3)/4; % rect and center, with the flixibility to resize & shift center - change vars to zero if not used.
+yc = rect(4)/2;
+
+params.topRect =  CenterRectOnPoint([0 0 params.gaborWidth params.gaborHeight],xc,yc);
+%params.bottomlocation = rect;
+
 
 %%%% initial window - wait for backtick
 Screen(win, 'DrawText', 'Waiting for Backtick.', 10,10,[0 0 0]);
@@ -274,16 +277,13 @@ for n = 1:(length(experiment.allFlips)-1)
         for motionFlip = flipTimes
             stimFlipCnt = stimFlipCnt+ 1; 
             % top stim
-             %topWaveID = Screen('MakeTexture', win, squeeze(topWave(stimFlipCnt,:,:)));
-             Screen('DrawTexture', win, topWaveID);
-             %[topWaveID,stimFlipCnt]
-
-            % bottom stim
-            if strcmp(conditions(thisCond).name, 'double-inPhase') || strcmp(conditions(thisCond).name, 'double-oppPhase')  % draw second stim if it is 'double-inPhase' or 'double-oppPhase' %if it's randomized or incognruent
-                %bottomWaveID = Screen('MakeTexture', win, squeeze(bottomWave(stimFlipCnt,:,:)));
-                %Screen('DrawTexture', win, bottomWaveID);
-            end
-          
+             Screen('DrawTexture', win, params.topWaveID(stimFlipCnt),[],params.topRect);
+             
+             % bottom stim
+             if strcmp(conditions(thisCond).name, 'double-inPhase') || strcmp(conditions(thisCond).name, 'double-oppPhase')  % draw second stim if it is 'double-inPhase' or 'double-oppPhase' %if it's randomized or incognruent
+                 Screen('DrawTexture', win, params.bottomWaveID(stimFlipCnt));
+             end
+             
 
             % draw fixation and RSVP letter
             Screen('FillOval', win,[255 255 255], [xc-round(params.fixSize/2) yc-round(params.fixSize/2) xc+round(params.fixSize/2) yc+round(params.fixSize/2)]); % white fixation ring
