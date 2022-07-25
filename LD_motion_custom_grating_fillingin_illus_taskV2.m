@@ -358,24 +358,6 @@ for n = 1:(length(experiment.allFlips)-1)
             [VBLT experiment.flipTime(flipCount) FlipT missed] = Screen(win, 'Flip', experiment.startRun + experiment.allFlips(n)+motionFlip - slack);
             flipCount = flipCount+1;
             
-            %%%% increment phase to show motion
-            %             if strfind(conditions(thisCond).name{:},'double') ==1
-            %                 if strcmp(conditions(thisCond).stimTop,'left') == 1
-            %                     topPhase = mod(topPhase + params.stim.motionPerFlip,360);
-            %                     bottomPhase = mod(bottomPhase - params.stim.motionPerFlip,360);
-            %                 elseif strcmp(conditions(thisCond).stimTop,'right') == 1
-            %                     topPhase = mod(topPhase - params.stim.motionPerFlip,360);
-            %                     bottomPhase = mod(bottomPhase + params.stim.motionPerFlip,360);
-            %                 end
-            %             elseif strfind(conditions(thisCond).name{:},'single') ==1 % single stimulus condition
-            %                 if strcmp(conditions(thisCond).stimTop,'left') == 1
-            %                     topPhase = mod(topPhase + params.stim.motionPerFlip,360);
-            %                    % bottomPhase = mod(bottomPhase + params.stim.motionPerFlip,360);
-            %                 elseif strcmp(conditions(thisCond).stimTop,'right') == 1
-            %                     topPhase = mod(topPhase - params.stim.motionPerFlip,360);
-            %                    % bottomPhase = mod(bottomPhase - params.stim.motionPerFlip,360);
-            %                 end
-            %             end
         end
     else % if phase is 0 or it's blank
         % draw fixation and RSVP letter
@@ -390,7 +372,7 @@ for n = 1:(length(experiment.allFlips)-1)
     end
     % listen for response  - correct if you respond to previous 3 letters
     if n > (params.firstPossibleTarget-1) % don't start response listen until targets can appear
-        [pressed, firstPress]= KbQueueCheck();
+        [pressed, firstPress]= KbCheck();
         targetRange = targetInd(n - params.responseBack-1:n-2);
         if (pressed ==1) && (sum(targetRange)>0)
             thisTarget = find(targetRange)+n-2-params.responseBack; % to convert it back into targetInd's scale
