@@ -93,17 +93,27 @@ params.backgroundColor = [50 50 50];%[127 127 127];  % color
 params.fontSize = 20;
 
 %%%% task
-params.targetProb = .1;              % proportion of trials where the target letters will come up
-params.firstPossibleTarget = 20;     % no targets in the first X flips
-params.lastPossibleTarget = 20;      % no targets in the last X flips
-params.targets = {'J' 'K'};
-params.distractors = {'A' 'S' 'D' 'F' 'G' 'H' 'L'};
-experiment.performance = [];        % will be the performance on the one-back task in each block
-params.RSVPrate = .2;               % how fast the letters flip (second) - this likely needs to be hardcoded down below, but is saved here for bookkeeping
-params.cueColor = 0;%[50 50 255];   % letter color
-params.totalLetters = (experiment.totalTime/params.RSVPrate); %total number of letters that COULD BE presented during the experiment (though based on prob, much less will be presented)
-params.responseBack = 3;    % the response is correct if the preceding N letters were the target
-experiment.letterTiming = (0:params.RSVPrate:experiment.totalTime);
+% params.targetProb = .1;              % proportion of trials where the target letters will come up
+% params.firstPossibleTarget = 20;     % no targets in the first X flips
+% params.lastPossibleTarget = 20;      % no targets in the last X flips
+% params.targets = {'J' 'K'};
+% params.distractors = {'A' 'S' 'D' 'F' 'G' 'H' 'L'};
+% experiment.performance = [];        % will be the performance on the one-back task in each block
+% params.RSVPrate = .2;               % how fast the letters flip (second) - this likely needs to be hardcoded down below, but is saved here for bookkeeping
+% params.cueColor = 0;%[50 50 255];   % letter color
+% params.totalLetters = (experiment.totalTime/params.RSVPrate); %total number of letters that COULD BE presented during the experiment (though based on prob, much less will be presented)
+% params.responseBack = 3;    % the response is correct if the preceding N letters were the target
+% experiment.letterTiming = (0:params.RSVPrate:experiment.totalTime);
+letters = ['ABCDEFGHIJKLMNOP'];
+targetLetters = ['O', 'K'];
+experiment.task.target = [];
+experiment.task.target_time = [];
+experiment.task.response = [];
+experiment.task.response_time = [];
+experiment.task.accuracy = 0;
+experiment.task.meanRT = 0;
+
+taskText = 'characters';
 
 
 %%%% final few structs

@@ -93,17 +93,18 @@ params.backgroundColor = [50 50 50];%[127 127 127];  % color
 params.fontSize = 20;
 
 %%%% task
-params.targetProb = .1;              % proportion of trials where the target letters will come up
-params.firstPossibleTarget = 20;     % no targets in the first X flips
-params.lastPossibleTarget = 20;      % no targets in the last X flips
-params.targets = {'J' 'K'};
-params.distractors = {'A' 'S' 'D' 'F' 'G' 'H' 'L'};
-experiment.performance = [];        % will be the performance on the one-back task in each block
-params.RSVPrate = .2;               % how fast the letters flip (second) - this likely needs to be hardcoded down below, but is saved here for bookkeeping
-params.cueColor = 0;%[50 50 255];   % letter color
-params.totalLetters = (experiment.totalTime/params.RSVPrate); %total number of letters that COULD BE presented during the experiment (though based on prob, much less will be presented)
-params.responseBack = 3;    % the response is correct if the preceding N letters were the target
-experiment.letterTiming = (0:params.RSVPrate:experiment.totalTime);
+% params.targetProb = .1;              % proportion of trials where the target letters will come up
+% params.firstPossibleTarget = 20;     % no targets in the first X flips
+% params.lastPossibleTarget = 20;      % no targets in the last X flips
+% params.targets = {'J' 'K'};
+% params.distractors = {'A' 'S' 'D' 'F' 'G' 'H' 'L'};
+% experiment.performance = [];        % will be the performance on the one-back task in each block
+% params.RSVPrate = .2;               % how fast the letters flip (second) - this likely needs to be hardcoded down below, but is saved here for bookkeeping
+% params.cueColor = 0;%[50 50 255];   % letter color
+% params.totalLetters = (experiment.totalTime/params.RSVPrate); %total number of letters that COULD BE presented during the experiment (though based on prob, much less will be presented)
+% params.responseBack = 3;    % the response is correct if the preceding N letters were the target
+% experiment.letterTiming = (0:params.RSVPrate:experiment.totalTime);
+
 
 
 %%%% final few structs
@@ -170,51 +171,62 @@ end
 % task set-up %
 %%%%%%%%%%%%%%%%%%%%
 
+letters = ['ABCDEFGHIJKLMNOP'];
+targetLetters = ['J', 'K'];
+experiment.task.target = [];
+experiment.task.target_time = [];
+experiment.task.response = [];
+experiment.task.response_time = [];
+experiment.task.accuracy = 0;
+experiment.task.meanRT = 0;
+
+taskText = 'RSVP';
+
 %%%% find the target positioning for this run (index of repeated letters)
-experiment.numTargets = length(find(rand(1,params.totalLetters)<params.targetProb)); %draw targets from uniform distribution between 0 nd 1, only keep the density we need (0.1) of them
-targetInd = zeros(1,params.totalLetters+1); % this has to go to +1, but it's only for the repeat check
-if experiment.numTargets > 0
-    while 1
-        %check previous (-1,-2) and following indices (+1,+2) if they may constitute a
-        %repeated letter
-        maybeRep = params.firstPossibleTarget+Randi(params.totalLetters-params.firstPossibleTarget-params.lastPossibleTarget);    % a possible index for a repeat, from 3:16
-        if targetInd(maybeRep-1) == 0 && targetInd(maybeRep+1) == 0 && targetInd(maybeRep-2) == 0 && targetInd(maybeRep+2) == 0 % if the previous and following TWO images weren't already a repeat
-            targetInd(maybeRep) = 1; %record this index if it is not a repeat
-        end
-        if sum(targetInd) == experiment.numTargets %if the sum of target letters reach the number of targets, stop the check
-            break
-        end
-    end
-end
-targetInd = targetInd(1:params.totalLetters); % trim this back for sanity
-
-
-%%%% fill the sequence out with actual letters
-experiment.letterSequence = [];
-for k = 1:length(targetInd)
-    if targetInd(k) == 1 % targets - we know these don't repeat
-        experiment.letterSequence{k} = params.targets{randi(length(params.targets))}; %pick a random target
-    else % distractors - we need to make sure these don't repeat
-        if k > 1 % the first letter can be whatever
-            while 1
-                maybeLetter = params.distractors{randi(length(params.distractors))};
-                if strcmp(maybeLetter, experiment.letterSequence{k-1}) == 0
-                    experiment.letterSequence{k} = maybeLetter;
-                    break
-                end
-            end
-        else %% (the first letter can be whatever)
-            experiment.letterSequence{k} = params.distractors{randi(length(params.distractors))};
-        end
-    end
-end
+% experiment.numTargets = length(find(rand(1,params.totalLetters)<params.targetProb)); %draw targets from uniform distribution between 0 nd 1, only keep the density we need (0.1) of them
+% targetInd = zeros(1,params.totalLetters+1); % this has to go to +1, but it's only for the repeat check
+% if experiment.numTargets > 0
+%     while 1
+%         %check previous (-1,-2) and following indices (+1,+2) if they may constitute a
+%         %repeated letter
+%         maybeRep = params.firstPossibleTarget+Randi(params.totalLetters-params.firstPossibleTarget-params.lastPossibleTarget);    % a possible index for a repeat, from 3:16
+%         if targetInd(maybeRep-1) == 0 && targetInd(maybeRep+1) == 0 && targetInd(maybeRep-2) == 0 && targetInd(maybeRep+2) == 0 % if the previous and following TWO images weren't already a repeat
+%             targetInd(maybeRep) = 1; %record this index if it is not a repeat
+%         end
+%         if sum(targetInd) == experiment.numTargets %if the sum of target letters reach the number of targets, stop the check
+%             break
+%         end
+%     end
+% end
+% targetInd = targetInd(1:params.totalLetters); % trim this back for sanity
+% 
+% 
+% %%%% fill the sequence out with actual letters
+% experiment.letterSequence = [];
+% for k = 1:length(targetInd)
+%     if targetInd(k) == 1 % targets - we know these don't repeat
+%         experiment.letterSequence{k} = params.targets{randi(length(params.targets))}; %pick a random target
+%     else % distractors - we need to make sure these don't repeat
+%         if k > 1 % the first letter can be whatever
+%             while 1
+%                 maybeLetter = params.distractors{randi(length(params.distractors))};
+%                 if strcmp(maybeLetter, experiment.letterSequence{k-1}) == 0
+%                     experiment.letterSequence{k} = maybeLetter;
+%                     break
+%                 end
+%             end
+%         else %% (the first letter can be whatever)
+%             experiment.letterSequence{k} = params.distractors{randi(length(params.distractors))};
+%         end
+%     end
+% end
 
 %%%% set-up phase flicker conditions, and scale up the task accordingly
-experiment.longFormFlicker = repmat([1 1]',round((experiment.totalTime/params.stimDur)/2),1);
-if params.RSVPrate < params.targetDur
-    experiment.letterSequence = expand(experiment.letterSequence,[params.RSVPrate/params.targetDur,1]); 
-    % experiment.letterSequence = expand(experiment.letterSequence,[1, 1/params.RSVPrate/params.stimDur]);
-end
+% experiment.longFormFlicker = repmat([1 1]',round((experiment.totalTime/params.stimDur)/2),1);
+% if params.RSVPrate < params.targetDur
+%     experiment.letterSequence = expand(experiment.letterSequence,[params.RSVPrate/params.targetDur,1]); 
+%     % experiment.letterSequence = expand(experiment.letterSequence,[1, 1/params.RSVPrate/params.stimDur]);
+% end
 
 
 
@@ -225,37 +237,36 @@ end
 % HideCursor;
 Priority(9);
 
-%%%% open screen
+%% open screen
 screen=max(Screen('Screens'));
 [win, rect]=Screen('OpenWindow',screen,params.backgroundColor,[100 100 900 600],[],[],[],[],kPsychNeed32BPCFloat);
 Screen(win, 'TextSize', params.fontSize);
 %Screen('BlendFunction', win, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-%%%% gamma correction
+%% gamma correction
 % if params.gammaCorrect > 0
 %     load(params.whichCLUT);
 %     Screen('LoadNormalizedGammaTable', screen, linearizedCLUT);
 % end
 
-%%%% timing optimization
+%% timing optimization
 flipInt = Screen('GetFlipInterval',win);
 slack = flipInt/2;
+
 flipTimes = [0:flipInt*5:params.stimDur]; %multiply flipInt by 5 to flip the image every 5 frames 
 flipTimes = flipTimes(1:length(flipTimes)-1);
 params.stim.motionPerFlip = params.stim.motionRate * flipInt*5; %degrees per flip, here we multiply by five to move the phase 5 times more after each flip
 
 
-%%%% scale the stims for the screen
+%% Prepare scaling for stims on the screen
 params.ppd = pi* rect(3) / (atan(params.screenWidth/params.viewingDist/2)) / 360; %2pi*(rect(3)/2)= pi*rect(3)
-%params.freq =  (params.stim.spatialFreqDeg)*2*pi/params.ppd;                  %converts cycles per degree to cycles *(rad)/ pixel
 params.gaborHeight = round(params.stim.gaborHDeg*params.ppd);                 % in pixels, the size of our objects
 params.gaborWidth = round(params.stim.gaborWDeg*params.ppd);                 % in pixels, the size of our objects
 params.fromFix = round(params.stim.fromFixation*params.ppd);
 params.fixSize = round(params.fixSizeDeg*params.ppd);
-%params.littleFix = round(params.littleFixDeg*params.ppd);
 
 
-%%% create sine wave gratings and store all phase transitions in structure
+%% create sine wave gratings and store all phase transitions in structure
 %%% along with pointers
 topPhase = randi(360);
 bottomPhase = topPhase;
@@ -311,15 +322,24 @@ xbottom = rect(3)/4;
 ybottom = rect(4)/4*3;
 params.bottomRect =  CenterRectOnPoint([0 0 params.gaborWidth params.gaborHeight],xbottom,ybottom);
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%  Wait for trigger while displaying the fixation & set up
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %%%% initial window - wait for backtick
+%fixation circle
+Screen('FillOval', win,[255 255 255], [xc-round(params.fixSize/2) yc-round(params.fixSize/2) xc+round(params.fixSize/2) yc+round(params.fixSize/2)]);
+Screen('FillOval', win,[0 0 0], [xc-round(params.fixSize/4) yc-round(params.fixSize/4) xc+round(params.fixSize/4) yc+round(params.fixSize/4)]);
+%wait for backticktick
 Screen(win, 'DrawText', 'Waiting for Backtick.', 10,10,[0 0 0]);
+%name of the task
+Screen(win, 'DrawText', taskText, rect(3)-100,10,[0 0 0]);
 Screen(win, 'Flip', 0);
 
 KbTriggerWait(53, deviceNumber);
 KbQueueCreate(deviceNumber,responseKeys);
 %%% for the loc
-save LGNsurroundParams.mat params;
+save fillinginParams.mat params;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
