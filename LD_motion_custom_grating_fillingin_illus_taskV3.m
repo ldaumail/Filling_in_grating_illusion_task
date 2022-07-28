@@ -17,7 +17,7 @@ input('Hit enter to proceed.');
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% take these out for the actual scan!
-offset = -150;
+vertOffset = -150;
 [keyboardIndices, productNames, ~] = GetKeyboardIndices;
 deviceNumber = keyboardIndices;
 runNum = 1;
@@ -27,7 +27,7 @@ Screen('Preference', 'SkipSyncTests', 1);
 
 
 %%%% input this at the beginning of the scan session for 7T
-params.vertOffset = offset;    % vertical offset from FindScreenSize.m
+params.vertOffset = vertOffset;    % vertical offset from FindScreenSize.m
 % params.gammaCorrect = 1;       % make sure this = 1 when you're at the scanner!
 % params.whichCLUT = '7T_Sam.mat'; %'linearizedCLUT_SoniaMPB.mat';
 
@@ -89,6 +89,7 @@ experiment.totalTime = params.initialFixation+(params.numConds*params.stimsPerBl
 experiment.totalMins = experiment.totalTime/60;
 
 %%%% screen
+params.grayBackground = 200;
 params.backgroundColor = [50 50 50];%[127 127 127];  % color
 params.fontSize = 20;
 
@@ -239,9 +240,9 @@ Priority(9);
 
 %% open screen
 screen=max(Screen('Screens'));
-[win, rect]=Screen('OpenWindow',screen,params.backgroundColor,[100 100 900 600],[],[],[],[],kPsychNeed32BPCFloat);
-Screen(win, 'TextSize', params.fontSize);
-%Screen('BlendFunction', win, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+[w, rect]=Screen('OpenWindow',screen,params.backgroundColor,[100 100 900 600],[],[],[],[],kPsychNeed32BPCFloat);
+Screen(w, 'TextSize', params.fontSize);
+%Screen('BlendFunction', w, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 %% gamma correction
 % if params.gammaCorrect > 0
@@ -250,7 +251,7 @@ Screen(win, 'TextSize', params.fontSize);
 % end
 
 %% timing optimization
-flipInt = Screen('GetFlipInterval',win);
+flipInt = Screen('GetFlipInterval',w);
 slack = flipInt/2;
 
 flipTimes = [0:flipInt*5:params.stimDur]; %multiply flipInt by 5 to flip the image every 5 frames 
@@ -305,8 +306,8 @@ for f = 1:length(flipTimes)
             params.stim.orientation,bottomPhase,params.stim.contrastOffset(1),params.stim.contrastMultiplicator,...
             params.ppd);
     end
-    params.topWaveID(f) = Screen('MakeTexture', win, squeeze(params.topWave(f,:,:)));
-    params.bottomWaveID(f) = Screen('MakeTexture', win, squeeze(params.bottomWave(f,:,:)));
+    params.topWaveID(f) = Screen('MakeTexture', w, squeeze(params.topWave(f,:,:)));
+    params.bottomWaveID(f) = Screen('MakeTexture', w, squeeze(params.bottomWave(f,:,:)));
             
 end
 
@@ -325,16 +326,19 @@ params.bottomRect =  CenterRectOnPoint([0 0 params.gaborWidth params.gaborHeight
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %  Wait for trigger while displaying the fixation & set up
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Screen('FillRect', w, params.grayBackground);
 
 %%%% initial window - wait for backtick
 %fixation circle
-Screen('FillOval', win,[255 255 255], [xc-round(params.fixSize/2) yc-round(params.fixSize/2) xc+round(params.fixSize/2) yc+round(params.fixSize/2)]);
-Screen('FillOval', win,[0 0 0], [xc-round(params.fixSize/4) yc-round(params.fixSize/4) xc+round(params.fixSize/4) yc+round(params.fixSize/4)]);
+Screen('FillOval', w,[255 255 255], [xc-round(params.fixSize/2) yc-round(params.fixSize/2) xc+round(params.fixSize/2) yc+round(params.fixSize/2)]);
+Screen('FillOval', w,[0 0 0], [xc-round(params.fixSize/4) yc-round(params.fixSize/4) xc+round(params.fixSize/4) yc+round(params.fixSize/4)]);
 %wait for backticktick
-Screen(win, 'DrawText', 'Waiting for Backtick.', 10,10,[0 0 0]);
+Screen(w, 'DrawText', 'Waiting for Backtick.', 10,10,[0 0 0]);
 %name of the task
-Screen(win, 'DrawText', taskText, rect(3)-100,10,[0 0 0]);
-Screen(win, 'Flip', 0);
+Screen(w, 'DrawText', taskText, rect(3)-100,10,[0 0 0]);
+Screen(w, 'Flip', 0);
+
+[vbl experiment.startRun FlipTimestamp Missed Beampos] = Screen('Flip', w); % starts timing
 
 KbTriggerWait(53, deviceNumber);
 KbQueueCreate(deviceNumber,responseKeys);
@@ -360,72 +364,104 @@ for n = 1:(length(experiment.allFlips)-1)
     thisCond = experiment.longFormConds(n);
     
     %%%% draw gabors
-    if thisCond > 0 && experiment.longFormFlicker(n) > 0% zeros correspond to blanks, in which case we skip this next section
-        
-        %         if experiment.longFormConds(n-1)==0 % if this is the beginning of a block, we need to randomize the phases
-        %             topPhase = randi(360);
-        %             if conditions(thisCond).phase == 2 % 1 = oppPhase, 2 = inPhase
-        %                 bottomPhase = topPhase;
-        %             else
-        %                 bottomPhase = mod(topPhase - 180,360); % opp phase for oppPhase
-        %             end
-        %         end
-        
-        
+    if thisCond > 0 %&& experiment.longFormFlicker(n) > 0% zeros correspond to blanks, in which case we skip this next section
+ 
         % draw & increment stims
         stimFlipCnt = 0;
         for motionFlip = flipTimes
             stimFlipCnt = stimFlipCnt+ 1;
             % top stim
-            Screen('DrawTexture', win, params.topWaveID(stimFlipCnt),[],params.topRect);
+            Screen('DrawTexture', w, params.topWaveID(stimFlipCnt),[],params.topRect);
             
             % bottom stim
             if strcmp(conditions(thisCond).name, 'double-indir') || strcmp(conditions(thisCond).name, 'double-oppdir')  % draw second stim if it is 'double-indir' or 'double-oppdir' %if it's randomized or incognruent
-                Screen('DrawTexture', win, params.bottomWaveID(stimFlipCnt), [], params.bottomRect);
+                Screen('DrawTexture', w, params.bottomWaveID(stimFlipCnt), [], params.bottomRect);
             end
             
             
-            % draw fixation and RSVP letter
-            Screen('FillOval', win,[255 255 255], [xc-round(params.fixSize/2) yc-round(params.fixSize/2) xc+round(params.fixSize/2) yc+round(params.fixSize/2)]); % white fixation ring
-            [width,height] = RectSize(Screen('TextBounds',win,experiment.letterSequence{n}));
-            Screen(win, 'DrawText', experiment.letterSequence{n}, xc-width/2, yc-height/2,params.cueColor);
+            %             %draw fixation and RSVP letter
+            %             Screen('FillOval', w,[255 255 255], [xc-round(params.fixSize/2) yc-round(params.fixSize/2) xc+round(params.fixSize/2) yc+round(params.fixSize/2)]); % white fixation ring
+            %             [width,height] = RectSize(Screen('TextBounds',w,experiment.letterSequence{n}));
+            %             Screen(w, 'DrawText', experiment.letterSequence{n}, xc-width/2, yc-height/2,params.cueColor);
+            
+            % draw RSVP letter
+            l = randperm(numel(letters));
+            fixChar = letters(l(1));
+            Screen('FillOval', w,[255 255 255], [xc-round(params.fixSize/2) yc-round(params.fixSize/2) xc+round(params.fixSize/2) yc+round(params.fixSize/2)]);
+            DrawFormattedText(w, fixChar, 'center', 8+vertOffset+rect(4)/2, 0);
+            
+            flipTime = experiment.startRun + experiment.allFlips(n) - slack;
+            %flipTime = experiment.startRun + params.initialFixation + ((b-1)*(params.blockLength+params.IBI)) + ((t-1)*(params.stimDur+params.ISI)) - slack;
+            %Screen('Flip', w, flipTime); %will be important to consider
+            %Dave's approach for time flipping (and time measurement) when integrating all conditions and blocks
+            
             
             %%%%%%%%%%% FLIP %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-            [VBLT experiment.flipTime(flipCount) FlipT missed] = Screen(win, 'Flip', experiment.startRun + experiment.allFlips(n)+motionFlip - slack);
+            [VBLT experiment.flipTime(flipCount) FlipT missed] = Screen(w, 'Flip', experiment.startRun + experiment.allFlips(n)+motionFlip - slack);
             flipCount = flipCount+1;
             
+            if fixChar == 'J';
+                experiment.task.target = [experiment.task.target, 1];
+                experiment.task.target_time = [experiment.task.target_time, GetSecs - experiment.startRun];
+            elseif fixChar == 'K';
+                experiment.task.target = [experiment.task.target, 2];
+                experiment.task.target_time = [experiment.task.target_time, GetSecs - experiment.startRun];
+            end
+            
+            % ISI, draw fixation and flip
+            Screen('FillOval', w,[255 255 255], [xc-round(params.fixSize/2) yc-round(params.fixSize/2) xc+round(params.fixSize/2) yc+round(params.fixSize/2)]);
+            Screen('FillOval', w,[0 0 0], [xc-round(params.fixSize/4) yc-round(params.fixSize/4) xc+round(params.fixSize/4) yc+round(params.fixSize/4)]);
+            flipTime = flipTime + params.stimDur;
+            Screen('Flip', w, flipTime);
+            
         end
-    else % if phase is 0 or it's blank
-        % draw fixation and RSVP letter
-        Screen('FillOval', win,[255 255 255], [xc-round(params.fixSize/2) yc-round(params.fixSize/2) xc+round(params.fixSize/2) yc+round(params.fixSize/2)]); % white fixation ring
-        [width,height] = RectSize(Screen('TextBounds',win,experiment.letterSequence{n}));
-        Screen(win, 'DrawText', experiment.letterSequence{n}, xc-width/2, yc-height/2,params.cueColor);
-        %         %%%%% FLIP %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-        if n == 1 [VBLT experiment.startRun FlipT missed] = Screen(win, 'Flip', 0);
-            experiment.flipTime(flipCount) = experiment.startRun;
-        else [VBLT experiment.flipTime(flipCount) FlipT missed] = Screen(win, 'Flip', experiment.startRun + experiment.allFlips(n) - slack);end
-        flipCount = flipCount+1;
+        
+        %     else % if phase is 0 or it's blank
+        %         % draw fixation and RSVP letter
+        %         Screen('FillOval', w,[255 255 255], [xc-round(params.fixSize/2) yc-round(params.fixSize/2) xc+round(params.fixSize/2) yc+round(params.fixSize/2)]); % white fixation ring
+        %         [width,height] = RectSize(Screen('TextBounds',w,experiment.letterSequence{n}));
+        %         Screen(w, 'DrawText', experiment.letterSequence{n}, xc-width/2, yc-height/2,params.cueColor);
+        %         %         %%%%% FLIP %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        %         if n == 1 [VBLT experiment.startRun FlipT missed] = Screen(w, 'Flip', 0);
+        %             experiment.flipTime(flipCount) = experiment.startRun;
+        %         else [VBLT experiment.flipTime(flipCount) FlipT missed] = Screen(w, 'Flip', experiment.startRun + experiment.allFlips(n) - slack);end
+        %         flipCount = flipCount+1;
+        
+        
     end
     % listen for response  - correct if you respond to previous 3 letters
-    if n > (params.firstPossibleTarget-1) % don't start response listen until targets can appear
-        [pressed, firstPress]= KbQueueCheck();
-        targetRange = targetInd(n - params.responseBack-1:n-2);
-        if (pressed ==1) && (sum(targetRange)>0)
-            thisTarget = find(targetRange)+n-2-params.responseBack; % to convert it back into targetInd's scale
-            if strcmp(experiment.letterSequence{thisTarget},'J') == 1 && find(firstPress,1) == KbName('1!')
-                experiment.numCorrect = experiment.numCorrect + 1; % then it's correct
-                experiment.correctTarget = [experiment.correctTarget thisTarget];
-            elseif strcmp(experiment.letterSequence{thisTarget},'K') == 1 && find(firstPress,1) == KbName('2@')
-                experiment.numCorrect = experiment.numCorrect + 1;
-                experiment.correctTarget = [experiment.correctTarget thisTarget];
-            end % then it's correct
+    %     if n > (params.firstPossibleTarget-1) % don't start response listen until targets can appear
+    %         [pressed, firstPress]= KbQueueCheck();
+    %         targetRange = targetInd(n - params.responseBack-1:n-2);
+    %         if (pressed ==1) && (sum(targetRange)>0)
+    %             thisTarget = find(targetRange)+n-2-params.responseBack; % to convert it back into targetInd's scale
+    %             if strcmp(experiment.letterSequence{thisTarget},'J') == 1 && find(firstPress,1) == KbName('1!')
+    %                 experiment.numCorrect = experiment.numCorrect + 1; % then it's correct
+    %                 experiment.correctTarget = [experiment.correctTarget thisTarget];
+    %             elseif strcmp(experiment.letterSequence{thisTarget},'K') == 1 && find(firstPress,1) == KbName('2@')
+    %                 experiment.numCorrect = experiment.numCorrect + 1;
+    %                 experiment.correctTarget = [experiment.correctTarget thisTarget];
+    %             end % then it's correct
+    %         end
+    %         KbQueueFlush();
+    %     end
+    [pressed, firstPress]= KbQueueCheck();
+    if (pressed == 1) && ((firstPress(KbName('1!')) > 0) || (firstPress(KbName('2@')) > 0))
+        if firstPress(KbName('1!')) > 0
+            experiment.task.response = [experiment.task.response, 1];
+            experiment.task.response_time = [experiment.task.response_time, firstPress(KbName('1!')) - experiment.startRun];
+        elseif firstPress(KbName('2@')) > 0
+            experiment.task.response = [experiment.task.response, 2];
+            experiment.task.response_time = [experiment.task.response_time, firstPress(KbName('2@')) - experiment.startRun];
         end
-        KbQueueFlush();
     end
+    
+    %%%% refresh queue for next character
+    KbQueueFlush();
     
 end
 %%%% to show the very last flip screen for its 200ms
-[VBLT experiment.flipTime(n+1) FlipT missed] = Screen(win, 'Flip', experiment.startRun + experiment.allFlips(length(experiment.allFlips)) - slack);
+[VBLT experiment.flipTime(n+1) FlipT missed] = Screen(w, 'Flip', experiment.startRun + experiment.allFlips(length(experiment.allFlips)) - slack);
 
 %%%%%%%%%%%%%%%%%%
 % done! wrap up  %
