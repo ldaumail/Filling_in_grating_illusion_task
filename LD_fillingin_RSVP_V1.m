@@ -22,8 +22,8 @@ responseKeys(KbName('2@'))=1; % button box 2
 
 Screen('Preference', 'SkipSyncTests', 0);
 
-experiment.scanNum = input('Scan number :');
-experiment.runNum = input('Run number :');
+% experiment.scanNum = input('Scan number :');
+% experiment.runNum = input('Run number :');
 experiment.vertOffset = vertOffset;    % vertical offset from FindScreenSize.m
 experiment.gammaCorrect = 1;       % make sure this = 1 when you're at the scanner!
 experiment.whichCLUT = '7T_Sam.mat'; %'linearizedCLUT_SoniaMPB.mat';
@@ -100,7 +100,7 @@ experiment.onSecs = [zeros(1,experiment.initialFixation)...
     zeros(1,experiment.finalFixation)];
 experiment.longFormBlocks = Expand(experiment.onSecs,1/experiment.flipWin,1);
 experiment.longFormFlicker = repmat(ones(1,1),1,length(experiment.longFormBlocks));
-experiment.waveID = repmat([1:flipsPerSec],1,length(experiment.longFormBlocks)/2);
+experiment.waveID = repmat([1:flipsPerSec],1,length(experiment.longFormBlocks)/length(flipsPerSec));
 length(experiment.longFormBlocks)
 
 %%%%%%%%%%%%%%%
