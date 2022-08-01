@@ -50,7 +50,7 @@ experiment.initialFixation = 6;        % in seconds
 experiment.finalFixation = 0;          % in seconds
 experiment.flipsPerSec = 12;           % number of phase changes we want from the visual stimulus, and thus the number of times we want to change visual stimulation on the screen
 experiment.flipWin = 1/experiment.flipsPerSec;         % in seconds then actually in 1 sec the stimuli will change 12 times 
-%experiment.stimDur = 0.5;        % in seconds, same as flipWin for now, refers to gabor
+experiment.stimDur = 1;        % in seconds,refers to sine wave grating
 experiment.numBlocks = 12;  % 6 for single and 6 for pair...
 experiment.trialFreq = 1;               % duration of fixation trials (seconds) (time it takes to switch from red to green then back to red)
 experiment.trialDur = .4;               % duration in seconds of the letter presentation of each fixation trial (.4s letter ON, .6 letter OFF)
@@ -100,14 +100,14 @@ experiment.onSecs = [zeros(1,experiment.initialFixation)...
     zeros(1,experiment.finalFixation)];
 experiment.longFormBlocks = Expand(experiment.onSecs,1/experiment.flipWin,1);
 experiment.longFormFlicker = repmat(ones(1,1),1,length(experiment.longFormBlocks));
-experiment.waveID = repmat([1:flipsPerSec],1,length(experiment.longFormBlocks)/length(flipsPerSec));
+experiment.waveID = repmat([1:experiment.flipsPerSec],1,length(experiment.longFormBlocks)/length(experiment.flipsPerSec));
 length(experiment.longFormBlocks)
 
 %%%%%%%%%%%%%%%
 % open screen %
 %%%%%%%%%%%%%%%
 
-HideCursor;
+%HideCursor;
 Priority(9);
 
 %%%% open screen
