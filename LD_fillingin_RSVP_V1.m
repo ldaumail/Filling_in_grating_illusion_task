@@ -48,9 +48,9 @@ experiment.blockLength = 12;            % in seconds
 experiment.betweenBlocks = 12;          % in seconds
 experiment.initialFixation = 6;        % in seconds
 experiment.finalFixation = 0;          % in seconds
+experiment.stimDur = 2.6;        % in seconds,refers to sine wave grating
 experiment.flipsPerSec = 12;           % number of phase changes we want from the visual stimulus, and thus the number of times we want to change visual stimulation on the screen
 experiment.flipWin = 1/experiment.flipsPerSec;         % in seconds then actually in 1 sec the stimuli will change 12 times 
-experiment.stimDur = 1;        % in seconds,refers to sine wave grating
 experiment.numBlocks = 12;  % 6 for single and 6 for pair...
 experiment.trialFreq = 1;               % duration of fixation trials (seconds) (time it takes to switch from red to green then back to red)
 experiment.trialDur = .4;               % duration in seconds of the letter presentation of each fixation trial (.4s letter ON, .6 letter OFF)
@@ -58,16 +58,7 @@ experiment.postTargetWindow = 1;           % duration in seconds of target-free 
 flipsPerTrial = experiment.trialFreq/experiment.flipWin;
 trialOnFlips = experiment.trialDur/experiment.flipWin;
 
-%%%% checkerboard
-% experiment.stim.spatialFreqDeg = 1.5;   % cycles per degree
-% experiment.stim.contrast =  1;          % in %, maybe??
-% experiment.stim.stimSizeDeg = 14;       % keep this at 14 as it is spatially restricted later
-% experiment.stim.degFromFix = 1;         % distance from fixation in degrees
-% experiment.stim.centerRad = 2;          % radius in degrees
-% experiment.stim.surroundRad = 6;          % radius in degrees
-% experiment.stim.annulusRad = experiment.stim.centerRad;         % in degrees
-
-%%%% gabor properties
+%%%% 2D sine wave grating properties
 experiment.stim.spatialFreqDeg = 1;                                           % cycles per degree of visual angle
 experiment.stim.contrast =  .3;                                                 % in %, maybe??
 experiment.stim.orientation = 90;                                                % in degrees
@@ -98,9 +89,9 @@ experiment.fontSize = 26;
 experiment.onSecs = [zeros(1,experiment.initialFixation)...
     repmat([ones(1,experiment.blockLength) zeros(1,experiment.betweenBlocks) 2*ones(1,experiment.blockLength) zeros(1,experiment.betweenBlocks)],1,experiment.numBlocks/2)...
     zeros(1,experiment.finalFixation)];
-experiment.longFormBlocks = Expand(experiment.onSecs,1/experiment.flipWin,1);
+experiment.longFormBlocks = Expand(experiment.onSecs,experiment.flipsPerSec,1);
 experiment.longFormFlicker = repmat(ones(1,1),1,length(experiment.longFormBlocks));
-experiment.waveID = repmat([1:experiment.flipsPerSec],1,length(experiment.longFormBlocks)/length(experiment.flipsPerSec));
+experiment.waveID = repmat([1:experiment.flipsPerSec],1,length(experiment.longFormBlocks)/experiment.flipsPerSec`);
 length(experiment.longFormBlocks)
 
 %%%%%%%%%%%%%%%
@@ -123,18 +114,17 @@ Screen('BlendFunction', w, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 % end
 
 %%%% timing optimization
-flipInt = Screen('GetFlipInterval',w);
-slack = flipInt/2;
+frameInt = Screen('GetFlipInterval',w);
+slack = frameInt/2;
 frameRate = Screen('NominalFrameRate',w);
-experiment.phaseRate = 12; %desired number of grating phases to store per second, which will result in adjusting the flip rate based on the nominal frame rate
-flipTimes = [0:flipInt*frameRate/experiment.phaseRate:experiment.stimDur]; %multiply flipInt by 60/12 = 5 to flip the image every 5 frames 
+flipTimes = [0:frameInt*frameRate/experiment.flipsPerSec:experiment.stimDur]; %multiply frameInt by 60/12 = 5 to flip the image every 5 frames 
 flipTimes = flipTimes(1:length(flipTimes)-1);
-experiment.stim.dphasePerFlip = experiment.stim.motionRate * flipInt*frameRate/experiment.phaseRate; %degrees per flip, here we multiply by 60/12 =5 to move the phase 5 times more after each flip
+experiment.stim.dphasePerFlip = experiment.stim.motionRate*frameInt * frameRate/experiment.flipsPerSec; %degrees per flip, here we multiply by 60/12 =5 to move the phase 5 times more after each flip
 
 %%%% scale the stims for the screen
 experiment.ppd = pi* rect(3) / (atan(experiment.screenWidth/experiment.viewingDist/2)) / 360;
-%experiment.stimSize = round(experiment.stim.stimSizeDeg*experiment.ppd);                 % in degrees, the size of our objects
-%experiment.innerAnnulus = round(experiment.stim.annulusRad*experiment.ppd);
+% experiment.stimSize = round(experiment.stim.stimSizeDeg*experiment.ppd);                 % in degrees, the size of our objects
+% experiment.innerAnnulus = round(experiment.stim.annulusRad*experiment.ppd);
 experiment.fixSize = round(experiment.fixSizeDeg*experiment.ppd);
 experiment.littleFix = round(experiment.littleFixDeg*experiment.ppd);
 % experiment.pixPerCheck = round((experiment.ppd/experiment.stim.spatialFreqDeg)/2);      % half of the pix/cycle
@@ -143,28 +133,8 @@ experiment.littleFix = round(experiment.littleFixDeg*experiment.ppd);
 experiment.gaborHeight = round(experiment.stim.gaborHDeg*experiment.ppd);                 % in pixels, the size of our objects
 experiment.gaborWidth = round(experiment.stim.gaborWDeg*experiment.ppd);                 % in pixels, the size of our objects
 
-xc = rect(3)/2; % rect and center, with the flixibility to resize & shift center - change vars to zero if not used.
+xc = rect(3)/2; % rect and center, with the flexibility to resize & shift center - change vars to zero if not used.
 yc = rect(4)/2+experiment.vertOffset;
-
-% experiment.checkerboardPix = round(experiment.stim.spatialFreqDeg*experiment.ppd); % pixels per 1 cycle of checkerboard (B and W square)
-% experiment.checkerboardSize = round(experiment.stimSize/experiment.checkerboardPix);
-% 
-% basicCheck = checkerboard(ceil(experiment.checkerboardPix/4),experiment.checkerboardSize,experiment.checkerboardSize)>.5;
-
-% Define a simple checkerboard with 1 pix/check
-% totalCycles = ceil(experiment.stim.stimSizeDeg * experiment.stim.spatialFreqDeg);
-% checkerboard = repmat(Expand(eye(2),experiment.pixPerCheck,experiment.pixPerCheck), totalCycles, totalCycles);
-% checkRect = CenterRectOnPoint([0 0 size(checkerboard,1) size(checkerboard,2)],xc,yc);
-% % Make the checkerboard into a texure (1 pix per cycle)
-% checkTex{1} = Screen('MakeTexture',w,255*checkerboard);
-% checkTex{2} = Screen('MakeTexture',w,255*abs(checkerboard-1)); % inverse
-% 
-% % make left and right circular masks for stim
-% apertureCenter=Screen('OpenOffscreenwindow', w, 128);
-% Screen('FillOval',apertureCenter,[255 255 255 0],[xc-experiment.ppd*(experiment.stim.centerRad) yc-experiment.ppd*experiment.stim.centerRad xc+experiment.ppd*(experiment.stim.centerRad) yc+experiment.ppd*experiment.stim.centerRad]);
-% apertureSurround=Screen('OpenOffscreenwindow', w, 128);
-% Screen('FillOval',apertureSurround,[255 255 255 0],[xc-experiment.ppd*(experiment.stim.surroundRad) yc-experiment.ppd*experiment.stim.surroundRad xc+experiment.ppd*(experiment.stim.surroundRad) yc+experiment.ppd*experiment.stim.surroundRad]);
-
 
 %% create sine wave gratings and store all phase transitions in structure
 %%% along with pointers
@@ -209,6 +179,9 @@ for f = 1:length(flipTimes)
     experiment.bottomWaveID(f) = Screen('MakeTexture', w, squeeze(experiment.bottomWave(f,:,:)));
             
 end
+%% extend stimulus repetition to have the same total number of flips as the whole experiment
+experiment.topWaveID = repmat(experiment.topWaveID,1,length(experiment.waveID));
+experiment.bottomWaveID = repmat(experiment.bottomWaveID,1,length(experiment.waveID));
 
 %% Sine wave gratings locations
 xc = rect(3)/2; % rect and center, with the flixibility to resize & shift center - change vars to zero if not used.
@@ -236,15 +209,16 @@ KbQueueCreate(deviceNumber,responseKeys);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-experiment.targetTimes=[];
-experiment.targets = {};
-experiment.responseTimes=[];
-experiment.responses = {};
-experiment.allColors = {};
-Colors = 'kkrg';
-targetColors = ['rg'];
-lastTargetCounter = 0;
-lastColor = 0;
+% experiment.targetTimes=[];
+% experiment.targets = {};
+% experiment.responseTimes=[];
+% experiment.responses = {};
+% experiment.allColors = {};
+% Colors = 'kkrg';
+% targetColors = ['rg'];
+% lastTargetCounter = 0;
+% lastColor = 0;
+letters = ['ABCDEFGHIJKLMNOP'];
 n=0;
 count = 1;
 %%%%%%% START task TASK/FLIPPING
@@ -258,12 +232,10 @@ while n+1 < length(experiment.allFlips)
     if experiment.longFormBlocks(n+1) == 1 && experiment.longFormFlicker(n+1) > 0 % zeros correspond to IBI, in which case we skip this next section
 %         Screen('DrawTexture', w, checkTex{experiment.whichCheck(n+1)},[],checkRect);
 %         Screen('DrawTexture',w,apertureCenter);
-% %         Screen('FillOval',w,experiment.backgroundColor,[xc-experiment.innerAnnulus yc-experiment.innerAnnulus xc+experiment.innerAnnulus yc+experiment.innerAnnulus]);
+% %       Screen('FillOval',w,experiment.backgroundColor,[xc-experiment.innerAnnulus yc-experiment.innerAnnulus xc+experiment.innerAnnulus yc+experiment.innerAnnulus]);
    
        % draw & increment stims
-%        stimFlipCnt = 0;
-%        for motionFlip = flipTimes
-        %    stimFlipCnt = stimFlipCnt+ 1;
+
             % top stim
             Screen('DrawTexture', w, experiment.topWaveID(n+1),[],experiment.topRect);
             
