@@ -218,7 +218,21 @@ KbQueueCreate(deviceNumber,responseKeys);
 % targetColors = ['rg'];
 % lastTargetCounter = 0;
 % lastColor = 0;
+
 letters = ['ABCDEFGHIJKLMNOP'];
+
+%%%% character identification task
+targetLetters = ['O', 'K'];
+experiment.task.target = [];
+experiment.task.target_time = [];
+experiment.task.response = [];
+experiment.task.response_time = [];
+experiment.task.accuracy = 0;
+experiment.task.meanRT = 0;
+
+taskText = 'characters';
+
+
 n=0;
 count = 1;
 %%%%%%% START task TASK/FLIPPING
@@ -295,27 +309,42 @@ while n+1 < length(experiment.allFlips)
     
     % select new character if starting new trial
     if mod(n, flipsPerTrial) == 0
-        l = randperm(4);
-        fixColor = Colors(l(1));
-        experiment.allColors = [experiment.allColors, fixColor];
-        while any(ismember(fixColor, targetColors)) && lastTargetCounter < experiment.postTargetWindow/experiment.trialDur
-            experiment.allChars = [experiment.allColors, 'change'];
-            l = randperm(4);
-            fixColor = Colors(l(1));
-            experiment.allColors = [experiment.allColors, fixColor];
-        end
-        lastTargetCounter = lastTargetCounter + 1;
-        lastColor = fixColor;
+%         l = randperm(4);
+%         fixColor = Colors(l(1));
+%         experiment.allColors = [experiment.allColors, fixColor];
         
-        if fixColor == 'r';
-            experiment.targets = [experiment.targets, 'r'];
-            experiment.targetTimes = [experiment.targetTimes, GetSecs - experiment.startRun];
-            lastTargetCounter = 0;
-        elseif fixColor == 'g';
-            experiment.targets = [experiment.targets, 'g'];
-            experiment.targetTimes = [experiment.targetTimes, GetSecs - experiment.startRun];
-            lastTargetCounter = 0;
-        end
+        % draw character
+        l = randperm(numel(letters));
+        fixChar = letters(l(1));
+        Screen('FillOval', w,[255 255 255], [xc-round(params.fixSize/2) yc-round(params.fixSize/2) xc+round(params.fixSize/2) yc+round(params.fixSize/2)]);
+        DrawFormattedText(w, fixChar, 'center', 8+vertOffset+rect(4)/2, 0);
+        
+%        while any(ismember(fixColor, targetColors)) && lastTargetCounter < experiment.postTargetWindow/experiment.trialDur
+%            experiment.allChars = [experiment.allColors, 'change'];
+%            l = randperm(4);
+%            fixColor = Colors(l(1));
+%            experiment.allColors = [experiment.allColors, fixColor];
+%        end
+%        lastTargetCounter = lastTargetCounter + 1;
+%        lastColor = fixColor;
+        
+       if fixChar == 'O'
+            experiment.task.target = [experiment.task.target, 1];
+            experiment.task.target_time = [experiment.task.target_time, GetSecs - experiment.startRun];
+        elseif fixChar == 'K'
+            experiment.task.target = [experiment.task.target, 2];
+            experiment.task.target_time = [experiment.task.target_time, GetSecs - experiment.startRun];
+       end
+
+%            if fixColor == 'r';
+%                experiment.targets = [experiment.targets, 'r'];
+%                experiment.targetTimes = [experiment.targetTimes, GetSecs - experiment.startRun];
+%                lastTargetCounter = 0;
+%            elseif fixColor == 'g';
+%                experiment.targets = [experiment.targets, 'g'];
+%                experiment.targetTimes = [experiment.targetTimes, GetSecs - experiment.startRun];
+%                lastTargetCounter = 0;
+%            end
     end
 
     %%%% draw fixation circle
