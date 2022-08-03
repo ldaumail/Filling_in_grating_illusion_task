@@ -80,7 +80,7 @@ experiment.allFlips = (0:experiment.flipWin:experiment.totalTime);
 
 %%%% screen
 experiment.backgroundColor = [127 127 127];  % color
-experiment.fontSize = 26;
+experiment.fontSize = 10; %26;
 
 %%%%%%%%%%%%%%%%%
 % timing model  %
@@ -329,8 +329,9 @@ while n+1 < length(experiment.allFlips)
     
     if mod(n, flipsPerTrial) < trialOnFlips
         Screen('FillOval', w,[255 255 255], [xc-round(experiment.fixSize/2) yc-round(experiment.fixSize/2) xc+round(experiment.fixSize/2) yc+round(experiment.fixSize/2)]);
-%         DrawFormattedText(w, fixChar, 'center', 8+vertOffset+rect(4)/2, 0);
-        Screen('DrawText', w, fixChar, -10+rect(3)/2, -14+vertOffset+rect(4)/2,[0 0 0]);
+%         DrawFormattedText(w, fixChar, 'center', 8+vertOffset+rect(4)/2,
+%         0); %either text function works
+        Screen('DrawText', w, fixChar, -5+rect(3)/2, -10+vertOffset+rect(4)/2,[0 0 0]);
 
     else
         Screen('FillOval', w,[255 255 255], [xc-round(experiment.fixSize/2) yc-round(experiment.fixSize/2) xc+round(experiment.fixSize/2) yc+round(experiment.fixSize/2)]);
