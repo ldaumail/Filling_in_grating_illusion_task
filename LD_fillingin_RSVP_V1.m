@@ -91,7 +91,7 @@ experiment.onSecs = [zeros(1,experiment.initialFixation)...
     zeros(1,experiment.finalFixation)];
 experiment.longFormBlocks = Expand(experiment.onSecs,experiment.flipsPerSec,1);
 experiment.longFormFlicker = repmat(ones(1,1),1,length(experiment.longFormBlocks));
-experiment.waveID = repmat([1:experiment.flipsPerSec],1,length(experiment.longFormBlocks)/experiment.flipsPerSec`);
+experiment.waveID = repmat([1:experiment.flipsPerSec],1,length(experiment.longFormBlocks)/experiment.flipsPerSec);
 length(experiment.longFormBlocks)
 
 %%%%%%%%%%%%%%%
@@ -223,12 +223,12 @@ letters = ['ABCDEFGHIJKLMNOP'];
 
 %%%% character identification task
 targetLetters = ['O', 'K'];
-experiment.task.target = [];
-experiment.task.target_time = [];
-experiment.task.response = [];
-experiment.task.response_time = [];
-experiment.task.accuracy = 0;
-experiment.task.meanRT = 0;
+experiment.target = [];
+experiment.targetTimes = [];
+experiment.response = [];
+experiment.responseTimes=[];
+experiment.accuracy = 0;
+experiment.meanRT = 0;
 
 taskText = 'characters';
 
@@ -244,10 +244,7 @@ while n+1 < length(experiment.allFlips)
     
     %%%% draw check
     if experiment.longFormBlocks(n+1) == 1 && experiment.longFormFlicker(n+1) > 0 % zeros correspond to IBI, in which case we skip this next section
-%         Screen('DrawTexture', w, checkTex{experiment.whichCheck(n+1)},[],checkRect);
-%         Screen('DrawTexture',w,apertureCenter);
-% %       Screen('FillOval',w,experiment.backgroundColor,[xc-experiment.innerAnnulus yc-experiment.innerAnnulus xc+experiment.innerAnnulus yc+experiment.innerAnnulus]);
-   
+
        % draw & increment stims
 
             % top stim
@@ -309,57 +306,38 @@ while n+1 < length(experiment.allFlips)
     
     % select new character if starting new trial
     if mod(n, flipsPerTrial) == 0
-%         l = randperm(4);
-%         fixColor = Colors(l(1));
-%         experiment.allColors = [experiment.allColors, fixColor];
-        
+
         % draw character
         l = randperm(numel(letters));
         fixChar = letters(l(1));
-        Screen('FillOval', w,[255 255 255], [xc-round(params.fixSize/2) yc-round(params.fixSize/2) xc+round(params.fixSize/2) yc+round(params.fixSize/2)]);
+        Screen('FillOval', w,[255 255 255], [xc-round(experiment.fixSize/2) yc-round(experiment.fixSize/2) xc+round(experiment.fixSize/2) yc+round(experiment.fixSize/2)]);
         DrawFormattedText(w, fixChar, 'center', 8+vertOffset+rect(4)/2, 0);
         
-%        while any(ismember(fixColor, targetColors)) && lastTargetCounter < experiment.postTargetWindow/experiment.trialDur
-%            experiment.allChars = [experiment.allColors, 'change'];
-%            l = randperm(4);
-%            fixColor = Colors(l(1));
-%            experiment.allColors = [experiment.allColors, fixColor];
-%        end
-%        lastTargetCounter = lastTargetCounter + 1;
-%        lastColor = fixColor;
-        
+
        if fixChar == 'O'
-            experiment.task.target = [experiment.task.target, 1];
-            experiment.task.target_time = [experiment.task.target_time, GetSecs - experiment.startRun];
+            experiment.target = [experiment.target, 1];
+            experiment.targetTime = [experiment.targetTime, GetSecs - experiment.startRun];
         elseif fixChar == 'K'
-            experiment.task.target = [experiment.task.target, 2];
-            experiment.task.target_time = [experiment.task.target_time, GetSecs - experiment.startRun];
+            experiment.target = [experiment.target, 2];
+            experiment.targetTime = [experiment.targeTime, GetSecs - experiment.startRun];
        end
 
-%            if fixColor == 'r';
-%                experiment.targets = [experiment.targets, 'r'];
-%                experiment.targetTimes = [experiment.targetTimes, GetSecs - experiment.startRun];
-%                lastTargetCounter = 0;
-%            elseif fixColor == 'g';
-%                experiment.targets = [experiment.targets, 'g'];
-%                experiment.targetTimes = [experiment.targetTimes, GetSecs - experiment.startRun];
-%                lastTargetCounter = 0;
-%            end
+
     end
 
     %%%% draw fixation circle
     
     % draw character for 3 flips of the 5 for each trials
-    if mod(n, flipsPerTrial) < trialOnFlips & fixColor == 'r'
-    Screen('FillOval', w,[128 128 128], [xc-round(experiment.fixSize/2) yc-round(experiment.fixSize/2) xc+round(experiment.fixSize/2) yc+round(experiment.fixSize/2)]); % black fixation ring
-    Screen('FillOval', w,[255 0 0], [xc-round(experiment.littleFix/2) yc-round(experiment.littleFix/2) xc+round(experiment.littleFix/2) yc+round(experiment.littleFix/2)]); % black fixation ring
-    elseif mod(n, flipsPerTrial) < trialOnFlips & fixColor == 'g'
-    Screen('FillOval', w,[128 128 128], [xc-round(experiment.fixSize/2) yc-round(experiment.fixSize/2) xc+round(experiment.fixSize/2) yc+round(experiment.fixSize/2)]); % black fixation ring
-    Screen('FillOval', w,[0 200 0], [xc-round(experiment.littleFix/2) yc-round(experiment.littleFix/2) xc+round(experiment.littleFix/2) yc+round(experiment.littleFix/2)]); % black fixation ring
-    else
-    Screen('FillOval', w,[128 128 128], [xc-round(experiment.fixSize/2) yc-round(experiment.fixSize/2) xc+round(experiment.fixSize/2) yc+round(experiment.fixSize/2)]); % black fixation ring
-    Screen('FillOval', w,[0 0 255], [xc-round(experiment.littleFix/2) yc-round(experiment.littleFix/2) xc+round(experiment.littleFix/2) yc+round(experiment.littleFix/2)]); % black fixation ring
-    end
+%     if mod(n, flipsPerTrial) < trialOnFlips & fixColor == 'r'
+%     Screen('FillOval', w,[128 128 128], [xc-round(experiment.fixSize/2) yc-round(experiment.fixSize/2) xc+round(experiment.fixSize/2) yc+round(experiment.fixSize/2)]); % black fixation ring
+%     Screen('FillOval', w,[255 0 0], [xc-round(experiment.littleFix/2) yc-round(experiment.littleFix/2) xc+round(experiment.littleFix/2) yc+round(experiment.littleFix/2)]); % black fixation ring
+%     elseif mod(n, flipsPerTrial) < trialOnFlips & fixColor == 'g'
+%     Screen('FillOval', w,[128 128 128], [xc-round(experiment.fixSize/2) yc-round(experiment.fixSize/2) xc+round(experiment.fixSize/2) yc+round(experiment.fixSize/2)]); % black fixation ring
+%     Screen('FillOval', w,[0 200 0], [xc-round(experiment.littleFix/2) yc-round(experiment.littleFix/2) xc+round(experiment.littleFix/2) yc+round(experiment.littleFix/2)]); % black fixation ring
+%     else
+%     Screen('FillOval', w,[128 128 128], [xc-round(experiment.fixSize/2) yc-round(experiment.fixSize/2) xc+round(experiment.fixSize/2) yc+round(experiment.fixSize/2)]); % black fixation ring
+%     Screen('FillOval', w,[0 0 255], [xc-round(experiment.littleFix/2) yc-round(experiment.littleFix/2) xc+round(experiment.littleFix/2) yc+round(experiment.littleFix/2)]); % black fixation ring
+%     end
     %Screen('DrawText', w, fixChar, -10+rect(3)/2, -14+vertOffset+rect(4)/2,[0 0 0]);
     %%%%%%%%%%% FLIP %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     
