@@ -313,8 +313,6 @@ while n+1 < length(experiment.allFlips)
         % draw character
         l = randperm(numel(letters));
         fixChar = letters(l(1));
-        
-          
 
        if fixChar == 'O'
             experiment.target = [experiment.target, 1];
@@ -327,26 +325,20 @@ while n+1 < length(experiment.allFlips)
 
     end
     
+    %%%% draw fixation letter in fixation circle
+    
     if mod(n, flipsPerTrial) < trialOnFlips
         Screen('FillOval', w,[255 255 255], [xc-round(experiment.fixSize/2) yc-round(experiment.fixSize/2) xc+round(experiment.fixSize/2) yc+round(experiment.fixSize/2)]);
-        DrawFormattedText(w, fixChar, 'center', 8+vertOffset+rect(4)/2, 0);
+%         DrawFormattedText(w, fixChar, 'center', 8+vertOffset+rect(4)/2, 0);
+        Screen('DrawText', w, fixChar, -10+rect(3)/2, -14+vertOffset+rect(4)/2,[0 0 0]);
+
+    else
+        Screen('FillOval', w,[255 255 255], [xc-round(experiment.fixSize/2) yc-round(experiment.fixSize/2) xc+round(experiment.fixSize/2) yc+round(experiment.fixSize/2)]);
+        
     end
+ 
     
-    %%%% draw fixation circle
-    
-    % draw character for 3 flips of the 5 for each trials
-%     if mod(n, flipsPerTrial) < trialOnFlips & fixColor == 'r'
-%     Screen('FillOval', w,[128 128 128], [xc-round(experiment.fixSize/2) yc-round(experiment.fixSize/2) xc+round(experiment.fixSize/2) yc+round(experiment.fixSize/2)]); % black fixation ring
-%     Screen('FillOval', w,[255 0 0], [xc-round(experiment.littleFix/2) yc-round(experiment.littleFix/2) xc+round(experiment.littleFix/2) yc+round(experiment.littleFix/2)]); % black fixation ring
-%     elseif mod(n, flipsPerTrial) < trialOnFlips & fixColor == 'g'
-%     Screen('FillOval', w,[128 128 128], [xc-round(experiment.fixSize/2) yc-round(experiment.fixSize/2) xc+round(experiment.fixSize/2) yc+round(experiment.fixSize/2)]); % black fixation ring
-%     Screen('FillOval', w,[0 200 0], [xc-round(experiment.littleFix/2) yc-round(experiment.littleFix/2) xc+round(experiment.littleFix/2) yc+round(experiment.littleFix/2)]); % black fixation ring
-%     else
-%     Screen('FillOval', w,[128 128 128], [xc-round(experiment.fixSize/2) yc-round(experiment.fixSize/2) xc+round(experiment.fixSize/2) yc+round(experiment.fixSize/2)]); % black fixation ring
-%     Screen('FillOval', w,[0 0 255], [xc-round(experiment.littleFix/2) yc-round(experiment.littleFix/2) xc+round(experiment.littleFix/2) yc+round(experiment.littleFix/2)]); % black fixation ring
-%     end
-    %Screen('DrawText', w, fixChar, -10+rect(3)/2, -14+vertOffset+rect(4)/2,[0 0 0]);
-    %%%%%%%%%%% FLIP %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+       %%%%%%%%%%% FLIP %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     
     if n == 0 
         [VBLT, experiment.startRun, FlipT, missed] = Screen(w, 'Flip', 0);%[VBLTimestamp StimulusOnsetTime FlipTimestamp Missed] = Screen('Flip', windowPtr [, when] [, dontclear]...
