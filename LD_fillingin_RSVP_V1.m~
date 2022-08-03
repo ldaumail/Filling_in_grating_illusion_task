@@ -237,6 +237,9 @@ n=0;
 count = 1;
 %%%%%%% START task TASK/FLIPPING
 % [experiment.totalTime, experiment.allFlips,n]
+
+%[VBLT experiment.startRun FlipTimestamp Missed Beampos] = Screen('Flip', w); % starts timing (experiment.startRun records the stimulus onset time)
+
 while n+1 < length(experiment.allFlips)
     [experiment.longFormBlocks(n+1),experiment.longFormFlicker(n+1)]
 
@@ -310,35 +313,21 @@ while n+1 < length(experiment.allFlips)
         % draw character
         l = randperm(numel(letters));
         fixChar = letters(l(1));
+        
+          if mod(n, flipsPerTrial) < trialOnFlips
         Screen('FillOval', w,[255 255 255], [xc-round(experiment.fixSize/2) yc-round(experiment.fixSize/2) xc+round(experiment.fixSize/2) yc+round(experiment.fixSize/2)]);
         DrawFormattedText(w, fixChar, 'center', 8+vertOffset+rect(4)/2, 0);
         
-       while any(ismember(fixChar, targetColors)) && lastTargetCounter < experiment.postTargetWindow/experiment.trialDur
-           experiment.allChars = [experiment.allColors, 'change'];
-           l = randperm(4);
-           fixColor = Colors(l(1));
-           experiment.allColors = [experiment.allColors, fixColor];
-       end
-       lastTargetCounter = lastTargetCounter + 1;
-       lastColor = fixColor;
-        
+
        if fixChar == 'O'
-            experiment.task.target = [experiment.task.target, 1];
-            experiment.task.target_time = [experiment.task.target_time, GetSecs - experiment.startRun];
+            experiment.target = [experiment.target, 1];
+            experiment.targetTimes = [experiment.targetTimes, GetSecs - experiment.startRun];
         elseif fixChar == 'K'
-            experiment.task.target = [experiment.task.target, 2];
-            experiment.task.target_time = [experiment.task.target_time, GetSecs - experiment.startRun];
+            experiment.target = [experiment.target, 2];
+            experiment.targetTimes = [experiment.targetTimes, GetSecs - experiment.startRun];
        end
 
-%            if fixColor == 'r';
-%                experiment.targets = [experiment.targets, 'r'];
-%                experiment.targetTimes = [experiment.targetTimes, GetSecs - experiment.startRun];
-%                lastTargetCounter = 0;
-%            elseif fixColor == 'g';
-%                experiment.targets = [experiment.targets, 'g'];
-%                experiment.targetTimes = [experiment.targetTimes, GetSecs - experiment.startRun];
-%                lastTargetCounter = 0;
-%            end
+
     end
 
     %%%% draw fixation circle
@@ -357,11 +346,12 @@ while n+1 < length(experiment.allFlips)
     %Screen('DrawText', w, fixChar, -10+rect(3)/2, -14+vertOffset+rect(4)/2,[0 0 0]);
     %%%%%%%%%%% FLIP %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     
-    if n == 0 [VBLT, experiment.startRun, FlipT, missed] = Screen(w, 'Flip', 0);
-        experiment.flipTime(n+1) = experiment.startRun;
-    else
+%     if n == 0 
+%         [VBLT, experiment.startRun, FlipT, missed] = Screen(w, 'Flip', 0);%[VBLTimestamp StimulusOnsetTime FlipTimestamp Missed] = Screen('Flip', windowPtr [, when] [, dontclear]...
+%         experiment.flipTime(n+1) = experiment.startRun;
+%     else
         [VBLT, experiment.flipTime(n+1), FlipT, missed] = Screen(w, 'Flip', experiment.startRun + experiment.allFlips(n+1) - slack);
-    end
+%     end
 %     n
 %     fixColor
     KbQueueStop();

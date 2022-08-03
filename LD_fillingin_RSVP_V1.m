@@ -237,6 +237,9 @@ n=0;
 count = 1;
 %%%%%%% START task TASK/FLIPPING
 % [experiment.totalTime, experiment.allFlips,n]
+
+%[VBLT experiment.startRun FlipTimestamp Missed Beampos] = Screen('Flip', w); % starts timing (experiment.startRun records the stimulus onset time)
+
 while n+1 < length(experiment.allFlips)
     [experiment.longFormBlocks(n+1),experiment.longFormFlicker(n+1)]
 
@@ -310,21 +313,25 @@ while n+1 < length(experiment.allFlips)
         % draw character
         l = randperm(numel(letters));
         fixChar = letters(l(1));
-        Screen('FillOval', w,[255 255 255], [xc-round(experiment.fixSize/2) yc-round(experiment.fixSize/2) xc+round(experiment.fixSize/2) yc+round(experiment.fixSize/2)]);
-        DrawFormattedText(w, fixChar, 'center', 8+vertOffset+rect(4)/2, 0);
         
+          
 
        if fixChar == 'O'
             experiment.target = [experiment.target, 1];
-            experiment.targetTime = [experiment.targetTime, GetSecs - experiment.startRun];
+            experiment.targetTimes = [experiment.targetTimes, GetSecs - experiment.startRun];
         elseif fixChar == 'K'
             experiment.target = [experiment.target, 2];
-            experiment.targetTime = [experiment.targeTime, GetSecs - experiment.startRun];
+            experiment.targetTimes = [experiment.targetTimes, GetSecs - experiment.startRun];
        end
 
 
     end
-
+    
+    if mod(n, flipsPerTrial) < trialOnFlips
+        Screen('FillOval', w,[255 255 255], [xc-round(experiment.fixSize/2) yc-round(experiment.fixSize/2) xc+round(experiment.fixSize/2) yc+round(experiment.fixSize/2)]);
+        DrawFormattedText(w, fixChar, 'center', 8+vertOffset+rect(4)/2, 0);
+    end
+    
     %%%% draw fixation circle
     
     % draw character for 3 flips of the 5 for each trials
@@ -341,7 +348,8 @@ while n+1 < length(experiment.allFlips)
     %Screen('DrawText', w, fixChar, -10+rect(3)/2, -14+vertOffset+rect(4)/2,[0 0 0]);
     %%%%%%%%%%% FLIP %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     
-    if n == 0 [VBLT, experiment.startRun, FlipT, missed] = Screen(w, 'Flip', 0);
+    if n == 0 
+        [VBLT, experiment.startRun, FlipT, missed] = Screen(w, 'Flip', 0);%[VBLTimestamp StimulusOnsetTime FlipTimestamp Missed] = Screen('Flip', windowPtr [, when] [, dontclear]...
         experiment.flipTime(n+1) = experiment.startRun;
     else
         [VBLT, experiment.flipTime(n+1), FlipT, missed] = Screen(w, 'Flip', experiment.startRun + experiment.allFlips(n+1) - slack);
