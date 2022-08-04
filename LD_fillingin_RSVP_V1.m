@@ -215,9 +215,9 @@ letters = ['ABCDEFGHIJKLMNOP'];
 
 %%%% character identification task
 targetLetters = ['O', 'K'];
-experiment.target = [];
+experiment.targets = [];
 experiment.targetTimes = [];
-experiment.response = [];
+experiment.responses = [];
 experiment.responseTimes=[];
 experiment.accuracy = 0;
 experiment.meanRT = 0;
@@ -281,12 +281,13 @@ while n+1 < length(experiment.allFlips)
         % draw character
         l = randperm(numel(letters));
         fixChar = letters(l(1));
+         
 
        if fixChar == 'O'
-            experiment.target = [experiment.target, 1];
+            experiment.targets = [experiment.targets, 1];
             experiment.targetTimes = [experiment.targetTimes, GetSecs - experiment.startRun];
         elseif fixChar == 'K'
-            experiment.target = [experiment.target, 2];
+            experiment.targets = [experiment.targets, 2];
             experiment.targetTimes = [experiment.targetTimes, GetSecs - experiment.startRun];
        end
 
@@ -322,10 +323,10 @@ while n+1 < length(experiment.allFlips)
     %%%% character identification
     if (pressed == 1) && ((firstPress(KbName('1!')) > 0) || (firstPress(KbName('2@')) > 0))
         if firstPress(KbName('1!')) > 0
-            experiment.response = [experiment.response, 1];
+            experiment.responses = [experiment.responses, 1];
             experiment.responseTimes = [experiment.responseTimes, firstPress(KbName('1!')) - experiment.startRun];
         elseif firstPress(KbName('2@')) > 0
-            experiment.response = [experiment.response, 2];
+            experiment.responses = [experiment.responses, 2];
             experiment.responseTimes = [experiment.responseTimes, firstPress(KbName('2@')) - experiment.startRun];
         end
     end
@@ -353,7 +354,7 @@ for t = 1:size(experiment.targetTimes,2)
     for r = 1:size(responseTimes,2)
         if ismember(responses(r),  target) && responseTimes(r) > targetTime % if response is correct and happened after target
             rt = responseTimes(r)-targetTime;
-            if rt < responseWindow; % and if response happened within a second of target
+            if rt < responseWindow % and if response happened within a second of target
                 experiment.hits(t) = 1; % mark a hit
                 experiment.RTs(t) = rt; % store the RT
                 responseTimes(r) = []; % delete this response so it can't be reused
@@ -366,10 +367,10 @@ end
 experiment.accuracy = (sum(experiment.hits)/size(experiment.targetTimes,2))*100;
 experiment.meanRT = nanmean(experiment.RTs);
 
-savedir = fullfile(experiment.root,'data',subject,session,'figureGround_loc_v5');
-if ~exist(savedir); mkdir(savedir); end
-savename = fullfile(savedir, strcat(subject , '_figureGround_loc_v5_sn',num2str(experiment.scanNum),'_rn',num2str(experiment.runNum),'_',experiment.date,'.mat'));    
-save(savename,'experiment');
+% savedir = fullfile(experiment.root,'data',subject,session,'figureGround_loc_v5');
+% if ~exist(savedir); mkdir(savedir); end
+% savename = fullfile(savedir, strcat(subject , '_figureGround_loc_v5_sn',num2str(experiment.scanNum),'_rn',num2str(experiment.runNum),'_',experiment.date,'.mat'));    
+% save(savename,'experiment');
 
 KbQueueRelease();
 ShowCursor;
