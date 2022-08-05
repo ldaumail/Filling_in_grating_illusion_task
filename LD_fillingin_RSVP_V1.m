@@ -70,6 +70,8 @@ experiment.stim.contrastOffset = [.5 .5 .5 0];                                  
 experiment.stim.motionRate = 1.3*360 ;                                          % 1.3 cycles per second = 360 deg of phase *1.3 per sec
 
 %%%% conditions & layout
+experiment.conds = {'singleTop','singleBottom','double-indir'}; %'double-oppdir'
+experiment.numConds = length(experiment.conds);
 experiment.fixSizeDeg =  .5;            % in degrees, the size of the biggest white dot in the fixation
 experiment.littleFixDeg = .25;    % proportion of the fixSizeDeg occupied by the smaller black dot
 experiment.outerFixPixels = 2;          % in pixels, the black ring around fixation
@@ -89,10 +91,36 @@ experiment.fontSize = 20; %26;
 experiment.onSecs = [zeros(1,experiment.initialFixation)...
     repmat([ones(1,experiment.blockLength) zeros(1,experiment.betweenBlocks) 2*ones(1,experiment.blockLength) zeros(1,experiment.betweenBlocks)],1,experiment.numBlocks/2)...
     zeros(1,experiment.finalFixation)];
-experiment.longFormBlocks = Expand(experiment.onSecs,experiment.flipsPerSec,1);
+experiment.longFormBlocks = Expand(experiment.onSecs,experiment.flipsPerSec,1); 
 experiment.longFormFlicker = repmat(ones(1,1),1,length(experiment.longFormBlocks));
 experiment.waveID = repmat([1:experiment.flipsPerSec],1,length(experiment.longFormBlocks)/experiment.flipsPerSec);
 length(experiment.longFormBlocks)
+
+% %%%% set up our structs (specifying all stimulation conditions tested in the
+% %%%% experiment)
+
+conditions(1:experiment.numConds).name = experiment.conds;
+conditions(1:experiment.numConds).startTimes = [];
+
+% 
+%  experiment.condShuffle = Shuffle(repmat([1:experiment.numConds],1,params.stimsPerBlock));
+%  experiment.numBlocks = length(experiment.condShuffle);
+% 
+% %%%% longform condition timing, which aligns with the flicker timing
+% experiment.longFormConds = zeros(params.initialFixation/params.stimDur,1);
+% for n = (1:experiment.numBlocks-1)
+%     experiment.longFormConds = [experiment.longFormConds; repmat(experiment.condShuffle(n),params.blockLength/params.stimDur,1)]; % blocks
+%     experiment.longFormConds = [experiment.longFormConds; zeros(params.betweenBlocks/params.stimDur,1)]; % inter-block blanks
+% end
+% experiment.longFormConds = [experiment.longFormConds; repmat(experiment.condShuffle(experiment.numBlocks),params.blockLength/params.stimDur,1); zeros(params.finalFixation/params.stimDur,1)]; % the last block
+% 
+% %% create the timing model for this particular run
+% counter = params.initialFixation; %will assess starting time of each block incrementally, that will be saved in the condition struct
+% for n=1:experiment.numBlocks
+%     experiment.startBlock(n) = counter; % timestamp (s) of when each block should start
+%     conditions(experiment.condShuffle(n)).startTimes = [conditions(experiment.condShuffle(n)).startTimes counter]; % add timestamps to the condition struct
+%     counter = counter + params.blockLength + params.betweenBlocks; % and progress the counter
+% end
 
 %%%%%%%%%%%%%%%
 % open screen %
@@ -209,7 +237,6 @@ KbQueueCreate(deviceNumber,responseKeys);
 %                         experiment                         %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
 
 letters = ['ABCDEFGHIJKLMNOP'];
 
