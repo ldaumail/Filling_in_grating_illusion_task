@@ -72,9 +72,9 @@ experiment.stim.contrastOffset = [.5 .5 .5 0];                                  
 experiment.stim.motionRate = 1.3*360 ;                                          % 1.3 cycles per second = 360 deg of phase *1.3 per sec
 
 %%%% conditions & layout
-experiment.conds = {'singleTop','singleBottom','double-indir'}; %'double-oppdir'
+experiment.conds = {'singleTop','singleBottom','doubleIndir'}; %'double-oppdir'
 experiment.numConds = length(experiment.conds);
-% here we will have 1 condition per block. we might need to change that
+% with line of code below we will have 1 condition per block, randomized. we might need to change that
 % later, to have the conditions randomized within each block
 experiment.condShuffle = Shuffle(repmat([1:experiment.numConds],1,experiment.stimsPerBlock)); %make same number of blocks with each condition, randomize order
 experiment.numBlocks = length(experiment.condShuffle);
@@ -83,7 +83,7 @@ experiment.littleFixDeg = .25;    % proportion of the fixSizeDeg occupied by the
 experiment.outerFixPixels = 2;          % in pixels, the black ring around fixation
 %experiment.TRlength = 2;                % in seconds
 experiment.repsPerRun = 2;              % repetitions of each object type x experimentation
-experiment.totalTime = experiment.initialFixation + (experiment.numBlocks * (experiment.blockLength + experiment.betweenBlocks)) + experiment.finalFixation;
+experiment.totalTime = experiment.initialFixation + ((experiment.numBlocks-1) * (experiment.blockLength + experiment.betweenBlocks)) + experiment.blockLength + experiment.finalFixation;
 experiment.allFlips = (0:experiment.flipWin:experiment.totalTime);
 
 %%%% screen
@@ -95,26 +95,24 @@ experiment.fontSize = 20; %26;
 %%%%%%%%%%%%%%%%%
 
 experiment.onSecs = [zeros(1,experiment.initialFixation)...
-    repmat([ones(1,experiment.blockLength) zeros(1,experiment.betweenBlocks)],1,experiment.numBlocks)... %2*ones(1,experiment.blockLength) zeros(1,experiment.betweenBlocks)
-    zeros(1,experiment.finalFixation)];
-experiment.longFormBlocks = Expand(experiment.onSecs,experiment.flipsPerSec,1); 
-experiment.longFormFlicker = repmat(ones(1,1),1,length(experiment.longFormBlocks));
-experiment.waveID = repmat([1:experiment.flipsPerSec],1,length(experiment.longFormBlocks)/experiment.flipsPerSec);
+    repmat([ones(1,experiment.blockLength) zeros(1,experiment.betweenBlocks)],1,experiment.numBlocks-1)... %2*ones(1,experiment.blockLength) zeros(1,experiment.betweenBlocks)
+    ones(1,experiment.blockLength) zeros(1,experiment.finalFixation)];
+experiment.longFormBlocks = Expand(experiment.onSecs,experiment.flipsPerSec,1); %1 when block, 0 when between block
+experiment.longFormFlicker = repmat(ones(1,1),1,length(experiment.longFormBlocks)); %1 all the way to ensure flip at every time selected
 length(experiment.longFormBlocks)
 
-% %%%% set up the timing model for stimulus conditions (single (top, bottom), pair)
-
-% 
-% %%%% longform condition timing, which aligns with the flicker timing
-% experiment.longFormConds = zeros(experiment.initialFixation/experiment.stimDur,1);
-experiment.longFormConds = zeros(experiment.initialFixation*experiment.flipsPerSec,1);
-for n = (1:experiment.numBlocks-1)
-    experiment.longFormConds = [experiment.longFormConds; repmat(experiment.condShuffle(n),experiment.blockLength*experiment.flipsPerSec,1)]; % blocks
-    experiment.longFormConds = [experiment.longFormConds; zeros(experiment.betweenBlocks*experiment.flipsPerSec,1)]; % inter-block blanks
+%set up the timing model for stimulus conditions (single (top, bottom), pair)
+%longform condition timing, which aligns with the flicker timing
+experiment.longFormConds = zeros(1,experiment.initialFixation);
+for i = (1:experiment.numBlocks-1)
+    experiment.longFormConds = [experiment.longFormConds, repmat(experiment.condShuffle(i),1,experiment.blockLength)]; % blocks
+    experiment.longFormConds = [experiment.longFormConds, zeros(1,experiment.betweenBlocks)]; % inter-block blanks
 end
-experiment.longFormConds = [experiment.longFormConds; repmat(experiment.condShuffle(experiment.numBlocks),experiment.blockLength*experiment.flipsPerSec,1); zeros(experiment.finalFixation*experiment.flipsPerSec,1)]; % the last block
-
-% %% create the timing model for this particular run
+experiment.longFormConds = [experiment.longFormConds, repmat(experiment.condShuffle(experiment.numBlocks),1,experiment.blockLength), zeros(1,experiment.finalFixation)]; % the last block
+experiment.longFormConds = Expand(experiment.longFormConds, experiment.flipsPerSec,1);
+length(experiment.longFormConds)
+% %% create the timing model of stimulus conditions for this particular run
+clear i
 for i =1:experiment.numConds
     conditions(i).name = experiment.conds(i);
     conditions(i).startTimes = [];
@@ -212,8 +210,8 @@ for f = 1:length(flipTimes)
             
 end
 %% extend stimulus repetition to have the same total number of flips as the whole experiment
-experiment.topWaveID = repmat(experiment.topWaveID,1,length(experiment.waveID));
-experiment.bottomWaveID = repmat(experiment.bottomWaveID,1,length(experiment.waveID));
+experiment.topWaveID = repmat(experiment.topWaveID,1,length(experiment.longFormFlicker));
+experiment.bottomWaveID = repmat(experiment.bottomWaveID,1,length(experiment.longFormFlicker));
 
 %% Sine wave gratings locations
 xc = rect(3)/2; % rect and center, with the flixibility to resize & shift center - change vars to zero if not used.
@@ -274,37 +272,20 @@ while n+1 < length(experiment.allFlips)
     end
     %%%% draw sine wave grating stimulus %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     if experiment.longFormBlocks(n+1) == 1 && experiment.longFormFlicker(n+1) > 0 % zeros correspond to IBI, in which case we skip this next section
-
-       % draw & increment stims
-
+        
+        % draw & increment stims
+        if strcmp(conditions(thisCond).name, 'doubleIndir')  %|| strcmp(conditions(thisCond).name, 'double-oppdir')  % draw second stim if it is 'double-indir' or 'double-oppdir' %if it's randomized or incognruent
             % top stim
             Screen('DrawTexture', w, experiment.topWaveID(n+1),[],experiment.topRect);
-            
             % bottom stim
-            if strcmp(conditions(thisCond).name, 'double-indir')  %|| strcmp(conditions(thisCond).name, 'double-oppdir')  % draw second stim if it is 'double-indir' or 'double-oppdir' %if it's randomized or incognruent
-                Screen('DrawTexture', w, experiment.bottomWaveID(n+1), [], experiment.bottomRect);
-            end
-
- %       end
- 
-%    elseif experiment.longFormBlocks(n+1) == 2 && experiment.longFormFlicker(n+1) > 0 % zeros correspond to IBI, in which case we skip this next section
-%         Screen('DrawTexture', w, checkTex{experiment.whichCheck(n+1)},[],checkRect);
-%         Screen('DrawTexture',w,apertureSurround);
-
-       % draw & increment stims
-%         stimFlipCnt = 0;
-%         for motionFlip = flipTimes
-%             stimFlipCnt = stimFlipCnt+ 1;
-             % top stim
-%            Screen('DrawTexture', w, experiment.topWaveID(stimFlipCnt),[],experiment.topRect);
-            
+            Screen('DrawTexture', w, experiment.bottomWaveID(n+1), [], experiment.bottomRect);
+        elseif strcmp(conditions(thisCond).name, 'singleTop')
+            % top stim
+            Screen('DrawTexture', w, experiment.topWaveID(n+1),[],experiment.topRect);
+        elseif strcmp(conditions(thisCond).name, 'singleBottom')
             % bottom stim
-            %if strcmp(conditions(thisCond).name, 'double-indir') || strcmp(conditions(thisCond).name, 'double-oppdir')  % draw second stim if it is 'double-indir' or 'double-oppdir' %if it's randomized or incognruent
-%               Screen('DrawTexture', w, experiment.bottomWaveID(stimFlipCnt), [], experiment.bottomRect);
-            %end
-
- %       end
-%        Screen('FillOval',w,experiment.backgroundColor,[xc-experiment.innerAnnulus yc-experiment.innerAnnulus xc+experiment.innerAnnulus yc+experiment.innerAnnulus]);
+            Screen('DrawTexture', w, experiment.bottomWaveID(n+1), [], experiment.bottomRect);
+        end
     end
     
     % select new character if starting new trial
