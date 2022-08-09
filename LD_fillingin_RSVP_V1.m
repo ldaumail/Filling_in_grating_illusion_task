@@ -58,7 +58,7 @@ experiment.trialFreq = 1;               % duration of fixation trials (seconds) 
 experiment.trialDur = .4;               % duration in seconds of the letter presentation of each fixation trial (.4s letter ON, .6 letter OFF)
 experiment.postTargetWindow = 1;           % duration in seconds of target-free interval after a target
 flipsPerTrial = experiment.trialFreq/experiment.flipWin;
-trialOnFlips = experiment.trialDur/experiment.flipWin;
+
 
 %%%% 2D sine wave grating properties
 experiment.stim.spatialFreqDeg = 1;                                           % cycles per degree of visual angle
@@ -90,9 +90,36 @@ experiment.allFlips = (0:experiment.flipWin:experiment.totalTime);
 experiment.backgroundColor = [127 127 127];  % color
 experiment.fontSize = 20; %26;
 
-%%%%%%%%%%%%%%%%%
-% timing model  %
-%%%%%%%%%%%%%%%%%
+%%%% task
+experiment.targetProb = .1;              % proportion of trials where the target letters will come up
+experiment.firstPossibleTarget = 20;     % no targets in the first X flips
+experiment.lastPossibleTarget = 20;      % no targets in the last X flips
+experiment.targetLetters = {'O' 'K'};
+experiment.distractors = {'A' 'S' 'D' 'F' 'G' 'H' 'L'};
+%experiment.performance = [];        % will be the performance on the one-back task in each block
+experiment.trialOnFlips = floor(experiment.trialDur/experiment.flipWin); %number of flips the letter is on over the course of 1 trial
+%experiment.RSVPrate = 1;               % how fast the letters flip (second) - this likely needs to be hardcoded down below, but is saved here for bookkeeping
+%params.cueColor = 0;%[50 50 255];   % letter color
+experiment.totalLetters = (experiment.totalTime/experiment.trialFreq); %total number of letters that COULD BE presented during the experiment (though based on prob, much less will be presented)
+experiment.responseBack = 3;    % the response is correct if the preceding N letters were the target
+%experiment.letterTiming = (0:params.RSVPrate:experiment.totalTime);
+
+%letters = ['ABCDEFGHIJKLMNOP'];
+
+%%%% character identification task
+%targetLetters = ['O', 'K'];
+experiment.targets = [];
+experiment.targetTimes = [];
+experiment.responses = [];
+experiment.responseTimes=[];
+experiment.accuracy = 0;
+experiment.meanRT = 0;
+
+taskText = 'characters';
+
+%% %%%%%%%%%%%%%%%%%
+   % timing model  %
+   %%%%%%%%%%%%%%%%%
 
 experiment.onSecs = [zeros(1,experiment.initialFixation)...
     repmat([ones(1,experiment.blockLength) zeros(1,experiment.betweenBlocks)],1,experiment.numBlocks-1)... %2*ones(1,experiment.blockLength) zeros(1,experiment.betweenBlocks)
@@ -123,7 +150,7 @@ for n=1:experiment.numBlocks
     conditions(experiment.condShuffle(n)).startTimes = [conditions(experiment.condShuffle(n)).startTimes counter]; % add timestamps to the condition struct
     counter = counter + experiment.blockLength + experiment.betweenBlocks; % and progress the counter
 end
-
+%%
 %%%%%%%%%%%%%%%
 % open screen %
 %%%%%%%%%%%%%%%
@@ -209,7 +236,7 @@ for f = 1:length(flipTimes)
     experiment.bottomWaveID(f) = Screen('MakeTexture', w, squeeze(experiment.bottomWave(f,:,:)));
             
 end
-%% extend stimulus repetition to have the same total number of flips as the whole experiment
+%% extend stimulus matrix to include the same total number of flips as the whole experiment
 experiment.topWaveID = repmat(experiment.topWaveID,1,length(experiment.longFormFlicker));
 experiment.bottomWaveID = repmat(experiment.bottomWaveID,1,length(experiment.longFormFlicker));
 
@@ -226,6 +253,54 @@ ybottom = rect(4)/4*3;
 experiment.bottomRect =  CenterRectOnPoint([0 0 experiment.gaborWidth experiment.gaborHeight],xbottom,ybottom);
 
 
+%% %%%%%%%%%%%%%%%%%%%%%%
+   % Letter task set-up %
+   %%%%%%%%%%%%%%%%%%%%%%
+
+%%%% find the target positioning for this run (index of repeated letters)
+experiment.numTargets = length(find(rand(1,experiment.totalLetters)<experiment.targetProb)); %draw targets from uniform distribution between 0 nd 1, only keep the density we need (0.1) of them
+targetInd = zeros(1,experiment.totalLetters+1); % this has to go to +1, but it's only for the repeat check
+if experiment.numTargets > 0
+    while 1
+        %check previous (-1,-2) and following indices (+1,+2) if they might constitute a
+        %repeated letter
+        maybeRep = experiment.firstPossibleTarget+Randi(experiment.totalLetters-experiment.firstPossibleTarget-experiment.lastPossibleTarget);    % a possible index for a target letter, picked randomly
+        if targetInd(maybeRep-1) == 0 && targetInd(maybeRep+1) == 0 && targetInd(maybeRep-2) == 0 && targetInd(maybeRep+2) == 0 % make sure the previous  TWO and following TWO letters weren't already a repeat
+            targetInd(maybeRep) = 1; %record this index if it is not a repeat
+        end
+        if sum(targetInd) == experiment.numTargets %if the sum of target letters reach the number of targets, stop the check
+            break
+        end
+    end
+end
+targetInd = targetInd(1:experiment.totalLetters); % trim this back for sanity
+
+
+%%%% fill the sequence out with actual letters
+experiment.letterSequence = [];
+for k = 1:length(targetInd)
+    if targetInd(k) == 1 % targets - we know these don't repeat
+        experiment.letterSequence{k} = experiment.targetLetters{randi(length(experiment.targetLetters))}; %pick a random target
+    else % distractors - we need to make sure these don't repeat
+        if k > 1 % the first letter can be whatever
+            while 1
+                maybeLetter = experiment.distractors{randi(length(experiment.distractors))};
+                if strcmp(maybeLetter, experiment.letterSequence{k-1}) == 0
+                    experiment.letterSequence{k} = maybeLetter;
+                    break
+                end
+            end
+        else %% (the first letter can be whatever)
+            experiment.letterSequence{k} = experiment.distractors{randi(length(experiment.distractors))};
+        end
+    end
+end
+
+% %%%% scale up the task based on flips
+experiment.letterSequence = Expand(experiment.letterSequence,experiment.flipsPerSec,1); 
+
+
+
 %%%% initial window - wait for backtick
 Screen(w, 'DrawText', 'Waiting for Backtick.', 10,10,[0 0 0]);
 Screen(w, 'Flip', 0);
@@ -239,19 +314,6 @@ KbQueueCreate(deviceNumber,responseKeys);
 %                         experiment                         %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-letters = ['ABCDEFGHIJKLMNOP'];
-
-%%%% character identification task
-targetLetters = ['O', 'K'];
-experiment.targets = [];
-experiment.targetTimes = [];
-experiment.responses = [];
-experiment.responseTimes=[];
-experiment.accuracy = 0;
-experiment.meanRT = 0;
-
-taskText = 'characters';
 
 n=0;
 count = 1;
@@ -291,15 +353,15 @@ while n+1 < length(experiment.allFlips)
     % select new character if starting new trial
     if mod(n, flipsPerTrial) == 0
 
-        % draw character
-        l = randperm(numel(letters));
-        fixChar = letters(l(1));
-         
+%         % draw character
+%         l = randperm(numel(letters));
+%         fixChar = letters(l(1));
+          fixChar = experiment.letterSequence(n+1);
 
-       if fixChar == 'O'
+       if strcmp(fixChar,'O') == 0
             experiment.targets = [experiment.targets, 1];
             experiment.targetTimes = [experiment.targetTimes, GetSecs - experiment.startRun];
-        elseif fixChar == 'K'
+        elseif strcmp(fixChar,'K') == 0
             experiment.targets = [experiment.targets, 2];
             experiment.targetTimes = [experiment.targetTimes, GetSecs - experiment.startRun];
        end
@@ -309,12 +371,12 @@ while n+1 < length(experiment.allFlips)
     
     %%%% draw fixation letter in fixation circle
     
-    if mod(n, flipsPerTrial) < trialOnFlips
+    if mod(n, flipsPerTrial) <= experiment.trialOnFlips
         Screen('FillOval', w,[255 255 255], [xc-round(experiment.fixSize/2) yc-round(experiment.fixSize/2) xc+round(experiment.fixSize/2) yc+round(experiment.fixSize/2)]);%white fixation solid circle
         %DrawFormattedText(w, fixChar, 'center', 8+vertOffset+rect(4)/2,0); %either text function works
         %Screen('DrawText', w, fixChar, -5+rect(3)/2, -10+vertOffset+rect(4)/2,[0 0 0]);
-        [width,height] = RectSize(Screen('TextBounds',w,fixChar));
-        Screen('DrawText', w, fixChar, xc-width/2, yc-height/2,[0 0 0]);
+        [width,height] = RectSize(Screen('TextBounds',w,fixChar{:}));
+        Screen('DrawText', w, fixChar{:}, xc-width/2, yc-height/2,[0 0 0]);
      else
         Screen('FillOval', w,[255 255 255], [xc-round(experiment.fixSize/2) yc-round(experiment.fixSize/2) xc+round(experiment.fixSize/2) yc+round(experiment.fixSize/2)]);%white fixation solid circle
    
