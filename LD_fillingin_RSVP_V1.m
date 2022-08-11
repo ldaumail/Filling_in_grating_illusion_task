@@ -300,8 +300,7 @@ end
 experiment.letterSequence = Expand(experiment.letterSequence,experiment.flipsPerSec,1); 
 
 
-
-%%%% initial window - wait for backtick
+%% %%%% initial window - wait for backtick
 Screen(w, 'DrawText', 'Waiting for Backtick.', 10,10,[0 0 0]);
 Screen(w, 'Flip', 0);
 
@@ -323,7 +322,7 @@ count = 1;
 while n+1 < length(experiment.allFlips)
     [experiment.longFormBlocks(n+1),experiment.longFormFlicker(n+1)]
     thisCond = experiment.longFormConds(n+1);
-    
+    tic
     KbQueueStart();
     %%%%%%%%%%% FLIP %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     if n == 0 
@@ -409,6 +408,7 @@ while n+1 < length(experiment.allFlips)
     %%%% refresh queue for next character
     KbQueueFlush();
     n = n+1;
+    toc
 end
 
 %%%%%%%%%%%%%%%%%%
