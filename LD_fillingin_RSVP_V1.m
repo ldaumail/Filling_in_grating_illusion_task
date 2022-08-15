@@ -22,8 +22,8 @@ responseKeys(KbName('2@'))=1; % button box 2
 
 Screen('Preference', 'SkipSyncTests', 0);
 
-% experiment.scanNum = input('Scan number :');
-% experiment.runNum = input('Run number :');
+ experiment.scanNum = input('Scan number :');
+ experiment.runNum = input('Run number :');
 experiment.vertOffset = vertOffset;    % vertical offset from FindScreenSize.m
 experiment.gammaCorrect = 1;       % make sure this = 1 when you're at the scanner!
 experiment.whichCLUT = '7T_Sam.mat'; %'linearizedCLUT_SoniaMPB.mat';
@@ -442,10 +442,10 @@ end
 experiment.accuracy = (sum(experiment.hits)/size(experiment.targetTimes,2))*100;
 experiment.meanRT = nanmean(experiment.RTs);
 
-% savedir = fullfile(experiment.root,'data',subject,session,'figureGround_loc_v5');
-% if ~exist(savedir); mkdir(savedir); end
-% savename = fullfile(savedir, strcat(subject , '_figureGround_loc_v5_sn',num2str(experiment.scanNum),'_rn',num2str(experiment.runNum),'_',experiment.date,'.mat'));    
-% save(savename,'experiment');
+ savedir = fullfile(experiment.root,'data',subject,session,'fillingin_rsvp_v1');
+ if ~exist(savedir); mkdir(savedir); end
+ savename = fullfile(savedir, strcat(subject , '_fillingin_rsvp_v1_sn',num2str(experiment.scanNum),'_rn',num2str(experiment.runNum),'_',experiment.date,'.mat'));    
+ save(savename,'experiment');
 
 KbQueueRelease();
 ShowCursor;
