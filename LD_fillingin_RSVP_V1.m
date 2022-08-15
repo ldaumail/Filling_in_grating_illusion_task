@@ -357,10 +357,10 @@ while n+1 < length(experiment.allFlips)
 %         fixChar = letters(l(1));
           fixChar = experiment.letterSequence(n+1);
 
-       if strcmp(fixChar,'O') == 0
+       if strcmp(fixChar,'O') == 1
             experiment.targets = [experiment.targets, 1];
             experiment.targetTimes = [experiment.targetTimes, GetSecs - experiment.startRun];
-        elseif strcmp(fixChar,'K') == 0
+        elseif strcmp(fixChar,'K') == 1
             experiment.targets = [experiment.targets, 2];
             experiment.targetTimes = [experiment.targetTimes, GetSecs - experiment.startRun];
        end
@@ -442,10 +442,10 @@ end
 experiment.accuracy = (sum(experiment.hits)/size(experiment.targetTimes,2))*100;
 experiment.meanRT = nanmean(experiment.RTs);
 
- savedir = fullfile(experiment.root,'data',subject,session,'fillingin_rsvp_v1');
- if ~exist(savedir); mkdir(savedir); end
- savename = fullfile(savedir, strcat(subject , '_fillingin_rsvp_v1_sn',num2str(experiment.scanNum),'_rn',num2str(experiment.runNum),'_',experiment.date,'.mat'));    
- save(savename,'experiment');
+savedir = fullfile(experiment.root,'data',subject,session,'fillingin_rsvp_v1');
+if ~exist(savedir); mkdir(savedir); end
+savename = fullfile(savedir, strcat(subject , '_fillingin_rsvp_v1_sn',num2str(experiment.scanNum),'_rn',num2str(experiment.runNum),'_',experiment.date,'.mat'));
+save(savename,'experiment');
 
 KbQueueRelease();
 ShowCursor;
