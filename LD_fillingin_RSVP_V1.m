@@ -22,8 +22,8 @@ responseKeys(KbName('2@'))=1; % button box 2
 
 Screen('Preference', 'SkipSyncTests', 0);
 
- experiment.scanNum = input('Scan number :');
- experiment.runNum = input('Run number :');
+experiment.scanNum = input('Scan number :');
+experiment.runNum = input('Run number :');
 experiment.vertOffset = vertOffset;    % vertical offset from FindScreenSize.m
 experiment.gammaCorrect = 1;       % make sure this = 1 when you're at the scanner!
 experiment.whichCLUT = '7T_Sam.mat'; %'linearizedCLUT_SoniaMPB.mat';
@@ -43,7 +43,7 @@ experiment.session = session;
 experiment.root = pwd;
 experiment.date = datestr(now,30);
 
-%%%% timing
+%%%% sine wave grating timing
 
 experiment.initialFixation = 6;        % in seconds
 experiment.finalFixation = 0;          % in seconds
@@ -54,11 +54,6 @@ experiment.betweenBlocks = 12;          % in seconds
 experiment.flipsPerSec = 12;           % number of phase changes we want from the visual stimulus, and thus the number of times we want to change visual stimulation on the screen
 experiment.flipWin = 1/experiment.flipsPerSec;         % in seconds then actually in 1 sec the stimuli will change 12 times 
 %experiment.numBlocks = 12;  % 6 for single and 6 for pair...
-experiment.trialFreq = 1;               % duration of fixation trials (seconds) (time it takes to switch from red to green then back to red)
-experiment.trialDur = .4;               % duration in seconds of the letter presentation of each fixation trial (.4s letter ON, .6 letter OFF)
-experiment.postTargetWindow = 1;           % duration in seconds of target-free interval after a target
-flipsPerTrial = experiment.trialFreq/experiment.flipWin;
-
 
 %%%% 2D sine wave grating properties
 experiment.stim.spatialFreqDeg = 1;                                           % cycles per degree of visual angle
@@ -67,7 +62,7 @@ experiment.stim.orientation = 90;                                               
 experiment.stim.degFromFix = .6;                                              % in degrees of visual angle
 experiment.stim.gaborHDeg = 4;                                                  % in degrees of visual angle
 experiment.stim.gaborWDeg = 4; 
-experiment.stim.contrastMultiplicator = .2;                                     % for sine wave 0.5 = 100% contrast, 0.2 = 40%
+experiment.stim.contrastMultiplicator = .075;                                     % for sine wave 0.5 = 100% contrast, 0.2 = 40%
 experiment.stim.contrastOffset = [.5 .5 .5 0];                                  % for procedural gabor
 experiment.stim.motionRate = 1.3*360 ;                                          % 1.3 cycles per second = 360 deg of phase *1.3 per sec
 
@@ -79,24 +74,23 @@ experiment.numConds = length(experiment.conds);
 experiment.condShuffle = Shuffle(repmat([1:experiment.numConds],1,experiment.stimsPerBlock)); %make same number of blocks with each condition, randomize order
 experiment.numBlocks = length(experiment.condShuffle);
 experiment.fixSizeDeg =  .5;            % in degrees, the size of the biggest white dot in the fixation
-experiment.littleFixDeg = .25;    % proportion of the fixSizeDeg occupied by the smaller black dot
-experiment.outerFixPixels = 2;          % in pixels, the black ring around fixation
-%experiment.TRlength = 2;                % in seconds
 experiment.repsPerRun = 2;              % repetitions of each object type x experimentation
 experiment.totalTime = experiment.initialFixation + ((experiment.numBlocks-1) * (experiment.blockLength + experiment.betweenBlocks)) + experiment.blockLength + experiment.finalFixation;
 experiment.allFlips = (0:experiment.flipWin:experiment.totalTime);
 
 %%%% screen
-experiment.backgroundColor = [127 127 127];  % color
+experiment.backgroundColor = [127 127 127];%[108.3760 108.3760 108.3760];%;  % color based on minimum gating luminance 
 experiment.fontSize = 20; %26;
 
-%%%% task
+%%%% RSVP task setup
 experiment.targetProb = .1;              % proportion of trials where the target letters will come up
 experiment.firstPossibleTarget = 20;     % no targets in the first X flips
 experiment.lastPossibleTarget = 20;      % no targets in the last X flips
-experiment.targetLetters = {'O' 'K'};
+experiment.targetLetters = {'J' 'K'};
 experiment.distractors = {'A' 'S' 'D' 'F' 'G' 'H' 'L'};
-%experiment.performance = [];        % will be the performance on the one-back task in each block
+experiment.trialFreq = 0.5;               % duration of fixation trials (seconds) (time it takes to switch from one letter to blank then back to one letter)
+flipsPerTrial = experiment.trialFreq/experiment.flipWin;
+experiment.trialDur = experiment.trialFreq/2;               % duration in seconds of the letter presentation of each fixation trial (.25s letter ON, .25 letter OFF)
 experiment.trialOnFlips = floor(experiment.trialDur/experiment.flipWin); %number of flips the letter is on over the course of 1 trial
 %experiment.RSVPrate = 1;               % how fast the letters flip (second) - this likely needs to be hardcoded down below, but is saved here for bookkeeping
 %params.cueColor = 0;%[50 50 255];   % letter color
@@ -104,10 +98,7 @@ experiment.totalLetters = (experiment.totalTime/experiment.trialFreq); %total nu
 experiment.responseBack = 3;    % the response is correct if the preceding N letters were the target
 %experiment.letterTiming = (0:params.RSVPrate:experiment.totalTime);
 
-%letters = ['ABCDEFGHIJKLMNOP'];
-
 %%%% character identification task
-%targetLetters = ['O', 'K'];
 experiment.targets = [];
 experiment.targetTimes = [];
 experiment.responses = [];
@@ -180,13 +171,7 @@ experiment.stim.dphasePerFlip = experiment.stim.motionRate*frameInt * frameRate/
 
 %%%% scale the stims for the screen
 experiment.ppd = pi* rect(3) / (atan(experiment.screenWidth/experiment.viewingDist/2)) / 360;
-% experiment.stimSize = round(experiment.stim.stimSizeDeg*experiment.ppd);                 % in degrees, the size of our objects
-% experiment.innerAnnulus = round(experiment.stim.annulusRad*experiment.ppd);
 experiment.fixSize = round(experiment.fixSizeDeg*experiment.ppd);
-experiment.littleFix = round(experiment.littleFixDeg*experiment.ppd);
-% experiment.pixPerCheck = round((experiment.ppd/experiment.stim.spatialFreqDeg)/2);      % half of the pix/cycle
-
-%%%% scale the stims for the screen
 experiment.gaborHeight = round(experiment.stim.gaborHDeg*experiment.ppd);                 % in pixels, the size of our objects
 experiment.gaborWidth = round(experiment.stim.gaborWDeg*experiment.ppd);                 % in pixels, the size of our objects
 
@@ -241,15 +226,15 @@ experiment.topWaveID = repmat(experiment.topWaveID,1,length(experiment.longFormF
 experiment.bottomWaveID = repmat(experiment.bottomWaveID,1,length(experiment.longFormFlicker));
 
 %% Sine wave gratings locations
-xc = rect(3)/2; % rect and center, with the flixibility to resize & shift center - change vars to zero if not used.
+xc = rect(3)/2; % rect and center, with the flexibility to resize & shift center - change vars to zero if not used.
 yc = rect(4)/2; %+experiment.vertOffset;
 
-xtop = rect(3)/4;
-ytop = rect(4)/4;
+xtop = rect(3)/2 - (4+2)*experiment.ppd;%rect(3)/4; % = stimulus center located 4 degrees horizontal from the center
+ytop = rect(4)/2 - experiment.gaborHeight;
 experiment.topRect =  CenterRectOnPoint([0 0 experiment.gaborWidth experiment.gaborHeight],xtop,ytop);
 
-xbottom = rect(3)/4;
-ybottom = rect(4)/4*3;
+xbottom = rect(3)/2 - (4+2)*experiment.ppd; %rect(3)/4; = stimulus center located 4 degrees horizontal from the center
+ybottom = rect(4)/2 + experiment.gaborHeight;%rect(4)/4*3;
 experiment.bottomRect =  CenterRectOnPoint([0 0 experiment.gaborWidth experiment.gaborHeight],xbottom,ybottom);
 
 
@@ -297,7 +282,7 @@ for k = 1:length(targetInd)
 end
 
 % %%%% scale up the task based on flips
-experiment.letterSequence = Expand(experiment.letterSequence,experiment.flipsPerSec,1); 
+experiment.letterSequence = Expand(experiment.letterSequence,flipsPerTrial,1);%experiment.flipsPerSec,1); 
 
 
 %% %%%% initial window - wait for backtick
@@ -314,12 +299,15 @@ KbQueueCreate(deviceNumber,responseKeys);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+
 n=0;
 count = 1;
 %%%%%%% START task TASK/FLIPPING
 % [experiment.totalTime, experiment.allFlips,n]
-
+gray = repmat(min(min(squeeze(experiment.topWave(1,:,:)),[],1)), [1,3]);
+Screen('FillRect', w, gray);
 while n+1 < length(experiment.allFlips)
+    
     [experiment.longFormBlocks(n+1),experiment.longFormFlicker(n+1)]
     thisCond = experiment.longFormConds(n+1);
     tic
@@ -357,7 +345,7 @@ while n+1 < length(experiment.allFlips)
 %         fixChar = letters(l(1));
           fixChar = experiment.letterSequence(n+1);
 
-       if strcmp(fixChar,'O') == 1
+       if strcmp(fixChar,'J') == 1
             experiment.targets = [experiment.targets, 1];
             experiment.targetTimes = [experiment.targetTimes, GetSecs - experiment.startRun];
         elseif strcmp(fixChar,'K') == 1
@@ -386,14 +374,6 @@ while n+1 < length(experiment.allFlips)
     KbQueueStop();
     [pressed, firstPress]= KbQueueCheck();
     
-%     if pressed
-%         firstPress(firstPress == 0) = nan;
-%         [RT,key] = min(firstPress);
-%         KeyName = KbName(key);
-%         experiment.responses = [experiment.responses, targetColors(str2num([KeyName(1)]))];
-%         experiment.responseTimes = [experiment.responseTimes, RT - experiment.startRun];
-%     end
-     
     %%%% character identification
     if (pressed == 1) && ((firstPress(KbName('1!')) > 0) || (firstPress(KbName('2@')) > 0))
         if firstPress(KbName('1!')) > 0
