@@ -47,7 +47,7 @@ experiment.date = datestr(now,30);
 
 experiment.initialFixation = 6;        % in seconds
 experiment.finalFixation = 0;          % in seconds
-experiment.stimDur = 2.6;        % in seconds. 2.6 refers to sine wave grating 2.6 = 1.3*2 = 2 phases
+experiment.stimDur = 1.6*2;        % in seconds. 1.6 sec refers to sine wave grating 1.6 = 2cycles/1.13cyc.sec-1 mutiplied by 2 for back and forth
 experiment.stimsPerBlock = 5;
 experiment.blockLength = experiment.stimDur*experiment.stimsPerBlock;            % in seconds
 experiment.betweenBlocks = 16;          % in seconds
@@ -123,11 +123,18 @@ length(experiment.longFormBlocks)
 %bottom), pair) and stimulus orientation
 %longform condition timing, which aligns with the flicker timing
 experiment.longFormConds = zeros(1,experiment.initialFixation);
-for i = (1:experiment.numBlocks-1)
-    experiment.longFormConds = [experiment.longFormConds, repmat(experiment.condShuffle(i),1,experiment.blockLength)]; % blocks
-    experiment.longFormConds = [experiment.longFormConds, zeros(1,experiment.betweenBlocks)]; % inter-block blanks
+for n = 1:experiment.numBlocks/length(experiment.condShuffle)
+    if n < experiment.numBlocks/length(experiment.condShuffle)
+        len = length(experiment.condShuffle);
+    else
+        len = length(experiment.condShuffle)-1;
+    end
+    for i = (1:len)
+        experiment.longFormConds = [experiment.longFormConds, repmat(experiment.condShuffle(i),1,experiment.blockLength)]; % blocks
+        experiment.longFormConds = [experiment.longFormConds, zeros(1,experiment.betweenBlocks)]; % inter-block blanks
+    end
 end
-experiment.longFormConds = [experiment.longFormConds, repmat(experiment.condShuffle(experiment.numBlocks),1,experiment.blockLength), zeros(1,experiment.finalFixation)]; % the last block
+experiment.longFormConds = [experiment.longFormConds, repmat(experiment.condShuffle(end),1,experiment.blockLength), zeros(1,experiment.finalFixation)]; % the last block
 experiment.longFormConds = Expand(experiment.longFormConds, experiment.flipsPerSec,1);
 length(experiment.longFormConds)
 % %% create the timing model of stimulus conditions for this particular run
@@ -136,12 +143,12 @@ for i =1:experiment.numConds
     conditions(i).name = experiment.conds(i);
     conditions(i).startTimes = [];
 end
-counter = experiment.initialFixation; %will assess starting time of each block incrementally, that will be saved in the condition struct
-for n=1:experiment.numBlocks
-    experiment.startBlock(n) = counter; % timestamp (s) of when each block should start
-    conditions(experiment.condShuffle(n)).startTimes = [conditions(experiment.condShuffle(n)).startTimes counter]; % add timestamps to the condition struct
-    counter = counter + experiment.blockLength + experiment.betweenBlocks; % and progress the counter
-end
+% counter = experiment.initialFixation; %will assess starting time of each block incrementally, that will be saved in the condition struct
+% for n=1:experiment.numBlocks
+%     experiment.startBlock(n) = counter; % timestamp (s) of when each block should start
+%     conditions(experiment.condShuffle(n)).startTimes = [conditions(experiment.condShuffle(n)).startTimes counter]; % add timestamps to the condition struct
+%     counter = counter + experiment.blockLength + experiment.betweenBlocks; % and progress the counter
+% end
 %%
 %%%%%%%%%%%%%%%
 % open screen %
@@ -152,7 +159,8 @@ Priority(9);
 
 %%%% open screen
 screen=max(Screen('Screens'));
-[w, rect]=Screen('OpenWindow',screen,experiment.backgroundColor,[100 100 900 600],[],[],[],[],kPsychNeed32BPCFloat); %might need to switch 900 and 600 by 1600 and 1200 for room 425
+%[w, rect]=Screen('OpenWindow',screen,experiment.backgroundColor,[100 100 900 600],[],[],[],[],kPsychNeed32BPCFloat); %might need to switch 900 and 600 by 1600 and 1200 for room 425
+[w, rect]=Screen('OpenWindow',screen,experiment.backgroundColor,[],[],[],[],[],kPsychNeed32BPCFloat); %might need to switch 900 and 600 by 1600 and 1200 for room 425
 Screen(w, 'TextSize', experiment.fontSize);
 Screen('BlendFunction', w, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
