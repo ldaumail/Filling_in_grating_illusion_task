@@ -71,7 +71,7 @@ experiment.conds = {'vertSingleTop','horSingleTop','vertSingleBottom','horSingle
 experiment.numConds = length(experiment.conds);
 % with line of code below we will have 1 condition per block, randomized. we might need to change that
 % later, to have the conditions randomized within each block
-experiment.condShuffle = Shuffle(repmat([1:experiment.numConds],1,experiment.stimsPerBlock)); %make same number of blocks with each condition, randomize order
+experiment.condShuffle = Shuffle(repmat([1:experiment.numConds],1,1)); % %experiment.stimsPerBlock make same number of blocks with each condition, randomize order
 experiment.numBlocks = length(experiment.condShuffle)*2;
 experiment.fixSizeDeg =  .6;            % in degrees, the size of the biggest white dot in the fixation
 experiment.repsPerRun = 2;              % repetitions of each object type x experimentation
@@ -159,8 +159,8 @@ Priority(9);
 
 %%%% open screen
 screen=max(Screen('Screens'));
-%[w, rect]=Screen('OpenWindow',screen,experiment.backgroundColor,[100 100 900 600],[],[],[],[],kPsychNeed32BPCFloat); %might need to switch 900 and 600 by 1600 and 1200 for room 425
-[w, rect]=Screen('OpenWindow',screen,experiment.backgroundColor,[],[],[],[],[],kPsychNeed32BPCFloat); %might need to switch 900 and 600 by 1600 and 1200 for room 425
+[w, rect]=Screen('OpenWindow',screen,experiment.backgroundColor,[100 100 900 600],[],[],[],[],kPsychNeed32BPCFloat); %might need to switch 900 and 600 by 1600 and 1200 for room 425
+%[w, rect]=Screen('OpenWindow',screen,experiment.backgroundColor,[],[],[],[],[],kPsychNeed32BPCFloat); %might need to switch 900 and 600 by 1600 and 1200 for room 425
 Screen(w, 'TextSize', experiment.fontSize);
 Screen('BlendFunction', w, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
