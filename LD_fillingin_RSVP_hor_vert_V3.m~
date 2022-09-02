@@ -112,146 +112,146 @@ taskText = 'characters';
 %% ET PARAMETERS
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-% ET_ON = 1;
-% 
-% % This applies to actual trials
-% params.AbortTrialWhenExceeded = [ ] ; % During actual expt
-% 
-% % This applies to practice trials (turned off during actual expt)
-% params.ShowETbox = [ 1  ]; % during practice
-% params.ETbox = [  3  ];% [ 3+.5 ]; % in VA; actually, diameter of a circle
-% params.ETbox_size_pix = [ params.ETbox params.ETbox ] * params.ppd; 
-% params.ETbox_color = [ 255 255 255 ]*.6;
-% % params.ShowRealTimeGaze = [ 1 ]; % [] or [ something ]
-% params.ShowRealTimeGaze = [  ]; % [] or [ something ]
-% params.nGazetoShow = [ 60 ]; % current~past N fixations
-% params.nGazeAllowed =  [ 12 ];% [ 12 ]=1st session of AP,DM; % Abort the trial if recent N trials were ALL outside the circle
-% cmap_gaze = [255 0 0]; % repmat([255 0 0]', 1, s.nGazetoShow); 
-% cmap_gaze_exceed = [255 0 0]; % repmat([0 0 255]', 1, s.nGazetoShow);    
-% 
-% params.Fixation.Color = [1 1 1]*255*0; % [1 1 1]*[ 128*.4 ]; % [ s.Background*.7 ]; % Inside Fixation(Cross) s.Black(1); %
-% params.Fixation.Color2 = [ params.Fixation.Color ]; % [1 1 1]*[ 10] ; % [ 255 0 0 ]; % [0 0 0]
-% % tmp_VA = [ .25 ];% .25? radius = .5? in diameter  %% [.32 ];  % [2, 6, 8]; in pixel; of Radius; was [2, 4, 6] in pilot; 
-% tmp_VA = [ .1 ];% .25? radius = .5? in diameter  %% [.32 ];  % [2, 6, 8]; in pixel; of Radius; was [2, 4, 6] in pilot; 
-% params.Fixation.R_pix = round(tmp_VA * params.ppd); 
-% params.Fixation.R_VA = params.Fixation.R_pix / params.ppd;
-% params.Fixation.R2_pix = round(params.Fixation.R_VA*[ .2 ] * params.ppd); 
-% params.Fixation.R2_VA =  params.Fixation.R2_pix/params.ppd;  % [2, 6, 8]; in pixel; of Radius; was [2, 4, 6] in pilot;     
-% params.Fixation.Width_pix = round(params.Fixation.R_pix*.2 ); 
-% params.Fixation.Width_VA = params.Fixation.Width_pix / params.ppd; %  [ .03 ]; % Pen Width   
-% 
-% params.Fixation.rect  = CenterRect( [0 0 params.Fixation.R_pix*2  params.Fixation.R_pix*2], rect );
-% params.Fixation.rect2 = CenterRect( [0 0 params.Fixation.R2_pix*2 params.Fixation.R2_pix*2], rect );
-% 
-% %%
-% %%%% INITIALIZE EYETRACKING
-% if ~isempty(ET_ON)
-%     if EyelinkInit()~= 1;
-%         error('ERROR: Eyetracking not on-line.  Make sure it is plugged in and turned on...\n')
-%         sca
-%         return;
-%     end;
-% 
-%     %%% Sets ET connection
-%     el = EyelinkInitDefaults(win);
-% 
-%     %%% Custum calibration: Adapted from EyelinkPictureCustomCalibration
-%     el.calibrationtargetsize=1; % from 2.5
-%     el.calibrationtargetwidth=.5; % from 1
-%     el.displayCalResults = 1; % [ avgError ?? ??? ]
-%     EyelinkUpdateDefaults(el)
-%     
-%     % SET UP TRACKER CONFIGURATION
-%     % Setting the proper recording resolution, proper calibration type,
-%     % as well as the data file content;
-%     width=ScreenRes.width; height=ScreenRes.height;
-%     Eyelink('command','screen_pixel_coords = %ld %ld %ld %ld', 0, 0, width-1, height-1);
-%     Eyelink('message', 'DISPLAY_COORDS %ld %ld %ld %ld', 0, 0, width-1, height-1);
-%     Eyelink('command', 'calibration_type = HV13'); % HV5 HV9 HV13 
-%     Eyelink('command', 'generate_default_targets = NO');
-%     
-%     %%%% layout of calibration points 
-%     ncal_angle = 8; % 8 angles along the larger circle (one per 45?)
-%     cal_angles = linspace(0, 2*pi, ncal_angle+1)+pi/4; cal_angles(end)=[];
-%     cal_radius = [ 5 ]*params.ppd; % Eccentricity    
-%     ncal_angle2 = 4; % 4 angles along the smaller circle (one per 45?)
-%     cal_angles2 = linspace(0, 2*pi, ncal_angle2+1); cal_angles2(end)=[];
-%     cal_radius2 = cal_radius/2; % [ 2.5 ]*s.ppd; 
-%     
-%     cal_xx = round(  width/2 + [cos(cal_angles)*cal_radius  cos(cal_angles2)*cal_radius2 ]);
-%     cal_yy = round( height/2 + [sin(cal_angles)*cal_radius  sin(cal_angles2)*cal_radius2 ]);    
-%     cal_xx = [ width/2 cal_xx ];
-%     cal_yy = [ height/2 cal_yy ];         
-%     
-%     ncal_sample = length(cal_xx)  % 4+8+1(center) = 13
-%     cal_sequence = sprintf('%d,',[ 0 1:ncal_sample] ); cal_sequence(end)=[]
-%     cal_targets = [ cal_xx; cal_yy ]; cal_targets = cal_targets(:)';
-%     cal_targets = sprintf('%d,%d ', cal_targets)
-%     
-%     % STEP 5.1 modify calibration and validation target locations
-%     Eyelink('command', ['calibration_samples = ' num2str(ncal_sample+1) ]); % +1 = including initial 0(=center)
-%     Eyelink('command', ['calibration_sequence = ' cal_sequence  ] );% first xy = fixation (=sequence 1)
-%     Eyelink('command', ['calibration_targets = ' cal_targets ]);
-%     Eyelink('command', ['validation_samples = ' num2str(ncal_sample) ]); 
-%     Eyelink('command', ['validation_sequence = ' cal_sequence  ] );
-%     Eyelink('command', ['validation_targets = ' cal_targets ]);
-% 
-%     %%% Tells the ET what data to record
-%     Eyelink('Command', 'file_sample_data = LEFT,RIGHT,GAZE,DIAMETER');
-%     Eyelink('Command', 'file_event_data = GAZE,GAZEREZ,DIAMETER,HREF,VELOCITY');
-%     Eyelink('Command', 'file_event_filter = LEFT, RIGHT, FIXATION,SACCADE, BLINK, MESSAGE, BUTTON');
-% end 
-%    
-% if ~isempty(ET_ON)
-%     EyelinkDoTrackerSetup(el);
-% end
-% 
-% %%%% Drift correction:
-% if ~isempty(ET_ON)
-% 
-%     ETbox_rect = CenterRectOnPoint([0 0 params.ETbox_size_pix], centerX, centerY);
-% 
-%     % Open a file to record to
-%     tmpETfile = 'ET_tmp.edf';
-%     Eyelink('openfile', tmpETfile);
-% 
-%     %%%% Drift correction:
-%     success = 0;
-%     while success == 0
-%         
-%         % In fact, there's an internal while loop inside the eyelink
-%         % driftcorrect code. Still, we need repeat driftcorrection until it
-%         % succeeds. Without the loop, the trial can proceed with the ESC key
-%         % press despite a poor fixation
-% 
-%         if ~isempty(params.ShowETbox)
-%             Screen('FrameOval', win, params.ETbox_color, ETbox_rect) ;%  [,penWidth]);
-%         end
-%         Screen('FrameOval', win, [0 0 0], params.Fixation.rect, params.Fixation.Width_pix)
-%         Screen('FillOval', win, [255 0 0], params.Fixation.rect2 ); %  , s.Fixation.Width_pix
-%         Screen('Flip',win);
-%         success = EyelinkDoDriftCorrection(el, [], [], 0, 0); % You can't get out of this function unless there's a success or ESC
-%         
-%     end 
-%     Eyelink('StartRecording');
-%     eye_used = Eyelink('EyeAvailable');
-%     
-% end 
-%         
-% ETdur_per_trial = params.trialLength + [ 5 ];
-% FrameRate = Screen('FrameRate', win); %  hz=Screen('FrameRate', w);
-% max_ET_nframe = FrameRate * ETdur_per_trial;
-% gazesamples = cell(length(blockNum), numTrials);
-% for i = 1:length(blockNum)
-%     for j = 1:numTrials
-%         gazesamples{i,j}.x = nan(max_ET_nframe,1);
-%         gazesamples{i,j}.y = nan(max_ET_nframe,1);
-%         gazesamples{i,j}.pa = nan(max_ET_nframe,1);
-%         gazesamples{i,j}.TS = nan(max_ET_nframe,1);
-%         gazesamples{i,j}.D = nan(max_ET_nframe,1);
-%     end
-% end
-% 
+ET_ON = 1;
+
+% This applies to actual trials
+params.AbortTrialWhenExceeded = [ ] ; % During actual expt
+
+% This applies to practice trials (turned off during actual expt)
+params.ShowETbox = [ 1  ]; % during practice
+params.ETbox = [  3  ];% [ 3+.5 ]; % in VA; actually, diameter of a circle
+params.ETbox_size_pix = [ params.ETbox params.ETbox ] * params.ppd; 
+params.ETbox_color = [ 255 255 255 ]*.6;
+% params.ShowRealTimeGaze = [ 1 ]; % [] or [ something ]
+params.ShowRealTimeGaze = [  ]; % [] or [ something ]
+params.nGazetoShow = [ 60 ]; % current~past N fixations
+params.nGazeAllowed =  [ 12 ];% [ 12 ]=1st session of AP,DM; % Abort the trial if recent N trials were ALL outside the circle
+cmap_gaze = [255 0 0]; % repmat([255 0 0]', 1, s.nGazetoShow); 
+cmap_gaze_exceed = [255 0 0]; % repmat([0 0 255]', 1, s.nGazetoShow);    
+
+params.Fixation.Color = [1 1 1]*255*0; % [1 1 1]*[ 128*.4 ]; % [ s.Background*.7 ]; % Inside Fixation(Cross) s.Black(1); %
+params.Fixation.Color2 = [ params.Fixation.Color ]; % [1 1 1]*[ 10] ; % [ 255 0 0 ]; % [0 0 0]
+% tmp_VA = [ .25 ];% .25? radius = .5? in diameter  %% [.32 ];  % [2, 6, 8]; in pixel; of Radius; was [2, 4, 6] in pilot; 
+tmp_VA = [ .1 ];% .25? radius = .5? in diameter  %% [.32 ];  % [2, 6, 8]; in pixel; of Radius; was [2, 4, 6] in pilot; 
+params.Fixation.R_pix = round(tmp_VA * params.ppd); 
+params.Fixation.R_VA = params.Fixation.R_pix / params.ppd;
+params.Fixation.R2_pix = round(params.Fixation.R_VA*[ .2 ] * params.ppd); 
+params.Fixation.R2_VA =  params.Fixation.R2_pix/params.ppd;  % [2, 6, 8]; in pixel; of Radius; was [2, 4, 6] in pilot;     
+params.Fixation.Width_pix = round(params.Fixation.R_pix*.2 ); 
+params.Fixation.Width_VA = params.Fixation.Width_pix / params.ppd; %  [ .03 ]; % Pen Width   
+
+params.Fixation.rect  = CenterRect( [0 0 params.Fixation.R_pix*2  params.Fixation.R_pix*2], rect );
+params.Fixation.rect2 = CenterRect( [0 0 params.Fixation.R2_pix*2 params.Fixation.R2_pix*2], rect );
+
+%%
+%%%% INITIALIZE EYETRACKING
+if ~isempty(ET_ON)
+    if EyelinkInit()~= 1;
+        error('ERROR: Eyetracking not on-line.  Make sure it is plugged in and turned on...\n')
+        sca
+        return;
+    end;
+
+    %%% Sets ET connection
+    el = EyelinkInitDefaults(win);
+
+    %%% Custum calibration: Adapted from EyelinkPictureCustomCalibration
+    el.calibrationtargetsize=1; % from 2.5
+    el.calibrationtargetwidth=.5; % from 1
+    el.displayCalResults = 1; % [ avgError ?? ??? ]
+    EyelinkUpdateDefaults(el)
+    
+    % SET UP TRACKER CONFIGURATION
+    % Setting the proper recording resolution, proper calibration type,
+    % as well as the data file content;
+    width=ScreenRes.width; height=ScreenRes.height;
+    Eyelink('command','screen_pixel_coords = %ld %ld %ld %ld', 0, 0, width-1, height-1);
+    Eyelink('message', 'DISPLAY_COORDS %ld %ld %ld %ld', 0, 0, width-1, height-1);
+    Eyelink('command', 'calibration_type = HV13'); % HV5 HV9 HV13 
+    Eyelink('command', 'generate_default_targets = NO');
+    
+    %%%% layout of calibration points 
+    ncal_angle = 8; % 8 angles along the larger circle (one per 45?)
+    cal_angles = linspace(0, 2*pi, ncal_angle+1)+pi/4; cal_angles(end)=[];
+    cal_radius = [ 5 ]*params.ppd; % Eccentricity    
+    ncal_angle2 = 4; % 4 angles along the smaller circle (one per 45?)
+    cal_angles2 = linspace(0, 2*pi, ncal_angle2+1); cal_angles2(end)=[];
+    cal_radius2 = cal_radius/2; % [ 2.5 ]*s.ppd; 
+    
+    cal_xx = round(  width/2 + [cos(cal_angles)*cal_radius  cos(cal_angles2)*cal_radius2 ]);
+    cal_yy = round( height/2 + [sin(cal_angles)*cal_radius  sin(cal_angles2)*cal_radius2 ]);    
+    cal_xx = [ width/2 cal_xx ];
+    cal_yy = [ height/2 cal_yy ];         
+    
+    ncal_sample = length(cal_xx)  % 4+8+1(center) = 13
+    cal_sequence = sprintf('%d,',[ 0 1:ncal_sample] ); cal_sequence(end)=[]
+    cal_targets = [ cal_xx; cal_yy ]; cal_targets = cal_targets(:)';
+    cal_targets = sprintf('%d,%d ', cal_targets)
+    
+    % STEP 5.1 modify calibration and validation target locations
+    Eyelink('command', ['calibration_samples = ' num2str(ncal_sample+1) ]); % +1 = including initial 0(=center)
+    Eyelink('command', ['calibration_sequence = ' cal_sequence  ] );% first xy = fixation (=sequence 1)
+    Eyelink('command', ['calibration_targets = ' cal_targets ]);
+    Eyelink('command', ['validation_samples = ' num2str(ncal_sample) ]); 
+    Eyelink('command', ['validation_sequence = ' cal_sequence  ] );
+    Eyelink('command', ['validation_targets = ' cal_targets ]);
+
+    %%% Tells the ET what data to record
+    Eyelink('Command', 'file_sample_data = LEFT,RIGHT,GAZE,DIAMETER');
+    Eyelink('Command', 'file_event_data = GAZE,GAZEREZ,DIAMETER,HREF,VELOCITY');
+    Eyelink('Command', 'file_event_filter = LEFT, RIGHT, FIXATION,SACCADE, BLINK, MESSAGE, BUTTON');
+end 
+   
+if ~isempty(ET_ON)
+    EyelinkDoTrackerSetup(el);
+end
+
+%%%% Drift correction:
+if ~isempty(ET_ON)
+
+    ETbox_rect = CenterRectOnPoint([0 0 params.ETbox_size_pix], centerX, centerY);
+
+    % Open a file to record to
+    tmpETfile = 'ET_tmp.edf';
+    Eyelink('openfile', tmpETfile);
+
+    %%%% Drift correction:
+    success = 0;
+    while success == 0
+        
+        % In fact, there's an internal while loop inside the eyelink
+        % driftcorrect code. Still, we need repeat driftcorrection until it
+        % succeeds. Without the loop, the trial can proceed with the ESC key
+        % press despite a poor fixation
+
+        if ~isempty(params.ShowETbox)
+            Screen('FrameOval', win, params.ETbox_color, ETbox_rect) ;%  [,penWidth]);
+        end
+        Screen('FrameOval', win, [0 0 0], params.Fixation.rect, params.Fixation.Width_pix)
+        Screen('FillOval', win, [255 0 0], params.Fixation.rect2 ); %  , s.Fixation.Width_pix
+        Screen('Flip',win);
+        success = EyelinkDoDriftCorrection(el, [], [], 0, 0); % You can't get out of this function unless there's a success or ESC
+        
+    end 
+    Eyelink('StartRecording');
+    eye_used = Eyelink('EyeAvailable');
+    
+end 
+        
+ETdur_per_trial = params.trialLength + [ 5 ];
+FrameRate = Screen('FrameRate', win); %  hz=Screen('FrameRate', w);
+max_ET_nframe = FrameRate * ETdur_per_trial;
+gazesamples = cell(length(blockNum), numTrials);
+for i = 1:length(blockNum)
+    for j = 1:numTrials
+        gazesamples{i,j}.x = nan(max_ET_nframe,1);
+        gazesamples{i,j}.y = nan(max_ET_nframe,1);
+        gazesamples{i,j}.pa = nan(max_ET_nframe,1);
+        gazesamples{i,j}.TS = nan(max_ET_nframe,1);
+        gazesamples{i,j}.D = nan(max_ET_nframe,1);
+    end
+end
+
 
 %% %%%%%%%%%%%%%%%%%
    % timing model  %
@@ -441,7 +441,7 @@ for k = 1:length(targetInd)
 end
 
 % %%%% scale up the task based on flips
-e.letterSequence = Expand(e.letterSequence,flipsPerTrial,1);%e.flipsPerSec,1); 
+experiment.letterSequence = Expand(experiment.letterSequence,flipsPerTrial,1);%experiment.flipsPerSec,1); 
 
 
 %% %%%% initial window - wait for backtick
@@ -462,24 +462,24 @@ KbQueueCreate(deviceNumber,responseKeys);
 n=0;
 count = 1;
 %%%%%%% START task TASK/FLIPPING
-% [e.totalTime, e.allFlips,n]
-gray = repmat(min(min(squeeze(e.topWave(1,:,:)),[],1)), [1,3]);
+% [experiment.totalTime, experiment.allFlips,n]
+gray = repmat(min(min(squeeze(experiment.topWave(1,:,:)),[],1)), [1,3]);
 Screen('FillRect', w, gray);
-while n+1 < length(e.allFlips)
+while n+1 < length(experiment.allFlips)
     
-    [e.longFormBlocks(n+1),e.longFormFlicker(n+1)]
-    thisCond = e.longFormConds(n+1);
+    [experiment.longFormBlocks(n+1),experiment.longFormFlicker(n+1)]
+    thisCond = experiment.longFormConds(n+1);
     tic
     KbQueueStart();
     %%%%%%%%%%% FLIP %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     if n == 0
-        [VBLT, e.startRun, FlipT, missed] = Screen(w, 'Flip', 0);%[VBLTimestamp StimulusOnsetTime FlipTimestamp Missed] = Screen('Flip', windowPtr [, when] [, dontclear]...
-        e.flipTime(n+1) = e.startRun;
+        [VBLT, experiment.startRun, FlipT, missed] = Screen(w, 'Flip', 0);%[VBLTimestamp StimulusOnsetTime FlipTimestamp Missed] = Screen('Flip', windowPtr [, when] [, dontclear]...
+        experiment.flipTime(n+1) = experiment.startRun;
     else
-        [VBLT, e.flipTime(n+1), FlipT, missed] = Screen(w, 'Flip', e.startRun + e.allFlips(n+1) - slack);
+        [VBLT, experiment.flipTime(n+1), FlipT, missed] = Screen(w, 'Flip', experiment.startRun + experiment.allFlips(n+1) - slack);
     end
     %%%% draw sine wave grating stimulus %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    if e.longFormBlocks(n+1) == 1 && e.longFormFlicker(n+1) > 0 % zeros correspond to IBI, in which case we skip this next section
+    if experiment.longFormBlocks(n+1) == 1 && experiment.longFormFlicker(n+1) > 0 % zeros correspond to IBI, in which case we skip this next section
         if strfind(conditions(thisCond).name{:}, 'vert')
             ori =1;
         else
@@ -488,15 +488,15 @@ while n+1 < length(e.allFlips)
         % draw & increment stims
         if strfind(conditions(thisCond).name{:}, 'DoubleIndir')  %|| strcmp(conditions(thisCond).name, 'double-oppdir')  % draw second stim if it is 'double-indir' or 'double-oppdir' %if it's randomized or incognruent
             % top stim
-            Screen('DrawTexture', w, e.topWaveID(n+1,ori),[],e.topRect);
+            Screen('DrawTexture', w, experiment.topWaveID(n+1,ori),[],experiment.topRect);
             % bottom stim
-            Screen('DrawTexture', w, e.bottomWaveID(n+1,ori), [], e.bottomRect);
+            Screen('DrawTexture', w, experiment.bottomWaveID(n+1,ori), [], experiment.bottomRect);
         elseif strfind(conditions(thisCond).name{:}, 'SingleTop')
             % top stim
-            Screen('DrawTexture', w, e.topWaveID(n+1,ori),[],e.topRect);
+            Screen('DrawTexture', w, experiment.topWaveID(n+1,ori),[],experiment.topRect);
         elseif strfind(conditions(thisCond).name{:}, 'SingleBottom')
             % bottom stim
-            Screen('DrawTexture', w, e.bottomWaveID(n+1,ori), [], e.bottomRect);
+            Screen('DrawTexture', w, experiment.bottomWaveID(n+1,ori), [], experiment.bottomRect);
         end
         
     end
@@ -507,14 +507,14 @@ while n+1 < length(e.allFlips)
 %         % draw character
 %         l = randperm(numel(letters));
 %         fixChar = letters(l(1));
-          fixChar = e.letterSequence(n+1);
+          fixChar = experiment.letterSequence(n+1);
 
        if strcmp(fixChar,'J') == 1
-            e.targets = [e.targets, 1];
-            e.targetTimes = [e.targetTimes, GetSecs - e.startRun];
+            experiment.targets = [experiment.targets, 1];
+            experiment.targetTimes = [experiment.targetTimes, GetSecs - experiment.startRun];
         elseif strcmp(fixChar,'K') == 1
-            e.targets = [e.targets, 2];
-            e.targetTimes = [e.targetTimes, GetSecs - e.startRun];
+            experiment.targets = [experiment.targets, 2];
+            experiment.targetTimes = [experiment.targetTimes, GetSecs - experiment.startRun];
        end
 
 
@@ -522,14 +522,14 @@ while n+1 < length(e.allFlips)
     
     %%%% draw fixation letter in fixation circle
     
-    if mod(n, flipsPerTrial) <= e.trialOnFlips
-        Screen('FillOval', w,[255 255 255], [xc-round(e.fixSize/2) yc-round(e.fixSize/2) xc+round(e.fixSize/2) yc+round(e.fixSize/2)]);%white fixation solid circle
+    if mod(n, flipsPerTrial) <= experiment.trialOnFlips
+        Screen('FillOval', w,[255 255 255], [xc-round(experiment.fixSize/2) yc-round(experiment.fixSize/2) xc+round(experiment.fixSize/2) yc+round(experiment.fixSize/2)]);%white fixation solid circle
         %DrawFormattedText(w, fixChar, 'center', 8+vertOffset+rect(4)/2,0); %either text function works
         %Screen('DrawText', w, fixChar, -5+rect(3)/2, -10+vertOffset+rect(4)/2,[0 0 0]);
         [width,height] = RectSize(Screen('TextBounds',w,fixChar{:}));
         Screen('DrawText', w, fixChar{:}, xc-width/2 +0.3, yc-height/2-0.2,[0 0 0]);
      else
-        Screen('FillOval', w,[255 255 255], [xc-round(e.fixSize/2) yc-round(e.fixSize/2) xc+round(e.fixSize/2) yc+round(e.fixSize/2)]);%white fixation solid circle
+        Screen('FillOval', w,[255 255 255], [xc-round(experiment.fixSize/2) yc-round(experiment.fixSize/2) xc+round(experiment.fixSize/2) yc+round(experiment.fixSize/2)]);%white fixation solid circle
    
     end
 
@@ -541,11 +541,11 @@ while n+1 < length(e.allFlips)
     %%%% character identification
     if (pressed == 1) && ((firstPress(KbName('1!')) > 0) || (firstPress(KbName('2@')) > 0))
         if firstPress(KbName('1!')) > 0
-            e.responses = [e.responses, 1];
-            e.responseTimes = [e.responseTimes, firstPress(KbName('1!')) - e.startRun];
+            experiment.responses = [experiment.responses, 1];
+            experiment.responseTimes = [experiment.responseTimes, firstPress(KbName('1!')) - experiment.startRun];
         elseif firstPress(KbName('2@')) > 0
-            e.responses = [e.responses, 2];
-            e.responseTimes = [e.responseTimes, firstPress(KbName('2@')) - e.startRun];
+            experiment.responses = [experiment.responses, 2];
+            experiment.responseTimes = [experiment.responseTimes, firstPress(KbName('2@')) - experiment.startRun];
         end
     end
 
@@ -559,23 +559,23 @@ end
 % done! wrap up  %
 %%%%%%%%%%%%%%%%%%
 
-e.runTime = GetSecs - e.startRun;
+experiment.runTime = GetSecs - experiment.startRun;
 
 % analyse task accuracy
-responseTimes = e.responseTimes; % make copies as we are editing these
-responses = e.responses;
+responseTimes = experiment.responseTimes; % make copies as we are editing these
+responses = experiment.responses;
 responseWindow = 1.5; % responses later than this count as a miss
-for t = 1:size(e.targetTimes,2)
-    targetTime = e.targetTimes(t);
-    target = e.targets(t);
-    e.hits(t) = 0; % default is a miss with RT of nan
-    e.RTs(t) = nan;
+for t = 1:size(experiment.targetTimes,2)
+    targetTime = experiment.targetTimes(t);
+    target = experiment.targets(t);
+    experiment.hits(t) = 0; % default is a miss with RT of nan
+    experiment.RTs(t) = nan;
     for r = 1:size(responseTimes,2)
         if ismember(responses(r),  target) && responseTimes(r) > targetTime % if response is correct and happened after target
             rt = responseTimes(r)-targetTime;
             if rt < responseWindow % and if response happened within a second of target
-                e.hits(t) = 1; % mark a hit
-                e.RTs(t) = rt; % store the RT
+                experiment.hits(t) = 1; % mark a hit
+                experiment.RTs(t) = rt; % store the RT
                 responseTimes(r) = []; % delete this response so it can't be reused
                 responses(r) = [];
                 break % stop looking for responses to this target
@@ -583,13 +583,13 @@ for t = 1:size(e.targetTimes,2)
         end
     end
 end
-e.accuracy = (sum(e.hits)/size(e.targetTimes,2))*100;
-e.meanRT = nanmean(e.RTs);
+experiment.accuracy = (sum(experiment.hits)/size(experiment.targetTimes,2))*100;
+experiment.meanRT = nanmean(experiment.RTs);
 
-savedir = fullfile(e.root,'data',subject,session,'fillingin_rsvp_v1');
+savedir = fullfile(experiment.root,'data',subject,session,'fillingin_rsvp_v1');
 if ~exist(savedir); mkdir(savedir); end
-savename = fullfile(savedir, strcat(subject , '_fillingin_rsvp_v1_sn',num2str(e.scanNum),'_rn',num2str(e.runNum),'_',e.date,'.mat'));
-save(savename,'e');
+savename = fullfile(savedir, strcat(subject , '_fillingin_rsvp_v1_sn',num2str(experiment.scanNum),'_rn',num2str(experiment.runNum),'_',experiment.date,'.mat'));
+save(savename,'experiment');
 
 KbQueueRelease();
 ShowCursor;
