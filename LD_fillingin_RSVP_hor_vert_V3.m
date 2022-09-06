@@ -92,10 +92,10 @@ e.trialFreq = 0.5;               % duration of fixation trials (seconds) (time i
 flipsPerTrial = e.trialFreq/e.flipWin;
 e.trialDur = e.trialFreq/2;               % duration in seconds of the letter presentation of each fixation trial (.25s letter ON, .25 letter OFF)
 e.trialOnFlips = floor(e.trialDur/e.flipWin); %number of flips the letter is on over the course of 1 trial
-%params.cueColor = 0;%[50 50 255];   % letter color
+%e.cueColor = 0;%[50 50 255];   % letter color
 e.totalLetters = (e.totalTime/e.trialFreq); %total number of letters that COULD BE presented during the e (though based on prob, much less will be presented)
 e.responseBack = 3;    % the response is correct if the preceding N letters were the target
-%e.letterTiming = (0:params.RSVPrate:e.totalTime);
+%e.letterTiming = (0:e.RSVPrate:e.totalTime);
 
 %%%% character identification task
 e.targets = [];
@@ -115,143 +115,143 @@ taskText = 'characters';
 % ET_ON = 1;
 % 
 % % This applies to actual trials
-% params.AbortTrialWhenExceeded = [ ] ; % During actual expt
+% e.AbortTrialWhenExceeded = [ ] ; % During actual expt
 % 
 % % This applies to practice trials (turned off during actual expt)
-% params.ShowETbox = [ 1  ]; % during practice
-% params.ETbox = [  3  ];% [ 3+.5 ]; % in VA; actually, diameter of a circle
-% params.ETbox_size_pix = [ params.ETbox params.ETbox ] * params.ppd; 
-% params.ETbox_color = [ 255 255 255 ]*.6;
-% % params.ShowRealTimeGaze = [ 1 ]; % [] or [ something ]
-% params.ShowRealTimeGaze = [  ]; % [] or [ something ]
-% params.nGazetoShow = [ 60 ]; % current~past N fixations
-% params.nGazeAllowed =  [ 12 ];% [ 12 ]=1st session of AP,DM; % Abort the trial if recent N trials were ALL outside the circle
+% e.ShowETbox = [ 1  ]; % during practice
+% e.ETbox = [  3  ];% [ 3+.5 ]; % in VA; actually, diameter of a circle
+% e.ETbox_size_pix = [ e.ETbox e.ETbox ] * e.ppd; 
+% e.ETbox_color = [ 255 255 255 ]*.6;
+% % e.ShowRealTimeGaze = [ 1 ]; % [] or [ something ]
+% e.ShowRealTimeGaze = [  ]; % [] or [ something ]
+% e.nGazetoShow = [ 60 ]; % current~past N fixations
+% e.nGazeAllowed =  [ 12 ];% [ 12 ]=1st session of AP,DM; % Abort the trial if recent N trials were ALL outside the circle
 % cmap_gaze = [255 0 0]; % repmat([255 0 0]', 1, s.nGazetoShow); 
 % cmap_gaze_exceed = [255 0 0]; % repmat([0 0 255]', 1, s.nGazetoShow);    
 % 
-% params.Fixation.Color = [1 1 1]*255*0; % [1 1 1]*[ 128*.4 ]; % [ s.Background*.7 ]; % Inside Fixation(Cross) s.Black(1); %
-% params.Fixation.Color2 = [ params.Fixation.Color ]; % [1 1 1]*[ 10] ; % [ 255 0 0 ]; % [0 0 0]
+% e.Fixation.Color = [1 1 1]*255*0; % [1 1 1]*[ 128*.4 ]; % [ s.Background*.7 ]; % Inside Fixation(Cross) s.Black(1); %
+% e.Fixation.Color2 = [ e.Fixation.Color ]; % [1 1 1]*[ 10] ; % [ 255 0 0 ]; % [0 0 0]
 % % tmp_VA = [ .25 ];% .25? radius = .5? in diameter  %% [.32 ];  % [2, 6, 8]; in pixel; of Radius; was [2, 4, 6] in pilot; 
 % tmp_VA = [ .1 ];% .25? radius = .5? in diameter  %% [.32 ];  % [2, 6, 8]; in pixel; of Radius; was [2, 4, 6] in pilot; 
-% params.Fixation.R_pix = round(tmp_VA * params.ppd); 
-% params.Fixation.R_VA = params.Fixation.R_pix / params.ppd;
-% params.Fixation.R2_pix = round(params.Fixation.R_VA*[ .2 ] * params.ppd); 
-% params.Fixation.R2_VA =  params.Fixation.R2_pix/params.ppd;  % [2, 6, 8]; in pixel; of Radius; was [2, 4, 6] in pilot;     
-% params.Fixation.Width_pix = round(params.Fixation.R_pix*.2 ); 
-% params.Fixation.Width_VA = params.Fixation.Width_pix / params.ppd; %  [ .03 ]; % Pen Width   
+% e.Fixation.R_pix = round(tmp_VA * e.ppd); 
+% e.Fixation.R_VA = e.Fixation.R_pix / e.ppd;
+% e.Fixation.R2_pix = round(e.Fixation.R_VA*[ .2 ] * e.ppd); 
+% e.Fixation.R2_VA =  e.Fixation.R2_pix/e.ppd;  % [2, 6, 8]; in pixel; of Radius; was [2, 4, 6] in pilot;     
+% e.Fixation.Width_pix = round(e.Fixation.R_pix*.2 ); 
+% e.Fixation.Width_VA = e.Fixation.Width_pix / e.ppd; %  [ .03 ]; % Pen Width   
 % 
-% params.Fixation.rect  = CenterRect( [0 0 params.Fixation.R_pix*2  params.Fixation.R_pix*2], rect );
-% params.Fixation.rect2 = CenterRect( [0 0 params.Fixation.R2_pix*2 params.Fixation.R2_pix*2], rect );
-% 
-% %%
-% %%%% INITIALIZE EYETRACKING
-% if ~isempty(ET_ON)
-%     if EyelinkInit()~= 1;
-%         error('ERROR: Eyetracking not on-line.  Make sure it is plugged in and turned on...\n')
-%         sca
-%         return;
-%     end;
-% 
-%     %%% Sets ET connection
-%     el = EyelinkInitDefaults(win);
-% 
-%     %%% Custum calibration: Adapted from EyelinkPictureCustomCalibration
-%     el.calibrationtargetsize=1; % from 2.5
-%     el.calibrationtargetwidth=.5; % from 1
-%     el.displayCalResults = 1; % [ avgError ?? ??? ]
-%     EyelinkUpdateDefaults(el)
-%     
-%     % SET UP TRACKER CONFIGURATION
-%     % Setting the proper recording resolution, proper calibration type,
-%     % as well as the data file content;
-%     width=ScreenRes.width; height=ScreenRes.height;
-%     Eyelink('command','screen_pixel_coords = %ld %ld %ld %ld', 0, 0, width-1, height-1);
-%     Eyelink('message', 'DISPLAY_COORDS %ld %ld %ld %ld', 0, 0, width-1, height-1);
-%     Eyelink('command', 'calibration_type = HV13'); % HV5 HV9 HV13 
-%     Eyelink('command', 'generate_default_targets = NO');
-%     
-%     %%%% layout of calibration points 
-%     ncal_angle = 8; % 8 angles along the larger circle (one per 45?)
-%     cal_angles = linspace(0, 2*pi, ncal_angle+1)+pi/4; cal_angles(end)=[];
-%     cal_radius = [ 5 ]*params.ppd; % Eccentricity    
-%     ncal_angle2 = 4; % 4 angles along the smaller circle (one per 45?)
-%     cal_angles2 = linspace(0, 2*pi, ncal_angle2+1); cal_angles2(end)=[];
-%     cal_radius2 = cal_radius/2; % [ 2.5 ]*s.ppd; 
-%     
-%     cal_xx = round(  width/2 + [cos(cal_angles)*cal_radius  cos(cal_angles2)*cal_radius2 ]);
-%     cal_yy = round( height/2 + [sin(cal_angles)*cal_radius  sin(cal_angles2)*cal_radius2 ]);    
-%     cal_xx = [ width/2 cal_xx ];
-%     cal_yy = [ height/2 cal_yy ];         
-%     
-%     ncal_sample = length(cal_xx)  % 4+8+1(center) = 13
-%     cal_sequence = sprintf('%d,',[ 0 1:ncal_sample] ); cal_sequence(end)=[]
-%     cal_targets = [ cal_xx; cal_yy ]; cal_targets = cal_targets(:)';
-%     cal_targets = sprintf('%d,%d ', cal_targets)
-%     
-%     % STEP 5.1 modify calibration and validation target locations
-%     Eyelink('command', ['calibration_samples = ' num2str(ncal_sample+1) ]); % +1 = including initial 0(=center)
-%     Eyelink('command', ['calibration_sequence = ' cal_sequence  ] );% first xy = fixation (=sequence 1)
-%     Eyelink('command', ['calibration_targets = ' cal_targets ]);
-%     Eyelink('command', ['validation_samples = ' num2str(ncal_sample) ]); 
-%     Eyelink('command', ['validation_sequence = ' cal_sequence  ] );
-%     Eyelink('command', ['validation_targets = ' cal_targets ]);
-% 
-%     %%% Tells the ET what data to record
-%     Eyelink('Command', 'file_sample_data = LEFT,RIGHT,GAZE,DIAMETER');
-%     Eyelink('Command', 'file_event_data = GAZE,GAZEREZ,DIAMETER,HREF,VELOCITY');
-%     Eyelink('Command', 'file_event_filter = LEFT, RIGHT, FIXATION,SACCADE, BLINK, MESSAGE, BUTTON');
-% end 
-%    
-% if ~isempty(ET_ON)
-%     EyelinkDoTrackerSetup(el);
-% end
-% 
-% %%%% Drift correction:
-% if ~isempty(ET_ON)
-% 
-%     ETbox_rect = CenterRectOnPoint([0 0 params.ETbox_size_pix], centerX, centerY);
-% 
-%     % Open a file to record to
-%     tmpETfile = 'ET_tmp.edf';
-%     Eyelink('openfile', tmpETfile);
-% 
-%     %%%% Drift correction:
-%     success = 0;
-%     while success == 0
-%         
-%         % In fact, there's an internal while loop inside the eyelink
-%         % driftcorrect code. Still, we need repeat driftcorrection until it
-%         % succeeds. Without the loop, the trial can proceed with the ESC key
-%         % press despite a poor fixation
-% 
-%         if ~isempty(params.ShowETbox)
-%             Screen('FrameOval', win, params.ETbox_color, ETbox_rect) ;%  [,penWidth]);
-%         end
-%         Screen('FrameOval', win, [0 0 0], params.Fixation.rect, params.Fixation.Width_pix)
-%         Screen('FillOval', win, [255 0 0], params.Fixation.rect2 ); %  , s.Fixation.Width_pix
-%         Screen('Flip',win);
-%         success = EyelinkDoDriftCorrection(el, [], [], 0, 0); % You can't get out of this function unless there's a success or ESC
-%         
-%     end 
-%     Eyelink('StartRecording');
-%     eye_used = Eyelink('EyeAvailable');
-%     
-% end 
-%         
-% ETdur_per_trial = params.trialLength + [ 5 ];
-% FrameRate = Screen('FrameRate', win); %  hz=Screen('FrameRate', w);
-% max_ET_nframe = FrameRate * ETdur_per_trial;
-% gazesamples = cell(length(blockNum), numTrials);
-% for i = 1:length(blockNum)
-%     for j = 1:numTrials
-%         gazesamples{i,j}.x = nan(max_ET_nframe,1);
-%         gazesamples{i,j}.y = nan(max_ET_nframe,1);
-%         gazesamples{i,j}.pa = nan(max_ET_nframe,1);
-%         gazesamples{i,j}.TS = nan(max_ET_nframe,1);
-%         gazesamples{i,j}.D = nan(max_ET_nframe,1);
-%     end
-% end
-% 
+% e.Fixation.rect  = CenterRect( [0 0 e.Fixation.R_pix*2  e.Fixation.R_pix*2], rect );
+% e.Fixation.rect2 = CenterRect( [0 0 e.Fixation.R2_pix*2 e.Fixation.R2_pix*2], rect );
+
+%%
+%%%% INITIALIZE EYETRACKING
+if ~isempty(ET_ON)
+    if EyelinkInit()~= 1;
+        error('ERROR: Eyetracking not on-line.  Make sure it is plugged in and turned on...\n')
+        sca
+        return;
+    end;
+
+    %%% Sets ET connection
+    el = EyelinkInitDefaults(win);
+
+    %%% Custum calibration: Adapted from EyelinkPictureCustomCalibration
+    el.calibrationtargetsize=1; % from 2.5
+    el.calibrationtargetwidth=.5; % from 1
+    el.displayCalResults = 1; % [ avgError ?? ??? ]
+    EyelinkUpdateDefaults(el)
+    
+    % SET UP TRACKER CONFIGURATION
+    % Setting the proper recording resolution, proper calibration type,
+    % as well as the data file content;
+    width=e.resolution.width; height=e.resolution.height;
+    Eyelink('command','screen_pixel_coords = %ld %ld %ld %ld', 0, 0, width-1, height-1);
+    Eyelink('message', 'DISPLAY_COORDS %ld %ld %ld %ld', 0, 0, width-1, height-1);
+    Eyelink('command', 'calibration_type = HV13'); % HV5 HV9 HV13 
+    Eyelink('command', 'generate_default_targets = NO');
+    
+    %%%% layout of calibration points 
+    ncal_angle = 8; % 8 angles along the larger circle (one per 45?)
+    cal_angles = linspace(0, 2*pi, ncal_angle+1)+pi/4; cal_angles(end)=[];
+    cal_radius = [ 5 ]*e.ppd; % Eccentricity    
+    ncal_angle2 = 4; % 4 angles along the smaller circle (one per 45?)
+    cal_angles2 = linspace(0, 2*pi, ncal_angle2+1); cal_angles2(end)=[];
+    cal_radius2 = cal_radius/2; % [ 2.5 ]*s.ppd; 
+    
+    cal_xx = round(  width/2 + [cos(cal_angles)*cal_radius  cos(cal_angles2)*cal_radius2 ]);
+    cal_yy = round( height/2 + [sin(cal_angles)*cal_radius  sin(cal_angles2)*cal_radius2 ]);    
+    cal_xx = [ width/2 cal_xx ];
+    cal_yy = [ height/2 cal_yy ];         
+    
+    ncal_sample = length(cal_xx)  % 4+8+1(center) = 13
+    cal_sequence = sprintf('%d,',[ 0 1:ncal_sample] ); cal_sequence(end)=[]
+    cal_targets = [ cal_xx; cal_yy ]; cal_targets = cal_targets(:)';
+    cal_targets = sprintf('%d,%d ', cal_targets)
+    
+    % STEP 5.1 modify calibration and validation target locations
+    Eyelink('command', ['calibration_samples = ' num2str(ncal_sample+1) ]); % +1 = including initial 0(=center)
+    Eyelink('command', ['calibration_sequence = ' cal_sequence  ] );% first xy = fixation (=sequence 1)
+    Eyelink('command', ['calibration_targets = ' cal_targets ]);
+    Eyelink('command', ['validation_samples = ' num2str(ncal_sample) ]); 
+    Eyelink('command', ['validation_sequence = ' cal_sequence  ] );
+    Eyelink('command', ['validation_targets = ' cal_targets ]);
+
+    %%% Tells the ET what data to record
+    Eyelink('Command', 'file_sample_data = LEFT,RIGHT,GAZE,DIAMETER');
+    Eyelink('Command', 'file_event_data = GAZE,GAZEREZ,DIAMETER,HREF,VELOCITY');
+    Eyelink('Command', 'file_event_filter = LEFT, RIGHT, FIXATION,SACCADE, BLINK, MESSAGE, BUTTON');
+end 
+   
+if ~isempty(ET_ON)
+    EyelinkDoTrackerSetup(el);
+end
+
+%%%% Drift correction:
+if ~isempty(ET_ON)
+
+    ETbox_rect = CenterRectOnPoint([0 0 e.ETbox_size_pix], centerX, centerY);
+
+    % Open a file to record to
+    tmpETfile = 'ET_tmp.edf';
+    Eyelink('openfile', tmpETfile);
+
+    %%%% Drift correction:
+    success = 0;
+    while success == 0
+        
+        % In fact, there's an internal while loop inside the eyelink
+        % driftcorrect code. Still, we need repeat driftcorrection until it
+        % succeeds. Without the loop, the trial can proceed with the ESC key
+        % press despite a poor fixation
+
+        if ~isempty(e.ShowETbox)
+            Screen('FrameOval', win, e.ETbox_color, ETbox_rect) ;%  [,penWidth]);
+        end
+        Screen('FrameOval', win, [0 0 0], e.Fixation.rect, e.Fixation.Width_pix)
+        Screen('FillOval', win, [255 0 0], e.Fixation.rect2 ); %  , s.Fixation.Width_pix
+        Screen('Flip',win);
+        success = EyelinkDoDriftCorrection(el, [], [], 0, 0); % You can't get out of this function unless there's a success or ESC
+        
+    end 
+    Eyelink('StartRecording');
+    eye_used = Eyelink('EyeAvailable');
+    
+end 
+        
+ETdur_per_trial = e.trialLength + [ 5 ];
+FrameRate = Screen('FrameRate', win); %  hz=Screen('FrameRate', w);
+max_ET_nframe = FrameRate * ETdur_per_trial;
+gazesamples = cell(length(blockNum), numTrials);
+for i = 1:length(blockNum)
+    for j = 1:numTrials
+        gazesamples{i,j}.x = nan(max_ET_nframe,1);
+        gazesamples{i,j}.y = nan(max_ET_nframe,1);
+        gazesamples{i,j}.pa = nan(max_ET_nframe,1);
+        gazesamples{i,j}.TS = nan(max_ET_nframe,1);
+        gazesamples{i,j}.D = nan(max_ET_nframe,1);
+    end
+end
+
 
 %% %%%%%%%%%%%%%%%%%
    % timing model  %
