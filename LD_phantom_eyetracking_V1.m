@@ -52,9 +52,9 @@ exp.date = datestr(now,30);
 exp.initialFixation = 6;        % in seconds
 exp.finalFixation = 0;          % in seconds
 exp.stimDur = 1.6*2;        % in seconds. 1.6 sec refers to sine wave grating 1.6 = 2cycles/1.13cyc.sec-1 mutiplied by 2 for back and forth
-exp.stimsPerBlock = 5;      % number of back and forth laps of the stimulus drift
-exp.blockLength = exp.stimDur*exp.stimsPerBlock;            % in seconds
-exp.betweenBlocks = 16;          % in seconds
+exp.stimsPerBlock = 3;      % number of back-and-forth laps of the stimulus drift
+exp.blockLength = ceil(exp.stimDur*exp.stimsPerBlock);            % in seconds
+exp.betweenBlocks = 2;          % in seconds
 exp.flipsPerSec = 12;           % number of phase changes we want from the visual stimulus, and thus the number of times we want to change visual stimulation on the screen
 exp.flipWin = 1/exp.flipsPerSec;         % in seconds then actually in 1 sec the stimuli will change 12 times 
 %e.numBlocks = 12;  % 6 for single and 6 for pair...
@@ -76,7 +76,7 @@ exp.numConds = length(exp.conds);
 % with line of code below we will have 1 condition per block, randomized. we might need to change that
 % later, to have the conditions randomized within each block
 exp.condShuffle = Shuffle(repmat([1:exp.numConds],1,1)); % %e.stimsPerBlock make same number of blocks with each condition, randomize order
-exp.numBlocks = length(exp.condShuffle)*2;
+exp.numBlocks = length(exp.condShuffle)*5;
 exp.fixSizeDeg =  .6;            % in degrees, the size of the biggest white dot in the fixation
 exp.repsPerRun = 2;              % repetitions of each object type x eation
 exp.totalTime = exp.initialFixation + ((exp.numBlocks-1) * (exp.blockLength + exp.betweenBlocks)) + exp.blockLength + exp.finalFixation;

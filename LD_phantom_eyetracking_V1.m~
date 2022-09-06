@@ -52,9 +52,9 @@ exp.date = datestr(now,30);
 exp.initialFixation = 6;        % in seconds
 exp.finalFixation = 0;          % in seconds
 exp.stimDur = 1.6*2;        % in seconds. 1.6 sec refers to sine wave grating 1.6 = 2cycles/1.13cyc.sec-1 mutiplied by 2 for back and forth
-exp.stimsPerBlock = 5;      % number of back and forth laps of the stimulus drift
+exp.stimsPerBlock = 3;      % number of back-and forth laps of the stimulus drift
 exp.blockLength = exp.stimDur*exp.stimsPerBlock;            % in seconds
-exp.betweenBlocks = 16;          % in seconds
+exp.betweenBlocks = 2;          % in seconds
 exp.flipsPerSec = 12;           % number of phase changes we want from the visual stimulus, and thus the number of times we want to change visual stimulation on the screen
 exp.flipWin = 1/exp.flipsPerSec;         % in seconds then actually in 1 sec the stimuli will change 12 times 
 %e.numBlocks = 12;  % 6 for single and 6 for pair...
@@ -86,30 +86,30 @@ exp.allFlips = (0:exp.flipWin:exp.totalTime);
 exp.backgroundColor = [127 127 127];%[108.3760 108.3760 108.3760];%;  % color based on minimum gating luminance 
 exp.fontSize = 12; %26;
 
-%%%% RSVP task setup
-exp.targetProb = .1;              % proportion of trials where the target letters will come up
-exp.firstPossibleTarget = 20;     % no targets in the first X flips
-exp.lastPossibleTarget = 20;      % no targets in the last X flips
-exp.targetLetters = {'J' 'K'};
-exp.distractors = {'A' 'S' 'D' 'F' 'G' 'H' 'L'};
-exp.trialFreq = 0.5;               % duration of fixation trials (seconds) (time it takes to switch from one letter to blank then back to one letter)
-flipsPerTrial = exp.trialFreq/exp.flipWin;
-exp.trialDur = exp.trialFreq/2;               % duration in seconds of the letter presentation of each fixation trial (.25s letter ON, .25 letter OFF)
-exp.trialOnFlips = floor(exp.trialDur/exp.flipWin); %number of flips the letter is on over the course of 1 trial
-%e.cueColor = 0;%[50 50 255];   % letter color
-exp.totalLetters = (exp.totalTime/exp.trialFreq); %total number of letters that COULD BE presented during the e (though based on prob, much less will be presented)
-exp.responseBack = 3;    % the response is correct if the preceding N letters were the target
-%e.letterTiming = (0:e.RSVPrate:e.totalTime);
-
-%%%% character identification task
-exp.targets = [];
-exp.targetTimes = [];
-exp.responses = [];
-exp.responseTimes=[];
-exp.accuracy = 0;
-exp.meanRT = 0;
-
-taskText = 'characters';
+% %%%% RSVP task setup
+% exp.targetProb = .1;              % proportion of trials where the target letters will come up
+% exp.firstPossibleTarget = 20;     % no targets in the first X flips
+% exp.lastPossibleTarget = 20;      % no targets in the last X flips
+% exp.targetLetters = {'J' 'K'};
+% exp.distractors = {'A' 'S' 'D' 'F' 'G' 'H' 'L'};
+% exp.trialFreq = 0.5;               % duration of fixation trials (seconds) (time it takes to switch from one letter to blank then back to one letter)
+% flipsPerTrial = exp.trialFreq/exp.flipWin;
+% exp.trialDur = exp.trialFreq/2;               % duration in seconds of the letter presentation of each fixation trial (.25s letter ON, .25 letter OFF)
+% exp.trialOnFlips = floor(exp.trialDur/exp.flipWin); %number of flips the letter is on over the course of 1 trial
+% %e.cueColor = 0;%[50 50 255];   % letter color
+% exp.totalLetters = (exp.totalTime/exp.trialFreq); %total number of letters that COULD BE presented during the e (though based on prob, much less will be presented)
+% exp.responseBack = 3;    % the response is correct if the preceding N letters were the target
+% %e.letterTiming = (0:e.RSVPrate:e.totalTime);
+% 
+% %%%% character identification task
+% exp.targets = [];
+% exp.targetTimes = [];
+% exp.responses = [];
+% exp.responseTimes=[];
+% exp.accuracy = 0;
+% exp.meanRT = 0;
+% 
+% taskText = 'characters';
 
 
 
@@ -189,9 +189,6 @@ exp.ppd = pi* rect(3) / (atan(exp.screenWidth/exp.viewingDist/2)) / 360;
 exp.fixSize = round(exp.fixSizeDeg*exp.ppd);
 exp.gaborHeight = round(exp.stim.gaborHDeg*exp.ppd);                 % in pixels, the size of our objects
 exp.gaborWidth = round(exp.stim.gaborWDeg*exp.ppd);                 % in pixels, the size of our objects
-
-xc = rect(3)/2; % rect and center, with the flexibility to resize & shift center - change vars to zero if not used.
-yc = rect(4)/2+exp.vertOffset;
 
 
 %% create sine wave gratings and store all phase transitions in structure
@@ -314,7 +311,7 @@ Screen(w, 'DrawText', 'Waiting for Backtick.', 10,10,[0 0 0]);
 Screen(w, 'Flip', 0);
 KbTriggerWait(53, deviceNumber);
 
-DrawFormattedText(w,'Attend to the fixation circle: press 1 as soon as letter J appears on the screen,\n\n and press 2 as soon as letter K appears on the screen. \n\n Press Space to start'...
+DrawFormattedText(w,'Attend to the fixation circle'... % : press 1 as soon as letter J appears on the screen,\n\n and press 2 as soon as letter K appears on the screen. \n\n Press Space to start'...
     ,'center', 'center',[0 0 0]);
 Screen(w, 'Flip', 0);
 KbTriggerWait(KbName('Space'), deviceNumber);
@@ -350,7 +347,7 @@ while n+1 < length(exp.allFlips)
     [exp.longFormBlocks(n+1),exp.longFormFlicker(n+1)]
     thisCond = exp.longFormConds(n+1);
 
-    KbQueueStart();
+%     KbQueueStart();
     %%%%%%%%%%% FLIP %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     if n == 0
         [VBLT, exp.startRun, FlipT, missed] = Screen(w, 'Flip', 0);%[VBLTimestamp StimulusOnsetTime FlipTimestamp Missed] = Screen('Flip', windowPtr [, when] [, dontclear]...
@@ -381,56 +378,56 @@ while n+1 < length(exp.allFlips)
         
     end
     
-    % select new character if starting new trial
-    if mod(n, flipsPerTrial) == 0
-
-%         % draw character
-%         l = randperm(numel(letters));
-%         fixChar = letters(l(1));
-          fixChar = exp.letterSequence(n+1);
-
-       if strcmp(fixChar,'J') == 1
-            exp.targets = [exp.targets, 1];
-            exp.targetTimes = [exp.targetTimes, GetSecs - exp.startRun];
-        elseif strcmp(fixChar,'K') == 1
-            exp.targets = [exp.targets, 2];
-            exp.targetTimes = [exp.targetTimes, GetSecs - exp.startRun];
-       end
-
-
-    end
+%     % select new character if starting new trial
+%     if mod(n, flipsPerTrial) == 0
+% 
+% %         % draw character
+% %         l = randperm(numel(letters));
+% %         fixChar = letters(l(1));
+%           fixChar = exp.letterSequence(n+1);
+% 
+%        if strcmp(fixChar,'J') == 1
+%             exp.targets = [exp.targets, 1];
+%             exp.targetTimes = [exp.targetTimes, GetSecs - exp.startRun];
+%         elseif strcmp(fixChar,'K') == 1
+%             exp.targets = [exp.targets, 2];
+%             exp.targetTimes = [exp.targetTimes, GetSecs - exp.startRun];
+%        end
+% 
+% 
+%     end
     
     %%%% draw fixation letter in fixation circle
     
-    if mod(n, flipsPerTrial) <= exp.trialOnFlips
+%     if mod(n, flipsPerTrial) <= exp.trialOnFlips
         Screen('FillOval', w,[255 255 255], [xc-round(exp.fixSize/2) yc-round(exp.fixSize/2) xc+round(exp.fixSize/2) yc+round(exp.fixSize/2)]);%white fixation solid circle
-        %DrawFormattedText(w, fixChar, 'center', 8+vertOffset+rect(4)/2,0); %either text function works
-        %Screen('DrawText', w, fixChar, -5+rect(3)/2, -10+vertOffset+rect(4)/2,[0 0 0]);
-        [width,height] = RectSize(Screen('TextBounds',w,fixChar{:}));
-        Screen('DrawText', w, fixChar{:}, xc-width/2 +0.3, yc-height/2-0.2,[0 0 0]);
-     else
-        Screen('FillOval', w,[255 255 255], [xc-round(exp.fixSize/2) yc-round(exp.fixSize/2) xc+round(exp.fixSize/2) yc+round(exp.fixSize/2)]);%white fixation solid circle
-   
-    end
+%         %DrawFormattedText(w, fixChar, 'center', 8+vertOffset+rect(4)/2,0); %either text function works
+%         %Screen('DrawText', w, fixChar, -5+rect(3)/2, -10+vertOffset+rect(4)/2,[0 0 0]);
+%         [width,height] = RectSize(Screen('TextBounds',w,fixChar{:}));
+%         Screen('DrawText', w, fixChar{:}, xc-width/2 +0.3, yc-height/2-0.2,[0 0 0]);
+%      else
+%         Screen('FillOval', w,[255 255 255], [xc-round(exp.fixSize/2) yc-round(exp.fixSize/2) xc+round(exp.fixSize/2) yc+round(exp.fixSize/2)]);%white fixation solid circle
+%    
+%     end
 
 %     n
 
-    KbQueueStop();
-    [pressed, firstPress]= KbQueueCheck();
-    
-    %%%% character identification
-    if (pressed == 1) && ((firstPress(KbName('1!')) > 0) || (firstPress(KbName('2@')) > 0))
-        if firstPress(KbName('1!')) > 0
-            exp.responses = [exp.responses, 1];
-            exp.responseTimes = [exp.responseTimes, firstPress(KbName('1!')) - exp.startRun];
-        elseif firstPress(KbName('2@')) > 0
-            exp.responses = [exp.responses, 2];
-            exp.responseTimes = [exp.responseTimes, firstPress(KbName('2@')) - exp.startRun];
-        end
-    end
-
-    %%%% refresh queue for next character
-    KbQueueFlush();
+%     KbQueueStop();
+%     [pressed, firstPress]= KbQueueCheck();
+%     
+%     %%%% character identification
+%     if (pressed == 1) && ((firstPress(KbName('1!')) > 0) || (firstPress(KbName('2@')) > 0))
+%         if firstPress(KbName('1!')) > 0
+%             exp.responses = [exp.responses, 1];
+%             exp.responseTimes = [exp.responseTimes, firstPress(KbName('1!')) - exp.startRun];
+%         elseif firstPress(KbName('2@')) > 0
+%             exp.responses = [exp.responses, 2];
+%             exp.responseTimes = [exp.responseTimes, firstPress(KbName('2@')) - exp.startRun];
+%         end
+%     end
+% 
+%     %%%% refresh queue for next character
+%     KbQueueFlush();
     n = n+1;
    
 end
@@ -441,37 +438,37 @@ end
 
 exp.runTime = GetSecs - exp.startRun;
 
-% analyse task accuracy
-responseTimes = exp.responseTimes; % make copies as we are editing these
-responses = exp.responses;
-responseWindow = 1.5; % responses later than this count as a miss
-for t = 1:size(exp.targetTimes,2)
-    targetTime = exp.targetTimes(t);
-    target = exp.targets(t);
-    exp.hits(t) = 0; % default is a miss with RT of nan
-    exp.RTs(t) = nan;
-    for r = 1:size(responseTimes,2)
-        if ismember(responses(r),  target) && responseTimes(r) > targetTime % if response is correct and happened after target
-            rt = responseTimes(r)-targetTime;
-            if rt < responseWindow % and if response happened within a second of target
-                exp.hits(t) = 1; % mark a hit
-                exp.RTs(t) = rt; % store the RT
-                responseTimes(r) = []; % delete this response so it can't be reused
-                responses(r) = [];
-                break % stop looking for responses to this target
-            end
-        end
-    end
-end
-exp.accuracy = (sum(exp.hits)/size(exp.targetTimes,2))*100;
-exp.meanRT = nanmean(exp.RTs);
+% % analyse task accuracy
+% responseTimes = exp.responseTimes; % make copies as we are editing these
+% responses = exp.responses;
+% responseWindow = 1.5; % responses later than this count as a miss
+% for t = 1:size(exp.targetTimes,2)
+%     targetTime = exp.targetTimes(t);
+%     target = exp.targets(t);
+%     exp.hits(t) = 0; % default is a miss with RT of nan
+%     exp.RTs(t) = nan;
+%     for r = 1:size(responseTimes,2)
+%         if ismember(responses(r),  target) && responseTimes(r) > targetTime % if response is correct and happened after target
+%             rt = responseTimes(r)-targetTime;
+%             if rt < responseWindow % and if response happened within a second of target
+%                 exp.hits(t) = 1; % mark a hit
+%                 exp.RTs(t) = rt; % store the RT
+%                 responseTimes(r) = []; % delete this response so it can't be reused
+%                 responses(r) = [];
+%                 break % stop looking for responses to this target
+%             end
+%         end
+%     end
+% end
+% exp.accuracy = (sum(exp.hits)/size(exp.targetTimes,2))*100;
+% exp.meanRT = nanmean(exp.RTs);
 
 savedir = fullfile(exp.root,'data',subject,session,'fillingin_rsvp_v1');
 if ~exist(savedir); mkdir(savedir); end
 savename = fullfile(savedir, sprtinf('s%d_fillingin_rsvp_v1_sn%d_rn_%d_%d.mat',subject,num2str(exp.scanNum),num2str(exp.runNum),exp.date));
 save(savename,'exp');
 
-KbQueueRelease();
+%KbQueueRelease();
 ShowCursor;
 Screen('Close');
 Screen('CloseAll');
