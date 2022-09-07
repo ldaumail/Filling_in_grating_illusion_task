@@ -47,17 +47,6 @@ exp.session = session;
 exp.root = pwd;
 exp.date = datestr(now,30);
 
-%%%% sine wave grating timing
-
-exp.initialFixation = 6;        % in seconds
-exp.finalFixation = 0;          % in seconds
-exp.stimDur = 1.6*2;        % in seconds. 1.6 sec refers to sine wave grating 1.6 = 2cycles/1.13cyc.sec-1 mutiplied by 2 for back and forth
-exp.stimsPerBlock = 3;      % number of back-and-forth laps of the stimulus drift
-exp.blockLength = ceil(exp.stimDur*exp.stimsPerBlock);            % in seconds
-exp.betweenBlocks = 2;          % in seconds
-exp.flipsPerSec = 12;           % number of phase changes we want from the visual stimulus, and thus the number of times we want to change visual stimulation on the screen
-exp.flipWin = 1/exp.flipsPerSec;         % in seconds then actually in 1 sec the stimuli will change 12 times 
-%e.numBlocks = 12;  % 6 for single and 6 for pair...
 
 %%%% 2D sine wave grating properties
 exp.stim.spatialFreqDeg = 0.5; %0.286;                                          % cycles per degree of visual angle
@@ -70,15 +59,27 @@ exp.stim.contrastMultiplicator = .075;                                     % for
 exp.stim.contrastOffset = [.5 .5 .5 0];                                  % for procedural gabor
 exp.stim.motionRate = 1.13*360 ;  %1.3                                        % 1.3 cycles per second = 360 deg of phase *1.3 per sec
 
-%%%% conditions & layout
+%%%% sine wave grating timing (within block scale)
+
+exp.initialFixation = 6;        % in seconds
+exp.finalFixation = 0;          % in seconds
+exp.stimDur = 1.6*2;        % in seconds. 1.6 sec refers to sine wave grating 1.6 = 2cycles/1.13cyc.sec-1 mutiplied by 2 for back and forth
+exp.stimsPerBlock = 3;      % number of back-and-forth laps of the stimulus drift
+exp.blockLength = ceil(exp.stimDur*exp.stimsPerBlock);            % in seconds
+exp.betweenBlocks = 2;          % in seconds
+exp.flipsPerSec = 12;           % number of phase changes we want from the visual stimulus, and thus the number of times we want to change visual stimulation on the screen
+exp.flipWin = 1/exp.flipsPerSec;         % in seconds then actually in 1 sec the stimuli will change 12 times 
+%e.numBlocks = 12;  % 6 for single and 6 for pair...
+
+%%%% conditions & layout (across blocks scale)
 exp.conds = {'horSingleL','horSingleR','vertDoubleIndir','horDoubleIndir'}; %'double-oppdir'
 exp.numConds = length(exp.conds);
 % with line of code below we will have 1 condition per block, randomized. we might need to change that
 % later, to have the conditions randomized within each block
-exp.condShuffle = Shuffle(repmat([1:exp.numConds],1,1)); % %e.stimsPerBlock make same number of blocks with each condition, randomize order
-exp.numBlocks = length(exp.condShuffle)*5;
+exp.repsPerRun = 5;              % repetitions of each object type x eation
+exp.numBlocks = exp.numConds*exp.repsPerRun;
+exp.condShuffle = Shuffle(repmat([1:exp.numConds],1,exp.repsPerRun)); % %e.stimsPerBlock make same number of blocks with each condition, randomize order
 exp.fixSizeDeg =  .6;            % in degrees, the size of the biggest white dot in the fixation
-exp.repsPerRun = 2;              % repetitions of each object type x eation
 exp.totalTime = exp.initialFixation + ((exp.numBlocks-1) * (exp.blockLength + exp.betweenBlocks)) + exp.blockLength + exp.finalFixation;
 exp.allFlips = (0:exp.flipWin:exp.totalTime);
 
@@ -129,16 +130,10 @@ length(exp.longFormBlocks)
 %bottom), pair) and stimulus orientation
 %longform condition timing, which aligns with the flicker timing
 exp.longFormConds = zeros(1,exp.initialFixation);
-for n = 1:exp.numBlocks/length(exp.condShuffle)
-    if n < exp.numBlocks/length(exp.condShuffle)
-        len = length(exp.condShuffle);
-    else
-        len = length(exp.condShuffle)-1;
-    end
-    for i = (1:len)
-        exp.longFormConds = [exp.longFormConds, repmat(exp.condShuffle(i),1,exp.blockLength)]; % blocks
-        exp.longFormConds = [exp.longFormConds, zeros(1,exp.betweenBlocks)]; % inter-block blanks
-    end
+for i = 1:exp.numBlocks-1
+    exp.longFormConds = [exp.longFormConds, repmat(exp.condShuffle(i),1,exp.blockLength)]; % blocks
+    exp.longFormConds = [exp.longFormConds, zeros(1,exp.betweenBlocks)]; % inter-block blanks
+    
 end
 exp.longFormConds = [exp.longFormConds, repmat(exp.condShuffle(end),1,exp.blockLength), zeros(1,exp.finalFixation)]; % the last block
 exp.longFormConds = Expand(exp.longFormConds, exp.flipsPerSec,1);
@@ -159,16 +154,8 @@ end
 %%%%%%%%%%%%%%%
 % open screen %
 %%%%%%%%%%%%%%%
-
-%HideCursor;
-Priority(9);
-
-%%%% open screen
-screen=max(Screen('Screens'));
-[w, rect]=Screen('OpenWindow',screen,exp.backgroundColor,[100 100 900 600],[],[],[],[],kPsychNeed32BPCFloat); %might need to switch 900 and 600 by 1600 and 1200 for room 425
-%[w, rect]=Screen('OpenWindow',screen,exp.backgroundColor,[],[],[],[],[],kPsychNeed32BPCFloat); %might need to switch 900 and 600 by 1600 and 1200 for room 425
-Screen(w, 'TextSize', exp.fontSize);
-Screen('BlendFunction', w, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+sca
+sca
 
 %%%% gamma correction
 % if e.gammaCorrect > 0
@@ -303,8 +290,8 @@ exp.RRect =  CenterRectOnPoint([0 0 exp.gaborWidth exp.gaborHeight],xR,yR);
 
 %% Eyetracking parameters
 % eyetracking on (1) or off (0)
- ET = 0;
-% EyelinkSetup(0);
+ ET = 1;
+ EyelinkSetup(0);
 
 %% %%%% initial window - wait for backtick
 Screen(w, 'DrawText', 'Waiting for Backtick.', 10,10,[0 0 0]);
@@ -334,16 +321,16 @@ gray = repmat(min(min(squeeze(exp.LWave(1,:,:)),[],1)), [1,3]);
 Screen('FillRect', w, gray);
     
 if ET
-    EyeData.mx{1}=[];
-    EyeData.my{1}=[];
-    EyeData.ma{1}=[];
-    EyeData.FixDoneT{1} = [];
+    EyeData.mx=[];
+    EyeData.my=[];
+    EyeData.ma=[];
+    EyeData.FixDoneT = [];
 end
-% EyeStart(1) = GetSecs(); %time we start caring about eyetracking
-% currPosID = i;
-% run FixCheck; %check eyetracker
-while n+1 < length(exp.allFlips)
+%EyeStart = GetSecs(); %time we start caring about eyetracking
+%currPosID = i;
 
+while n+1 < length(exp.allFlips)
+run FixCheck; %check eyetracker
     [exp.longFormBlocks(n+1),exp.longFormFlicker(n+1)]
     thisCond = exp.longFormConds(n+1);
 
@@ -401,7 +388,9 @@ while n+1 < length(exp.allFlips)
     
 %     if mod(n, flipsPerTrial) <= exp.trialOnFlips
         Screen('FillOval', w,[255 255 255], [xc-round(exp.fixSize/2) yc-round(exp.fixSize/2) xc+round(exp.fixSize/2) yc+round(exp.fixSize/2)]);%white fixation solid circle
-%         %DrawFormattedText(w, fixChar, 'center', 8+vertOffset+rect(4)/2,0); %either text function works
+        Screen('FillOval', w,[0 0 0], [xc-round(exp.fixSize/4) yc-round(exp.fixSize/4) xc+round(exp.fixSize/4) yc+round(exp.fixSize/4)]);%black fixation solid circle
+
+        %         %DrawFormattedText(w, fixChar, 'center', 8+vertOffset+rect(4)/2,0); %either text function works
 %         %Screen('DrawText', w, fixChar, -5+rect(3)/2, -10+vertOffset+rect(4)/2,[0 0 0]);
 %         [width,height] = RectSize(Screen('TextBounds',w,fixChar{:}));
 %         Screen('DrawText', w, fixChar{:}, xc-width/2 +0.3, yc-height/2-0.2,[0 0 0]);
@@ -463,9 +452,9 @@ exp.runTime = GetSecs - exp.startRun;
 % exp.accuracy = (sum(exp.hits)/size(exp.targetTimes,2))*100;
 % exp.meanRT = nanmean(exp.RTs);
 
-savedir = fullfile(exp.root,'data',subject,session,'fillingin_rsvp_v1');
+savedir = fullfile(exp.root,'data',sprintf('s%d/sess%d/',subject,session),'fillingin_rsvp_v1');
 if ~exist(savedir); mkdir(savedir); end
-savename = fullfile(savedir, sprtinf('s%d_fillingin_rsvp_v1_sn%d_rn_%d_%d.mat',subject,num2str(exp.scanNum),num2str(exp.runNum),exp.date));
+savename = fullfile(savedir, strcat(sprintf('/s%d_fillingin_rsvp_v1_sn%d_rn%d_date%s',subject,exp.scanNum,exp.runNum,num2str(exp.date)), '.mat'));
 save(savename,'exp');
 
 %KbQueueRelease();

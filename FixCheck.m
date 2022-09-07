@@ -11,10 +11,10 @@ if ET
         y = evt.gy(evt.gy~=el.MISSING_DATA);
         a = evt.pa(evt.pa~=-el.MISSING_DATA);
         fixT = GetSecs(); %doesn't account for blinks, so fix this to get accurate timestamps
-        EyeData.mx{1}=[x];
-        EyeData.my{1}=[y];
-        EyeData.ma{1}=[a];
-        EyeData.FixDoneT{1} = [fixT]; % record each time we get valid eyetracking data point
+        EyeData.mx=[EyeData.mx x];
+        EyeData.my=[EyeData.my y];
+        EyeData.ma=[EyeData.ma a];
+        EyeData.FixDoneT = [EyeData.FixDoneT fixT]; % record each time we get valid eyetracking data point
 
         % check whether fix the center
         if ~ (isempty(x) || isempty(y) || isempty(a))
