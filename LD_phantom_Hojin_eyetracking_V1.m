@@ -20,7 +20,6 @@ end
 %%%% keyboard
 [keyboardIndices, productNames, ~] = GetKeyboardIndices ;
 deviceNumber = keyboardIndices(1);
-responseKeys = zeros(1,256);
 responseKeys(KbName('1!'))=1; % button box 1
 responseKeys(KbName('2@'))=1; % button box 2
 
@@ -154,8 +153,16 @@ end
 %%%%%%%%%%%%%%%
 % open screen %
 %%%%%%%%%%%%%%%
-sca
-sca
+
+%HideCursor;
+Priority(9);
+
+%%%% open screen
+screen=max(Screen('Screens'));
+[w, rect]=Screen('OpenWindow',screen,exp.backgroundColor,[100 100 900 600],[],[],[],[],kPsychNeed32BPCFloat); %might need to switch 900 and 600 by 1600 and 1200 for room 425
+%[w, rect]=Screen('OpenWindow',screen,exp.backgroundColor,[],[],[],[],[],kPsychNeed32BPCFloat); %might need to switch 900 and 600 by 1600 and 1200 for room 425
+Screen(w, 'TextSize', exp.fontSize);
+Screen('BlendFunction', w, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 %%%% gamma correction
 % if e.gammaCorrect > 0
@@ -289,9 +296,148 @@ exp.RRect =  CenterRectOnPoint([0 0 exp.gaborWidth exp.gaborHeight],xR,yR);
 % exp.letterSequence = Expand(exp.letterSequence,flipsPerTrial,1);%e.flipsPerSec,1); 
 
 %% Eyetracking parameters
-% eyetracking on (1) or off (0)
- ET = 1;
- EyelinkSetup(0);
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+ET_ON = 1;
+
+% This applies to actual trials
+params.AbortTrialWhenExceeded = [ ] ; % During actual expt
+
+% This applies to practice trials (turned off during actual expt)
+params.ShowETbox = [ 1  ]; % during practice
+params.ETbox = [  3  ];% [ 3+.5 ]; % in VA; actually, diameter of a circle
+params.ETbox_size_pix = [ params.ETbox params.ETbox ] * params.ppd; 
+params.ETbox_color = [ 255 255 255 ]*.6;
+% params.ShowRealTimeGaze = [ 1 ]; % [] or [ something ]
+params.ShowRealTimeGaze = [  ]; % [] or [ something ]
+params.nGazetoShow = [ 60 ]; % current~past N fixations
+params.nGazeAllowed =  [ 12 ];% [ 12 ]=1st session of AP,DM; % Abort the trial if recent N trials were ALL outside the circle
+cmap_gaze = [255 0 0]; % repmat([255 0 0]', 1, s.nGazetoShow); 
+cmap_gaze_exceed = [255 0 0]; % repmat([0 0 255]', 1, s.nGazetoShow);    
+
+params.Fixation.Color = [1 1 1]*255*0; % [1 1 1]*[ 128*.4 ]; % [ s.Background*.7 ]; % Inside Fixation(Cross) s.Black(1); %
+params.Fixation.Color2 = [ params.Fixation.Color ]; % [1 1 1]*[ 10] ; % [ 255 0 0 ]; % [0 0 0]
+% tmp_VA = [ .25 ];% .25? radius = .5? in diameter  %% [.32 ];  % [2, 6, 8]; in pixel; of Radius; was [2, 4, 6] in pilot; 
+tmp_VA = [ .1 ];% .25? radius = .5? in diameter  %% [.32 ];  % [2, 6, 8]; in pixel; of Radius; was [2, 4, 6] in pilot; 
+params.Fixation.R_pix = round(tmp_VA * params.ppd); 
+params.Fixation.R_VA = params.Fixation.R_pix / params.ppd;
+params.Fixation.R2_pix = round(params.Fixation.R_VA*[ .2 ] * params.ppd); 
+params.Fixation.R2_VA =  params.Fixation.R2_pix/params.ppd;  % [2, 6, 8]; in pixel; of Radius; was [2, 4, 6] in pilot;     
+params.Fixation.Width_pix = round(params.Fixation.R_pix*.2 ); 
+params.Fixation.Width_VA = params.Fixation.Width_pix / params.ppd; %  [ .03 ]; % Pen Width   
+
+params.Fixation.rect  = CenterRect( [0 0 params.Fixation.R_pix*2  params.Fixation.R_pix*2], rect );
+params.Fixation.rect2 = CenterRect( [0 0 params.Fixation.R2_pix*2 params.Fixation.R2_pix*2], rect );
+
+%%%% INITIALIZE EYETRACKING
+if ~isempty(ET_ON)
+    if EyelinkInit()~= 1;
+        error('ERROR: Eyetracking not on-line.  Make sure it is plugged in and turned on...\n')
+        sca
+        return;
+    end;
+
+    %%% Sets ET connection
+    el = EyelinkInitDefaults(win);
+
+    %%% Custum calibration: Adapted from EyelinkPictureCustomCalibration
+    el.calibrationtargetsize=1; % from 2.5
+    el.calibrationtargetwidth=.5; % from 1
+    el.displayCalResults = 1; % [ avgError ?? ??? ]
+    EyelinkUpdateDefaults(el)
+    
+    % SET UP TRACKER CONFIGURATION
+    % Setting the proper recording resolution, proper calibration type,
+    % as well as the data file content;
+    width=ScreenRes.width; height=ScreenRes.height;
+    Eyelink('command','screen_pixel_coords = %ld %ld %ld %ld', 0, 0, width-1, height-1);
+    Eyelink('message', 'DISPLAY_COORDS %ld %ld %ld %ld', 0, 0, width-1, height-1);
+    Eyelink('command', 'calibration_type = HV13'); % HV5 HV9 HV13 
+    Eyelink('command', 'generate_default_targets = NO');
+    
+    %%%% layout of calibration points 
+    ncal_angle = 8; % 8 angles along the larger circle (one per 45?)
+    cal_angles = linspace(0, 2*pi, ncal_angle+1)+pi/4; cal_angles(end)=[];
+    cal_radius = [ 5 ]*params.ppd; % Eccentricity    
+    ncal_angle2 = 4; % 4 angles along the smaller circle (one per 45?)
+    cal_angles2 = linspace(0, 2*pi, ncal_angle2+1); cal_angles2(end)=[];
+    cal_radius2 = cal_radius/2; % [ 2.5 ]*s.ppd; 
+    
+    cal_xx = round(  width/2 + [cos(cal_angles)*cal_radius  cos(cal_angles2)*cal_radius2 ]);
+    cal_yy = round( height/2 + [sin(cal_angles)*cal_radius  sin(cal_angles2)*cal_radius2 ]);    
+    cal_xx = [ width/2 cal_xx ];
+    cal_yy = [ height/2 cal_yy ];         
+    
+    ncal_sample = length(cal_xx)  % 4+8+1(center) = 13
+    cal_sequence = sprintf('%d,',[ 0 1:ncal_sample] ); cal_sequence(end)=[]
+    cal_targets = [ cal_xx; cal_yy ]; cal_targets = cal_targets(:)';
+    cal_targets = sprintf('%d,%d ', cal_targets)
+    
+    % STEP 5.1 modify calibration and validation target locations
+    Eyelink('command', ['calibration_samples = ' num2str(ncal_sample+1) ]); % +1 = including initial 0(=center)
+    Eyelink('command', ['calibration_sequence = ' cal_sequence  ] );% first xy = fixation (=sequence 1)
+    Eyelink('command', ['calibration_targets = ' cal_targets ]);
+    Eyelink('command', ['validation_samples = ' num2str(ncal_sample) ]); 
+    Eyelink('command', ['validation_sequence = ' cal_sequence  ] );
+    Eyelink('command', ['validation_targets = ' cal_targets ]);
+
+    %%% Tells the ET what data to record
+    Eyelink('Command', 'file_sample_data = LEFT,RIGHT,GAZE,DIAMETER');
+    Eyelink('Command', 'file_event_data = GAZE,GAZEREZ,DIAMETER,HREF,VELOCITY');
+    Eyelink('Command', 'file_event_filter = LEFT, RIGHT, FIXATION,SACCADE, BLINK, MESSAGE, BUTTON');
+end 
+   
+if ~isempty(ET_ON)
+    EyelinkDoTrackerSetup(el);
+end
+
+%%%% Drift correction:
+if ~isempty(ET_ON)
+
+    ETbox_rect = CenterRectOnPoint([0 0 params.ETbox_size_pix], centerX, centerY);
+
+    % Open a file to record to
+    tmpETfile = 'ET_tmp.edf';
+    Eyelink('openfile', tmpETfile);
+
+    %%%% Drift correction:
+    success = 0;
+    while success == 0
+        
+        % In fact, there's an internal while loop inside the eyelink
+        % driftcorrect code. Still, we need repeat driftcorrection until it
+        % succeeds. Without the loop, the trial can proceed with the ESC key
+        % press despite a poor fixation
+
+        if ~isempty(params.ShowETbox)
+            Screen('FrameOval', win, params.ETbox_color, ETbox_rect) ;%  [,penWidth]);
+        end
+        Screen('FrameOval', win, [0 0 0], params.Fixation.rect, params.Fixation.Width_pix)
+        Screen('FillOval', win, [255 0 0], params.Fixation.rect2 ); %  , s.Fixation.Width_pix
+        Screen('Flip',win);
+        success = EyelinkDoDriftCorrection(el, [], [], 0, 0); % You can't get out of this function unless there's a success or ESC
+        
+    end 
+    Eyelink('StartRecording');
+    eye_used = Eyelink('EyeAvailable');
+    
+end 
+        
+%ETdur_per_trial = params.trialLength + [ 5 ];
+FrameRate = Screen('FrameRate', win); %  hz=Screen('FrameRate', w);
+%max_ET_nframe = FrameRate * ETdur_per_trial;
+max_ET_nframe = FrameRate * exp.totalTime;
+%gazesamples = cell(length(blockNum), numTrials);
+gazesamples = cell(1, 1);
+%for i = 1:length(blockNum)
+%    for j = 1:numTrials
+gazesamples{1,1}.x = nan(max_ET_nframe,1);
+gazesamples{1,1}.y = nan(max_ET_nframe,1);
+gazesamples{1,1}.pa = nan(max_ET_nframe,1);
+gazesamples{1,1}.TS = nan(max_ET_nframe,1);
+gazesamples{1,1}.D = nan(max_ET_nframe,1);
+%    end
+%end
 
 %% %%%% initial window - wait for backtick
 Screen(w, 'DrawText', 'Waiting for Backtick.', 10,10,[0 0 0]);
@@ -319,22 +465,21 @@ count = 1;
 % [e.totalTime, e.allFlips,n]
 gray = repmat(min(min(squeeze(exp.LWave(1,:,:)),[],1)), [1,3]);
 Screen('FillRect', w, gray);
-    
-if ET
-    EyeData.mx=[];
-    EyeData.my=[];
-    EyeData.ma=[];
-    EyeData.FixDoneT = [];
-end
-%EyeStart = GetSecs(); %time we start caring about eyetracking
-%currPosID = i;
+
 
 while n+1 < length(exp.allFlips)
-run FixCheck; %check eyetracker
+    gaze_exceeded=0;
+    abort=0;
+    gazex   = nan;
+    gazey   = nan;
+    gazeTS  = nan; %(1,max_ET_nframe);
+    gazeD   = nan; %(1,max_ET_nframe);
+    g_cnt=0;
+    
     [exp.longFormBlocks(n+1),exp.longFormFlicker(n+1)]
     thisCond = exp.longFormConds(n+1);
-
-%     KbQueueStart();
+    
+    %     KbQueueStart();
     %%%%%%%%%%% FLIP %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     if n == 0
         [VBLT, exp.startRun, FlipT, missed] = Screen(w, 'Flip', 0);%[VBLTimestamp StimulusOnsetTime FlipTimestamp Missed] = Screen('Flip', windowPtr [, when] [, dontclear]...
@@ -365,62 +510,68 @@ run FixCheck; %check eyetracker
         
     end
     
-%     % select new character if starting new trial
-%     if mod(n, flipsPerTrial) == 0
-% 
-% %         % draw character
-% %         l = randperm(numel(letters));
-% %         fixChar = letters(l(1));
-%           fixChar = exp.letterSequence(n+1);
-% 
-%        if strcmp(fixChar,'J') == 1
-%             exp.targets = [exp.targets, 1];
-%             exp.targetTimes = [exp.targetTimes, GetSecs - exp.startRun];
-%         elseif strcmp(fixChar,'K') == 1
-%             exp.targets = [exp.targets, 2];
-%             exp.targetTimes = [exp.targetTimes, GetSecs - exp.startRun];
-%        end
-% 
-% 
-%     end
+    %     % select new character if starting new trial
+    %     if mod(n, flipsPerTrial) == 0
+    %
+    % %         % draw character
+    % %         l = randperm(numel(letters));
+    % %         fixChar = letters(l(1));
+    %           fixChar = exp.letterSequence(n+1);
+    %
+    %        if strcmp(fixChar,'J') == 1
+    %             exp.targets = [exp.targets, 1];
+    %             exp.targetTimes = [exp.targetTimes, GetSecs - exp.startRun];
+    %         elseif strcmp(fixChar,'K') == 1
+    %             exp.targets = [exp.targets, 2];
+    %             exp.targetTimes = [exp.targetTimes, GetSecs - exp.startRun];
+    %        end
+    %
+    %
+    %     end
     
     %%%% draw fixation letter in fixation circle
     
-%     if mod(n, flipsPerTrial) <= exp.trialOnFlips
-        Screen('FillOval', w,[255 255 255], [xc-round(exp.fixSize/2) yc-round(exp.fixSize/2) xc+round(exp.fixSize/2) yc+round(exp.fixSize/2)]);%white fixation solid circle
-        Screen('FillOval', w,[0 0 0], [xc-round(exp.fixSize/4) yc-round(exp.fixSize/4) xc+round(exp.fixSize/4) yc+round(exp.fixSize/4)]);%black fixation solid circle
-
-        %         %DrawFormattedText(w, fixChar, 'center', 8+vertOffset+rect(4)/2,0); %either text function works
-%         %Screen('DrawText', w, fixChar, -5+rect(3)/2, -10+vertOffset+rect(4)/2,[0 0 0]);
-%         [width,height] = RectSize(Screen('TextBounds',w,fixChar{:}));
-%         Screen('DrawText', w, fixChar{:}, xc-width/2 +0.3, yc-height/2-0.2,[0 0 0]);
-%      else
-%         Screen('FillOval', w,[255 255 255], [xc-round(exp.fixSize/2) yc-round(exp.fixSize/2) xc+round(exp.fixSize/2) yc+round(exp.fixSize/2)]);%white fixation solid circle
-%    
-%     end
-
-%     n
-
-%     KbQueueStop();
-%     [pressed, firstPress]= KbQueueCheck();
-%     
-%     %%%% character identification
-%     if (pressed == 1) && ((firstPress(KbName('1!')) > 0) || (firstPress(KbName('2@')) > 0))
-%         if firstPress(KbName('1!')) > 0
-%             exp.responses = [exp.responses, 1];
-%             exp.responseTimes = [exp.responseTimes, firstPress(KbName('1!')) - exp.startRun];
-%         elseif firstPress(KbName('2@')) > 0
-%             exp.responses = [exp.responses, 2];
-%             exp.responseTimes = [exp.responseTimes, firstPress(KbName('2@')) - exp.startRun];
-%         end
-%     end
-% 
-%     %%%% refresh queue for next character
-%     KbQueueFlush();
+    %     if mod(n, flipsPerTrial) <= exp.trialOnFlips
+    Screen('FillOval', w,[255 255 255], [xc-round(exp.fixSize/2) yc-round(exp.fixSize/2) xc+round(exp.fixSize/2) yc+round(exp.fixSize/2)]);%white fixation solid circle
+    Screen('FillOval', w,[0 0 0], [xc-round(exp.fixSize/4) yc-round(exp.fixSize/4) xc+round(exp.fixSize/4) yc+round(exp.fixSize/4)]);%black fixation solid circle
+    
+    %         %DrawFormattedText(w, fixChar, 'center', 8+vertOffset+rect(4)/2,0); %either text function works
+    %         %Screen('DrawText', w, fixChar, -5+rect(3)/2, -10+vertOffset+rect(4)/2,[0 0 0]);
+    %         [width,height] = RectSize(Screen('TextBounds',w,fixChar{:}));
+    %         Screen('DrawText', w, fixChar{:}, xc-width/2 +0.3, yc-height/2-0.2,[0 0 0]);
+    %      else
+    %         Screen('FillOval', w,[255 255 255], [xc-round(exp.fixSize/2) yc-round(exp.fixSize/2) xc+round(exp.fixSize/2) yc+round(exp.fixSize/2)]);%white fixation solid circle
+    %
+    %     end
+    
+    %     n
+    
+    %     KbQueueStop();
+    %     [pressed, firstPress]= KbQueueCheck();
+    %
+    %     %%%% character identification
+    %     if (pressed == 1) && ((firstPress(KbName('1!')) > 0) || (firstPress(KbName('2@')) > 0))
+    %         if firstPress(KbName('1!')) > 0
+    %             exp.responses = [exp.responses, 1];
+    %             exp.responseTimes = [exp.responseTimes, firstPress(KbName('1!')) - exp.startRun];
+    %         elseif firstPress(KbName('2@')) > 0
+    %             exp.responses = [exp.responses, 2];
+    %             exp.responseTimes = [exp.responseTimes, firstPress(KbName('2@')) - exp.startRun];
+    %         end
+    %     end
+    %
+    %     %%%% refresh queue for next character
+    %     KbQueueFlush();
+    GetEyeData
+    
     n = n+1;
-   
+    
 end
-
+gazesamples{1, 1}.x = gazex(1:min([g_cnt max_ET_nframe]))';
+gazesamples{1, 1}.y = gazey(1:min([g_cnt max_ET_nframe]))';
+gazesamples{1, 1}.pa = gazepa(1:min([g_cnt max_ET_nframe]))';
+gazesamples{1, 1}.TS = gazeTS(1:min([g_cnt max_ET_nframe]))';
+gazesamples{1, 1}.D = gazeD(1:min([g_cnt max_ET_nframe]))';
 %%%%%%%%%%%%%%%%%%
 % done! wrap up  %
 %%%%%%%%%%%%%%%%%%
@@ -468,6 +619,6 @@ if ET
     Eyelink('StopRecording');   
     Eyelink('CloseFile');
     Eyelink('Shutdown');
-    save ET_pilot.mat
+    save ET_pilot.mat EyeDat
 end  
 
