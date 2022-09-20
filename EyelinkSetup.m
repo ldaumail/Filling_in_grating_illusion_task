@@ -15,6 +15,9 @@ el.foregroundcolour = 255;  %what's the differenece btwn foregroundcolour and ca
 el.calibrationtargetcolour= 0;
 el.msgfontcolour  = 0;
 el.targetbeep = 0;
+el.calibrationtargetsize=1; % from 2.5
+el.calibrationtargetwidth=.5; % from 1
+
 
 EyelinkUpdateDefaults(el);
 
@@ -22,9 +25,10 @@ Eyelink('Command','screen_pixel_coords = %ld %ld %ld %ld', 0,0,rect(3)-1, rect(4
 Eyelink('Message', 'DISPLAY_COORDS %ld %ld %ld %ld', 0,0,rect(3)-1, rect(4)-1);
 
 Eyelink('Command', 'link_sample_data = LEFT,RIGHT,GAZE,AREA'); 
+Eyelink('Command', 'file_sample_data = LEFT,RIGHT,GAZE,AREA');
 
 
-EyeData.edfFile=sprintf('demo.edf'); % overwrite the edf each time. or it would full the hard drive of eyelink computer
+EyeData.edfFile=sprintf('demo_nofix.edf'); % overwrite the edf each time. or it would full the hard drive of eyelink computer
 Eyelink('Openfile', EyeData.edfFile);
 
 % Calibrate the eye tracker
