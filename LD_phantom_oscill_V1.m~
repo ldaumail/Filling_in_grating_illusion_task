@@ -196,12 +196,10 @@ exp.stim.phases = cos(2*pi*exp.stim.cycPerSec*exp.stimDur/(exp.stimDur*exp.flips
 %signal is given by the number of flips per second, so the duration in flips is given by exp.stimDur*exp.flipsPerSec.
 %Finally, we multiply by 2*pi for the units to be in radian.
 
-%4)Then we subtract the phase at each flip time t (flipTimes),
+%4)Finally we subtract the phase at each flip time t (flipTimes),
 %normalized to 1 to avoid units in seconds (division by the stimulus duration exp.stimDur) and
 %multiplied 2*pi for the phase to be in radian (and not in seconds, even though the phase increases over time)
 
-%5)The amplitude of cos() varies between -1 and +1. Here we want our
-%displacement (grating shift) in degrees, so we multiply by 360.
 
 %%%% scale the stims for the screen
 exp.ppd = pi* rect(3) / (atan(exp.screenWidth/exp.viewingDist/2)) / 360;
@@ -212,7 +210,10 @@ exp.gaborWidth = round(exp.stim.gaborWDeg*exp.ppd);                 % in pixels,
 
 %% create sine wave gratings and store all phase transitions in structure
 %%% along with pointers
-
+% LPhase = randi(360);
+% RPhase = LPhase;
+LPhase = 0;
+RPhase = 0;
 exp.LWave = nan(length(flipTimes),exp.gaborHeight,exp.gaborWidth,length(exp.stim.orientation));
 exp.RWave = nan(length(flipTimes),exp.gaborHeight,exp.gaborWidth,length(exp.stim.orientation));
 exp.LWaveID = nan(length(flipTimes)*length(exp.longFormFlicker),length(exp.stim.orientation));
@@ -221,6 +222,10 @@ exp.RWaveID = nan(length(flipTimes)*length(exp.longFormFlicker),length(exp.stim.
 for o =1:length(exp.stim.orientation)
     for f = 1:length(flipTimes)
         
+%         if f <= length(flipTimes)/2
+            
+            %             LPhase = mod(LPhase + exp.stim.dphasePerFlip,360); %use mod() function just so the phase remains between 0 and 360
+            %             RPhase = mod(RPhase + exp.stim.dphasePerFlip,360);
             LPhase = exp.stim.phases(f);
             RPhase = exp.stim.phases(f);
             %ih in pixels %iw in pixels %spatial freq in cycles per dva
@@ -237,6 +242,17 @@ for o =1:length(exp.stim.orientation)
             %    figure();
             %   imshow(squeeze(topWave(f,:,:)));
             %
+%         elseif f > length(flipTimes)/2
+            %             LPhase = mod(LPhase - exp.stim.dphasePerFlip,360);
+            %             RPhase = mod(RPhase - exp.stim.dphasePerFlip,360);
+
+%             exp.LWave(f,:,:,o) = makeSineGrating(exp.gaborHeight,exp.gaborWidth,exp.stim.spatialFreqDeg,...
+%                 exp.stim.orientation(o),LPhase,exp.stim.contrastOffset(1),exp.stim.contrastMultiplicator,...
+%                 exp.ppd);
+%             exp.RWave(f,:,:,o) = makeSineGrating(exp.gaborHeight,exp.gaborWidth,exp.stim.spatialFreqDeg,...
+%                 exp.stim.orientation(o),RPhase,exp.stim.contrastOffset(1),exp.stim.contrastMultiplicator,...
+%                 exp.ppd);
+%         end
         tmpLWaveID(f,o) = Screen('MakeTexture', w, squeeze(exp.LWave(f,:,:,o)));
         tmpRWaveID(f,o) = Screen('MakeTexture', w, squeeze(exp.RWave(f,:,:,o)));
         
