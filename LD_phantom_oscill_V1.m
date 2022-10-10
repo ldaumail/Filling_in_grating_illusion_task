@@ -20,9 +20,9 @@ end
 %%%% keyboard
 [keyboardIndices, productNames, ~] = GetKeyboardIndices ;
 deviceNumber = keyboardIndices(1);
-responseKeys = zeros(1,256);
-responseKeys(KbName('1!'))=1; % button box 1
-responseKeys(KbName('2@'))=1; % button box 2
+% responseKeys = zeros(1,256);
+% responseKeys(KbName('1!'))=1; % button box 1
+% responseKeys(KbName('2@'))=1; % button box 2
 
 Screen('Preference', 'SkipSyncTests', 0);
 
@@ -51,7 +51,7 @@ exp.date = datestr(now,30);
 %%%% 2D sine wave grating properties
 exp.stim.spatialFreqDeg = 0.5; %0.286;                                          % cycles per degree of visual angle
 exp.stim.contrast = 0.3 ;                                                 % in %, maybe??
-exp.stim.orientation = [90 180];                                                % in degrees
+exp.stim.orientation = [90]; %[90 180];                                                % in degrees
 exp.stim.degFromFix = .6;                                              % in degrees of visual angle
 exp.stim.gaborHDeg = 4;                                                  % in degrees of visual angle
 exp.stim.gaborWDeg = 4; 
@@ -73,11 +73,11 @@ exp.flipWin = 1/exp.flipsPerSec;         % in seconds then actually in 1 sec the
 %e.numBlocks = 12;  % 6 for single and 6 for pair...
 
 %%%% conditions & layout (across blocks scale)
-exp.conds = {'horSingleL','horSingleR','vertDoubleIndir','horDoubleIndir'}; %'double-oppdir'
+exp.conds = {'vertDoubleSqu', 'vertDoubleRect'}; %'horSingleL','horSingleR','horDoubleIndir'
 exp.numConds = length(exp.conds);
 % with line of code below we will have 1 condition per block, randomized. we might need to change that
 % later, to have the conditions randomized within each block
-exp.repsPerRun = 5;              % repetitions of each object type per run
+exp.repsPerRun = 10;              % repetitions of each object type per run
 exp.numBlocks = exp.numConds*exp.repsPerRun;
 exp.condShuffle = Shuffle(repmat([1:exp.numConds],1,exp.repsPerRun)); % %e.stimsPerBlock make same number of blocks with each condition, randomize order
 exp.fixSizeDeg =  .6;            % in degrees, the size of the biggest white dot in the fixation
@@ -127,8 +127,7 @@ exp.longFormFlicker = repmat(ones(1,1),1,length(exp.longFormBlocks)); %1 all the
 length(exp.longFormBlocks)
 
 
-%set up the timing model for stimulus pairing conditions (single (top,
-%bottom), pair) and stimulus orientation
+%set up the timing model for stimulus pairing conditions ( pair square, pair rectangle ) and stimulus orientation
 %longform condition timing, which aligns with the flicker timing
 exp.longFormConds = zeros(1,exp.initialFixation);
 for i = 1:exp.numBlocks-1
@@ -252,12 +251,12 @@ end
 xc = rect(3)/2; % rect and center, with the flexibility to resize & shift center - change vars to zero if not used.
 yc = rect(4)/2; %+e.vertOffset;
 
-xL = rect(3)/2 - exp.stim.gaborHDeg*exp.ppd;% = stimulus center located 3 degrees horizontal left from the center
-yL = rect(4)/2; % 
+xL = rect(3)/2; % % = stimulus center located on the horizontal center of the screen
+yL = rect(4)/2 - exp.stim.gaborHDeg*exp.ppd; % stimulus located 4 degrees above screen center
 exp.LRect =  CenterRectOnPoint([0 0 exp.gaborWidth exp.gaborHeight],xL,yL);
 
-xR = rect(3)/2 + exp.stim.gaborHDeg*exp.ppd; % = stimulus center located 3 degrees horizontal right from the center
-yR = rect(4)/2; % 
+xR = rect(3)/2 ; % = stimulus center located on the horizontal center of the screen
+yR = rect(4)/2+ exp.stim.gaborHDeg*exp.ppd; % stimulus located 4 degrees below screen center
 exp.RRect =  CenterRectOnPoint([0 0 exp.gaborWidth exp.gaborHeight],xR,yR);
 
 
@@ -380,15 +379,14 @@ while n+1 < length(exp.allFlips)
             ori = 2;
         end
         % draw & increment stims
-        if strfind(conditions(thisCond).name{:}, 'DoubleIndir')  %|| strcmp(conditions(thisCond).name, 'double-oppdir')  % draw second stim if it is 'double-indir' or 'double-oppdir' %if it's randomized or incognruent
+        if strfind(conditions(thisCond).name{:}, 'DoubleSqu')  %|| strcmp(conditions(thisCond).name, 'double-oppdir')  % draw second stim if it is 'double-indir' or 'double-oppdir' %if it's randomized or incognruent
             % top stim
             Screen('DrawTexture', w, exp.LWaveID(n+1,ori),[],exp.LRect);
             % bottom stim
             Screen('DrawTexture', w, exp.RWaveID(n+1,ori), [], exp.RRect);
-        elseif strfind(conditions(thisCond).name{:}, 'SingleL')
+        elseif strfind(conditions(thisCond).name{:}, 'DoubleRect')
             % top stim
             Screen('DrawTexture', w, exp.LWaveID(n+1,ori),[],exp.LRect);
-        elseif strfind(conditions(thisCond).name{:}, 'SingleR')
             % bottom stim
             Screen('DrawTexture', w, exp.RWaveID(n+1,ori), [], exp.RRect);
         end
