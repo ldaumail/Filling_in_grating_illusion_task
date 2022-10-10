@@ -1,4 +1,4 @@
-%function figureGround_loc_v5(subject, session, vertOffset, debug) 
+%function phantom_v2(subject, session, vertOffset, debug) 
 subject = 1;
 session = 1;
 debug = 0;
@@ -76,7 +76,7 @@ exp.conds = {'horSingleL','horSingleR','vertDoubleIndir','horDoubleIndir'}; %'do
 exp.numConds = length(exp.conds);
 % with line of code below we will have 1 condition per block, randomized. we might need to change that
 % later, to have the conditions randomized within each block
-exp.repsPerRun = 5;              % repetitions of each object type
+exp.repsPerRun = 5;              % repetitions of each object type x eation
 exp.numBlocks = exp.numConds*exp.repsPerRun;
 exp.condShuffle = Shuffle(repmat([1:exp.numConds],1,exp.repsPerRun)); % %e.stimsPerBlock make same number of blocks with each condition, randomize order
 exp.fixSizeDeg =  .6;            % in degrees, the size of the biggest white dot in the fixation
@@ -308,7 +308,7 @@ Screen(w, 'DrawText', 'Waiting for Backtick.', 10,10,[0 0 0]);
 Screen(w, 'Flip', 0);
 KbTriggerWait(53, deviceNumber);
 
-DrawFormattedText(w,'Fixate on the fixation circle'... % : press 1 as soon as letter J appears on the screen,\n\n and press 2 as soon as letter K appears on the screen. \n\n Press Space to start'...
+DrawFormattedText(w,'Attend to the fixation circle'... % : press 1 as soon as letter J appears on the screen,\n\n and press 2 as soon as letter K appears on the screen. \n\n Press Space to start'...
     ,'center', 'center',[0 0 0]);
 Screen(w, 'Flip', 0);
 KbTriggerWait(KbName('Space'), deviceNumber);
