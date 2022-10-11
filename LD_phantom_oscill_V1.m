@@ -54,7 +54,8 @@ exp.stim.contrast = 0.3 ;                                                 % in %
 exp.stim.orientation = [90]; %[90 180];                                                % in degrees
 exp.stim.degFromFix = .6;                                              % in degrees of visual angle
 exp.stim.gaborHDeg = 4;                                                  % in degrees of visual angle
-exp.stim.gaborWDeg = 4; 
+exp.stim.gaborWDeg = 4;
+exp.stim.rectGaborWDeg = 8;
 exp.stim.contrastMultiplicator = .075;                                     % for sine wave 0.5 = 100% contrast, 0.2 = 40%
 exp.stim.contrastOffset = [.5 .5 .5 0];                                  % for procedural gabor
 exp.stim.cycPerSec = 1.13;
@@ -207,44 +208,66 @@ exp.ppd = pi* rect(3) / (atan(exp.screenWidth/exp.viewingDist/2)) / 360;
 exp.fixSize = round(exp.fixSizeDeg*exp.ppd);
 exp.gaborHeight = round(exp.stim.gaborHDeg*exp.ppd);                 % in pixels, the size of our objects
 exp.gaborWidth = round(exp.stim.gaborWDeg*exp.ppd);                 % in pixels, the size of our objects
-
+exp.rectGaborWidth = round(exp.stim.rectGaborWDeg*exp.ppd); 
 
 %% create sine wave gratings and store all phase transitions in structure
 %%% along with pointers
 
+%square
 exp.LWave = nan(length(flipTimes),exp.gaborHeight,exp.gaborWidth,length(exp.stim.orientation));
 exp.RWave = nan(length(flipTimes),exp.gaborHeight,exp.gaborWidth,length(exp.stim.orientation));
 exp.LWaveID = nan(length(flipTimes)*length(exp.longFormFlicker),length(exp.stim.orientation));
 exp.RWaveID = nan(length(flipTimes)*length(exp.longFormFlicker),length(exp.stim.orientation));
 
+%rectangle
+exp.rectLWave = nan(length(flipTimes),exp.gaborHeight,exp.rectGaborWidth,length(exp.stim.orientation));
+exp.rectRWave = nan(length(flipTimes),exp.gaborHeight,exp.rectGaborWidth,length(exp.stim.orientation));
+exp.rectLWaveID = nan(length(flipTimes)*length(exp.longFormFlicker),length(exp.stim.orientation));
+exp.rectRWaveID = nan(length(flipTimes)*length(exp.longFormFlicker),length(exp.stim.orientation));
+
 for o =1:length(exp.stim.orientation)
     for f = 1:length(flipTimes)
         
-            LPhase = exp.stim.phases(f);
-            RPhase = exp.stim.phases(f);
-            %ih in pixels %iw in pixels %spatial freq in cycles per dva
-            %tilt/orientation of the grating in degrees %phase in degrees (not degrees of visual angle)
-            %contrast offset in percent    %contrast multiplicator  %ppd = 0 if freq already in cycles per stimulus
-            %background color (unused if the grating is not an annulus)
-            
-            exp.LWave(f,:,:,o) = makeSineGrating(exp.gaborHeight,exp.gaborWidth,exp.stim.spatialFreqDeg,...
-                exp.stim.orientation(o),LPhase,exp.stim.contrastOffset(1),exp.stim.contrastMultiplicator,...
-                exp.ppd);
-            exp.RWave(f,:,:,o) = makeSineGrating(exp.gaborHeight,exp.gaborWidth,exp.stim.spatialFreqDeg,...
-                exp.stim.orientation(o),RPhase,exp.stim.contrastOffset(1),exp.stim.contrastMultiplicator,...
-                exp.ppd);
-            %    figure();
-            %   imshow(squeeze(topWave(f,:,:)));
-            %
+        LPhase = exp.stim.phases(f);
+        RPhase = exp.stim.phases(f);
+        %ih in pixels %iw in pixels %spatial freq in cycles per dva
+        %tilt/orientation of the grating in degrees %phase in degrees (not degrees of visual angle)
+        %contrast offset in percent    %contrast multiplicator  %ppd = 0 if freq already in cycles per stimulus
+        %background color (unused if the grating is not an annulus)
+        % square
+        exp.LWave(f,:,:,o) = makeSineGrating(exp.gaborHeight,exp.gaborWidth,exp.stim.spatialFreqDeg,...
+            exp.stim.orientation(o),LPhase,exp.stim.contrastOffset(1),exp.stim.contrastMultiplicator,...
+            exp.ppd);
+        exp.RWave(f,:,:,o) = makeSineGrating(exp.gaborHeight,exp.gaborWidth,exp.stim.spatialFreqDeg,...
+            exp.stim.orientation(o),RPhase,exp.stim.contrastOffset(1),exp.stim.contrastMultiplicator,...
+            exp.ppd);
+        %    figure();
+        %   imshow(squeeze(topWave(f,:,:)));
+        %
         tmpLWaveID(f,o) = Screen('MakeTexture', w, squeeze(exp.LWave(f,:,:,o)));
         tmpRWaveID(f,o) = Screen('MakeTexture', w, squeeze(exp.RWave(f,:,:,o)));
         
+        % rectangle
+        exp.rectLWave(f,:,:,o) = makeSineGrating(exp.gaborHeight,exp.rectGaborWidth,exp.stim.spatialFreqDeg,...
+            exp.stim.orientation(o),LPhase,exp.stim.contrastOffset(1),exp.stim.contrastMultiplicator,...
+            exp.ppd);
+        exp.rectRWave(f,:,:,o) = makeSineGrating(exp.gaborHeight,exp.rectGaborWidth,exp.stim.spatialFreqDeg,...
+            exp.stim.orientation(o),RPhase,exp.stim.contrastOffset(1),exp.stim.contrastMultiplicator,...
+            exp.ppd);
+        %    figure();
+        %   imshow(squeeze(topWave(f,:,:)));
+        %
+        rectTmpLWaveID(f,o) = Screen('MakeTexture', w, squeeze(exp.rectLWave(f,:,:,o)));
+        rectTmpRWaveID(f,o) = Screen('MakeTexture', w, squeeze(exp.rectRWave(f,:,:,o)));
+        
     end
     
-%% extend stimulus matrix to include the same total number of flips as the whole experiment
-exp.LWaveID(:,o) = repmat(tmpLWaveID(:,o),length(exp.longFormFlicker),1);
-exp.RWaveID(:,o) = repmat(tmpRWaveID(:,o),length(exp.longFormFlicker),1);
-
+    %% extend stimulus matrix to include the same total number of flips as the whole experiment
+    exp.LWaveID(:,o) = repmat(tmpLWaveID(:,o),length(exp.longFormFlicker),1);
+    exp.RWaveID(:,o) = repmat(tmpRWaveID(:,o),length(exp.longFormFlicker),1);
+    exp.rectLWaveID(:,o) = repmat(rectTmpLWaveID(:,o),length(exp.longFormFlicker),1);
+    exp.rectRWaveID(:,o) = repmat(rectTmpRWaveID(:,o),length(exp.longFormFlicker),1);
+    
 end
 
 %% Sine wave gratings locations
@@ -254,10 +277,12 @@ yc = rect(4)/2; %+e.vertOffset;
 xL = rect(3)/2; % % = stimulus center located on the horizontal center of the screen
 yL = rect(4)/2 - exp.stim.gaborHDeg*exp.ppd; % stimulus located 4 degrees above screen center
 exp.LRect =  CenterRectOnPoint([0 0 exp.gaborWidth exp.gaborHeight],xL,yL);
+exp.rectLRect =  CenterRectOnPoint([0 0 exp.rectGaborWidth exp.gaborHeight],xL,yL);
 
 xR = rect(3)/2 ; % = stimulus center located on the horizontal center of the screen
 yR = rect(4)/2+ exp.stim.gaborHDeg*exp.ppd; % stimulus located 4 degrees below screen center
 exp.RRect =  CenterRectOnPoint([0 0 exp.gaborWidth exp.gaborHeight],xR,yR);
+exp.rectRRect =  CenterRectOnPoint([0 0 exp.rectGaborWidth exp.gaborHeight],xR,yR);
 
 
 % %% %%%%%%%%%%%%%%%%%%%%%%
@@ -339,7 +364,8 @@ n=0;
 count = 1;
 %%%%%%% START task TASK/FLIPPING
 % [e.totalTime, e.allFlips,n]
-gray = repmat(min(min(squeeze(exp.LWave(1,:,:)),[],1)), [1,3]);
+% gray = repmat(min(min(squeeze(exp.LWave(1,:,:)),[],1)), [1,3]);
+gray = repmat(mean(squeeze(exp.LWave(1,1,:))), [1,3]);
 Screen('FillRect', w, gray);
     
 if ET
@@ -378,6 +404,7 @@ while n+1 < length(exp.allFlips)
         else
             ori = 2;
         end
+
         % draw & increment stims
         if strfind(conditions(thisCond).name{:}, 'DoubleSqu')  %|| strcmp(conditions(thisCond).name, 'double-oppdir')  % draw second stim if it is 'double-indir' or 'double-oppdir' %if it's randomized or incognruent
             % top stim
@@ -386,9 +413,9 @@ while n+1 < length(exp.allFlips)
             Screen('DrawTexture', w, exp.RWaveID(n+1,ori), [], exp.RRect);
         elseif strfind(conditions(thisCond).name{:}, 'DoubleRect')
             % top stim
-            Screen('DrawTexture', w, exp.LWaveID(n+1,ori),[],exp.LRect);
+            Screen('DrawTexture', w, exp.rectLWaveID(n+1,ori),[],exp.rectLRect);
             % bottom stim
-            Screen('DrawTexture', w, exp.RWaveID(n+1,ori), [], exp.RRect);
+            Screen('DrawTexture', w, exp.rectRWaveID(n+1,ori), [], exp.rectRRect);
         end
         
     end
