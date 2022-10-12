@@ -250,7 +250,8 @@ thresh = 0.99; %eye position quantile detection threshold
 stdx.minbg = nan(10, length(exptDat.minbg.exp.conds));
 stdy.minbg = nan(10, length(exptDat.minbg.exp.conds));
 for c =1:length(exptDat.minbg.exp.conds)
-
+    
+    
     blockdiff = unique([find(diff(exptDat.minbg.exp.longFormConds == c)) length(exptDat.minbg.exp.longFormConds)]); %get block onset time and offset time
     for n =1:length(blockdiff)/2
         xbloc = xmin(blockdiff(2*(n-1)+1):blockdiff(2*n));
@@ -258,8 +259,12 @@ for c =1:length(exptDat.minbg.exp.conds)
 
         xp = xbloc(abs(ybloc)<quantile(abs(ybloc),thresh) & abs(xbloc)<quantile(abs(xbloc),thresh))- nanmean(xbloc(abs(ybloc)<quantile(abs(ybloc),thresh) & abs(xbloc)<quantile(abs(xbloc),thresh)));
         yp = ybloc(abs(ybloc)<quantile(abs(ybloc),thresh) & abs(xbloc)<quantile(abs(xbloc),thresh))- nanmean(ybloc(abs(ybloc)<quantile(abs(ybloc),thresh) & abs(xbloc)<quantile(abs(xbloc),thresh)));
+ 
         normX = xp/max(abs(xp),[],'all');
         normY = yp/max(abs(yp),[],'all');
+%         figure();
+%         plot(normX, normY)
+
         stdx.minbg(n,c) = std(normX);
         stdy.minbg(n,c) = std(normY);
     end
@@ -281,7 +286,7 @@ ymean = yDat/pixperdeg; %convert from pixels to degrees
 stdx.meanbg = nan(10, length(exptDat.meanbg.exp.conds));
 stdy.meanbg = nan(10, length(exptDat.meanbg.exp.conds));
 for c =1:length(exptDat.meanbg.exp.conds)
-
+    
     blockdiff = unique([find(diff(exptDat.meanbg.exp.longFormConds == c)) length(exptDat.meanbg.exp.longFormConds)]); %get block onset time and offset time
     for n =1:length(blockdiff)/2
         xbloc = xmean(blockdiff(2*(n-1)+1):blockdiff(2*n));
@@ -291,6 +296,9 @@ for c =1:length(exptDat.meanbg.exp.conds)
         yp = ybloc(abs(ybloc)<quantile(abs(ybloc),thresh) & abs(xbloc)<quantile(abs(xbloc),thresh))- nanmean(ybloc(abs(ybloc)<quantile(abs(ybloc),thresh) & abs(xbloc)<quantile(abs(xbloc),thresh)));
         normX = xp/max(abs(xp),[],'all');
         normY = yp/max(abs(yp),[],'all');
+%         figure();
+%         plot(normX,normY)
+
         stdx.meanbg(n,c) = std(normX);
         stdy.meanbg(n,c) = std(normY);
     end
@@ -298,9 +306,12 @@ for c =1:length(exptDat.meanbg.exp.conds)
 end
 
 % compare square and rectangle
-
-
 % compare square minbg to square meanbg
+%= test for main effect in ANOVA2
+conds = [{'Square'}, {'Rectangle'}, {'minbg'},{'meanbg'}];
+aovx = anova2([stdx.minbg; stdx.meanbg],10, 'on');
+aovy = anova2([stdy.minbg; stdy.meanbg],10, 'on');
+
 % compare rectangle minbg to rectangle meanbg
 
 
