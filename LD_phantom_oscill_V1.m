@@ -11,10 +11,12 @@ if debug == 1
     exp.screenWidth = 17;             % in cm; %laptop=27.5,office=43, %19=%T3b, miniHelm=39;
     exp.viewingDist = 48;             % in cm; 3Tb/office=43, miniHelm=57;
 	exp.resolution = SetResolution(max(Screen('Screens')),1024,768,0); % laptop
+    exp.gammaCorrection = 0;
  else
     exp.screenWidth = 16;             % in cm; % 16 in eye tracking room 425%laptop=27.5,office=43, %19=%T3b, miniHelm=39;
     exp.viewingDist = 23;             % in cm; %23 in eye tracking room 425 3Tb/office=43, miniHelm=57;
     exp.resolution = SetResolution(max(Screen('Screens')),1024,768,60); % scanner
+    exp.gammaCorrection = 0;
 end
 
 %%%% keyboard
@@ -160,16 +162,19 @@ Priority(9);
 
 %%%% open screen
 screen=max(Screen('Screens'));
-[w, rect]=Screen('OpenWindow',screen,exp.backgroundColor,[100 100 900 600],[],[],[],[],kPsychNeed32BPCFloat); %might need to switch 900 and 600 by 1600 and 1200 for room 425
-%[w, rect]=Screen('OpenWindow',screen,exp.backgroundColor,[],[],[],[],[],kPsychNeed32BPCFloat); %might need to switch 900 and 600 by 1600 and 1200 for room 425
+%[w, rect]=Screen('OpenWindow',screen,exp.backgroundColor,[100 100 900 600],[],[],[],[],kPsychNeed32BPCFloat); %might need to switch 900 and 600 by 1600 and 1200 for room 425
+[w, rect]=Screen('OpenWindow',screen,exp.backgroundColor,[],[],[],[],[],kPsychNeed32BPCFloat); %might need to switch 900 and 600 by 1600 and 1200 for room 425
 Screen(w, 'TextSize', exp.fontSize);
 Screen('BlendFunction', w, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 %%%% gamma correction
-% if e.gammaCorrect > 0
-%     load(e.whichCLUT);
-%     Screen('LoadNormalizedGammaTable', screen, linearizedCLUT);
-% end
+
+%gamma correction, filed prepared for room 425
+if exp.gammaCorrection 
+  %load gamma correction file
+  load([pwd '/phase2_photometry.mat'])
+  Screen('LoadNormalizedGammaTable', w, inverseCLUT);
+end
 
 %%%% timing optimization
 frameInt = Screen('GetFlipInterval',w);
@@ -333,7 +338,7 @@ exp.rectRRect =  CenterRectOnPoint([0 0 exp.rectGaborWidth exp.gaborHeight],xR,y
 
 %% Eyetracking parameters
 % eyetracking on (1) or off (0)
-ET = 0;
+ET = 1;
 if ET 
     EyelinkSetup(0);
     eye_used = Eyelink('EyeAvailable');
@@ -345,7 +350,7 @@ Screen(w, 'DrawText', 'Waiting for Backtick.', 10,10,[0 0 0]);
 Screen(w, 'Flip', 0);
 KbTriggerWait(53, deviceNumber);
 
-DrawFormattedText(w,'Fixate the fixation circle'... % : press 1 as soon as letter J appears on the screen,\n\n and press 2 as soon as letter K appears on the screen. \n\n Press Space to start'...
+DrawFormattedText(w,'Follow the phantom stripes with your eyes'... % : press 1 as soon as letter J appears on the screen,\n\n and press 2 as soon as letter K appears on the screen. \n\n Press Space to start'...
     ,'center', 'center',[0 0 0]);
 Screen(w, 'Flip', 0);
 KbTriggerWait(KbName('Space'), deviceNumber);
@@ -507,9 +512,9 @@ exp.runTime = GetSecs - exp.startRun;
 % exp.accuracy = (sum(exp.hits)/size(exp.targetTimes,2))*100;
 % exp.meanRT = nanmean(exp.RTs);
 
-savedir = fullfile(exp.root,'data',sprintf('s%d/sess%d/',subject,session),'fillingin_rsvp_v1');
+savedir = fullfile(exp.root,'data',sprintf('s%d/sess%d/',subject,session),'smooth_pursuit_v1');
 if ~exist(savedir); mkdir(savedir); end
-savename = fullfile(savedir, strcat(sprintf('/s%d_fillingin_rsvp_v1_sn%d_rn%d_date%s_nofix',subject,exp.scanNum,exp.runNum,num2str(exp.date)), '.mat'));
+savename = fullfile(savedir, strcat(sprintf('/s%d_smooth_pursuit_v1_sn%d_rn%d_date%s_nofix',subject,exp.scanNum,exp.runNum,num2str(exp.date)), '.mat'));
 save(savename,'exp');
 
 %KbQueueRelease();
@@ -543,7 +548,6 @@ if ET
     Eyelink('Shutdown');
     save ET_pilot_nofix.mat EyeData
 end  
-
 
 
 
