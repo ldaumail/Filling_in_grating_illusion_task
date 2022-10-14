@@ -60,7 +60,7 @@ exp.stim.contrastMultiplicator = .075;                                     % for
 exp.stim.contrastOffset = [.5 .5 .5 0];                                  % for procedural gabor
 exp.stim.cycPerSec = 1.13/2; % (modified to half the speed)
 exp.stim.motionRate = exp.stim.cycPerSec*360;                                          % 1.13 cycles per second = 360 deg of phase *1.13 per sec
-exp.stim.cycles = 1; %number of cycles shifted per lap  (modified to half the number of cycles per lap)
+exp.stim.cycles = 2/2; %number of cycles shifted per lap  (modified to half the number of cycles per lap)
 %%%% sine wave grating timing (within block scale)
 
 exp.initialFixation = 6;        % in seconds
@@ -177,7 +177,9 @@ slack = frameInt/2;
 frameRate = Screen('NominalFrameRate',w);
 flipTimes = [0:frameInt*frameRate/exp.flipsPerSec:exp.stimDur]; %multiply frameInt by 60/12 = 5 to flip the image every 5 frames 
 flipTimes = flipTimes(1:length(flipTimes)-1);
+exp.flipTimes = flipTimes;
 % (in a linear/triangle scenario) exp.stim.dphasePerFlip = exp.stim.motionRate*frameInt * frameRate/exp.flipsPerSec; %degrees per flip, here we multiply by 60/12 =5 to move the phase 5 times more after each flip since we have 5 times less flips than frame refresh
+exp.oscillation = cos(2*pi*(1/exp.stimDur)*flipTimes);
 exp.stim.phases = cos(2*pi*(1/exp.stimDur)*flipTimes).*180*exp.stim.cycles; %./exp.stimDur-2*pi*flipTimes./exp.stimDur make it oscillatory
 %reasonning behind the calculation of exp.stim.phases:
 %GOAL: render the back and forth of grating drifts oscillatory in time instead
@@ -198,20 +200,22 @@ exp.stim.phases = cos(2*pi*(1/exp.stimDur)*flipTimes).*180*exp.stim.cycles; %./e
 %%4) We multiply w by t. Here the resolution of the signal is given by the number of flips per second, so the duration is given by flipTimes.
 %Finally, we multiply by 2*pi for the units to be in radian.
 
- 
-
-%5)Then we subtract the phase at each flip time t which here is 0.
+%5)Then we subtract the phase at each flip at time t which here is 0.
 
 %6)The amplitude of cos() varies between -1 and +1. Here we want our
-%displacement (grating shift) in degrees with a displacement of 360° (of the spatial grating) every half temporal oscillation so we multiply by 10.
+%displacement (grating shift) in degrees with a displacement of 360° (of the spatial grating) every half temporal oscillation so we multiply by 180 for the range to be [-180;+180].
 
-%%%% scale the stims for the screen
+%7) we multiply by the number of cycles desired to drift over one lap
+%(exp.stim.cycles).
+
+%%%% scale the stim params for the screen
 exp.ppd = pi* rect(3) / (atan(exp.screenWidth/exp.viewingDist/2)) / 360;
 exp.fixSize = round(exp.fixSizeDeg*exp.ppd);
 exp.gaborHeight = round(exp.stim.gaborHDeg*exp.ppd);                 % in pixels, the size of our objects
 exp.gaborWidth = round(exp.stim.gaborWDeg*exp.ppd);                 % in pixels, the size of our objects
 exp.rectGaborWidth = round(exp.stim.rectGaborWDeg*exp.ppd); 
-
+exp.driftSpeedDeg = exp.stim.cycPerSec/exp.stim.spatialFreqDeg;
+exp.driftPosDeg = exp.oscillation*exp.stim.spatialFreqDeg;
 %% create sine wave gratings and store all phase transitions in structure
 %%% along with pointers
 
@@ -446,6 +450,8 @@ while n+1 < length(exp.allFlips)
 %     if mod(n, flipsPerTrial) <= exp.trialOnFlips
 %         Screen('FillOval', w,[255 255 255], [xc-round(exp.fixSize/2) yc-round(exp.fixSize/2) xc+round(exp.fixSize/2) yc+round(exp.fixSize/2)]);%white fixation solid circle
 %         Screen('FillOval', w,[0 0 0], [xc-round(exp.fixSize/4) yc-round(exp.fixSize/4) xc+round(exp.fixSize/4) yc+round(exp.fixSize/4)]);%black fixation solid circle
+          Screen('FillOval', w,[0 0 0], [xc-round(exp.fixSize/4) yc-round(exp.fixSize/4) xc+round(exp.fixSize/4) yc+round(exp.fixSize/4)]);%black fixation solid circle
+
 
         %         %DrawFormattedText(w, fixChar, 'center', 8+vertOffset+rect(4)/2,0); %either text function works
 %         %Screen('DrawText', w, fixChar, -5+rect(3)/2, -10+vertOffset+rect(4)/2,[0 0 0]);
