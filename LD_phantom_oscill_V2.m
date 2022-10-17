@@ -182,7 +182,7 @@ flipTimes = flipTimes(1:length(flipTimes)-1);
 exp.flipTimes = flipTimes;
 % (in a linear/triangle scenario) exp.stim.dphasePerFlip = exp.stim.motionRate*frameInt * frameRate/exp.flipsPerSec; %degrees per flip, here we multiply by 60/12 =5 to move the phase 5 times more after each flip since we have 5 times less flips than frame refresh
 exp.oscillation = cos(2*pi*(1/exp.stimDur)*flipTimes);
-exp.stim.phases = exp.oscillation.*180*exp.stim.cycles; %./exp.stimDur-2*pi*flipTimes./exp.stimDur make it oscillatory
+exp.stim.phases = exp.oscillation.*180*exp.stim.cycles+90; %./exp.stimDur-2*pi*flipTimes./exp.stimDur make it oscillatory
 %reasonning behind the calculation of exp.stim.phases:
 %GOAL: render the back and forth of grating drifts oscillatory in time instead
 %of linear to smooth the signal phase shifts at the time of drift direction
@@ -314,8 +314,8 @@ exp.rectRRect =  CenterRectOnPoint([0 0 exp.rectGaborWidth exp.gaborHeight],xR,y
 
 %%% create drifting red dots position
 exp.driftPosDeg = exp.oscillation.*1/(2*exp.stim.spatialFreqDeg);
-exp.spatialPhase = (1/(4*exp.stim.spatialFreqDeg))*exp.ppd;
-exp.driftPos = exp.driftPosDeg.*exp.ppd+exp.spatialPhase;
+%exp.spatialPhase = (1/(4*exp.stim.spatialFreqDeg))*exp.ppd;
+exp.driftPos = exp.driftPosDeg.*exp.ppd;%+exp.spatialPhase;
 
 exp.longDriftPos = [zeros(1,exp.initialFixation*exp.flipsPerSec)...
     repmat([repmat(exp.driftPos,1,floor(exp.blockLength*exp.flipsPerSec/length(exp.driftPos))) exp.driftPos(1:mod(exp.blockLength*exp.flipsPerSec,length(exp.driftPos))) zeros(1,exp.betweenBlocks*exp.flipsPerSec)],1,exp.numBlocks-1)... %2*ones(1,e.blockLength) zeros(1,e.betweenBlocks)
@@ -397,8 +397,8 @@ KbTriggerWait(KbName('Space'), deviceNumber);
 n=0;
 %%%%%%% START task TASK/FLIPPING
 % [e.totalTime, e.allFlips,n]
-% gray = repmat(min(min(squeeze(exp.LWave(1,:,:)),[],1)), [1,3]);
-gray = repmat(mean(squeeze(exp.LWave(1,1,:))), [1,3]);
+gray = repmat(min(min(squeeze(exp.LWave(1,:,:)),[],1)), [1,3]);
+%gray = repmat(mean(squeeze(exp.LWave(1,1,:))), [1,3]);
 Screen('FillRect', w, gray);
     
 if ET
@@ -552,9 +552,9 @@ exp.runTime = GetSecs - exp.startRun;
 % exp.accuracy = (sum(exp.hits)/size(exp.targetTimes,2))*100;
 % exp.meanRT = nanmean(exp.RTs);
 
-savedir = fullfile(exp.root,'data',sprintf('s%d/sess%d/',subject,session),'fillingin_rsvp_v1');
+savedir = fullfile(exp.root,'data',sprintf('s%d/sess%d/',subject,session),'smooth_pursuit_v2');
 if ~exist(savedir); mkdir(savedir); end
-savename = fullfile(savedir, strcat(sprintf('/s%d_fillingin_rsvp_v1_sn%d_rn%d_date%s_nofix',subject,exp.scanNum,exp.runNum,num2str(exp.date)), '.mat'));
+savename = fullfile(savedir, strcat(sprintf('/s%d_smooth_pursuit_v2_sn%d_rn%d_date%s_fix',subject,exp.scanNum,exp.runNum,num2str(exp.date)), '.mat'));
 save(savename,'exp');
 
 %KbQueueRelease();
