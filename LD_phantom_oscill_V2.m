@@ -314,7 +314,8 @@ exp.rectRRect =  CenterRectOnPoint([0 0 exp.rectGaborWidth exp.gaborHeight],xR,y
 
 %%% create drifting red dots position
 exp.driftPosDeg = exp.oscillation.*1/(2*exp.stim.spatialFreqDeg);
-exp.driftPos = exp.driftPosDeg.*exp.ppd;
+exp.spatialPhase = (1/(4*exp.stim.spatialFreqDeg))*exp.ppd;
+exp.driftPos = exp.driftPosDeg.*exp.ppd+exp.spatialPhase;
 
 exp.longDriftPos = [zeros(1,exp.initialFixation*exp.flipsPerSec)...
     repmat([repmat(exp.driftPos,1,floor(exp.blockLength*exp.flipsPerSec/length(exp.driftPos))) exp.driftPos(1:mod(exp.blockLength*exp.flipsPerSec,length(exp.driftPos))) zeros(1,exp.betweenBlocks*exp.flipsPerSec)],1,exp.numBlocks-1)... %2*ones(1,e.blockLength) zeros(1,e.betweenBlocks)

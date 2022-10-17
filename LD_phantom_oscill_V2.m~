@@ -281,12 +281,20 @@ for o =1:length(exp.stim.orientation)
 %     exp.rectRWaveID(:,o) = rectlongTmpRWaveID(1:length(exp.rectRWaveID),:);
 
     exp.LWaveID(:,o) = [zeros(1,exp.initialFixation*exp.flipsPerSec)...
-    repmat([repmat(tmpLWaveID(:,o),1,floor(exp.blockLength*exp.flipsPerSec/length(tmpLWaveID(:,o)))) tmpLWaveID(1:mod(exp.blockLength*exp.flipsPerSec,length(tmpLWaveID(:,o))),o) zeros(1,exp.betweenBlocks*exp.flipsPerSec)],1,exp.numBlocks-1)... %2*ones(1,e.blockLength) zeros(1,e.betweenBlocks)
-    repmat(tmpLWaveID(:,o),1,floor(exp.blockLength*exp.flipsPerSec/length(tmpLWaveID(:,o)))) tmpLWaveID(1:mod(exp.blockLength*exp.flipsPerSec,length(exp.driftPos)),o) zeros(1,exp.finalFixation*exp.flipsPerSec)];
+    repmat([repmat(tmpLWaveID(:,o)',1,floor(exp.blockLength*exp.flipsPerSec/length(tmpLWaveID(:,o)))) tmpLWaveID(1:mod(exp.blockLength*exp.flipsPerSec,length(tmpLWaveID(:,o))),o)' zeros(1,exp.betweenBlocks*exp.flipsPerSec)],1,exp.numBlocks-1)... %2*ones(1,e.blockLength) zeros(1,e.betweenBlocks)
+    repmat(tmpLWaveID(:,o)',1,floor(exp.blockLength*exp.flipsPerSec/length(tmpLWaveID(:,o)))) tmpLWaveID(1:mod(exp.blockLength*exp.flipsPerSec,length(tmpLWaveID(:,o))),o)' zeros(1,exp.finalFixation*exp.flipsPerSec)];
     
     exp.RWaveID(:,o) = [zeros(1,exp.initialFixation*exp.flipsPerSec)...
-    repmat([repmat(tmpRWaveID(:,o),1,floor(exp.blockLength*exp.flipsPerSec/length(tmpRWaveID(:,o)))) tmpRWaveID(1:mod(exp.blockLength*exp.flipsPerSec,length(tmpRWaveID(:,o))),o) zeros(1,exp.betweenBlocks*exp.flipsPerSec)],1,exp.numBlocks-1)... %2*ones(1,e.blockLength) zeros(1,e.betweenBlocks)
-    repmat(tmpLWaveID(:,o),1,floor(exp.blockLength*exp.flipsPerSec/length(tmpLWaveID(:,o)))) tmpLWaveID(1:mod(exp.blockLength*exp.flipsPerSec,length(exp.driftPos)),o) zeros(1,exp.finalFixation*exp.flipsPerSec)];
+    repmat([repmat(tmpRWaveID(:,o)',1,floor(exp.blockLength*exp.flipsPerSec/length(tmpRWaveID(:,o)))) tmpRWaveID(1:mod(exp.blockLength*exp.flipsPerSec,length(tmpRWaveID(:,o))),o)' zeros(1,exp.betweenBlocks*exp.flipsPerSec)],1,exp.numBlocks-1)... %2*ones(1,e.blockLength) zeros(1,e.betweenBlocks)
+    repmat(tmpRWaveID(:,o)',1,floor(exp.blockLength*exp.flipsPerSec/length(tmpRWaveID(:,o)))) tmpRWaveID(1:mod(exp.blockLength*exp.flipsPerSec,length(tmpRWaveID(:,o))),o)' zeros(1,exp.finalFixation*exp.flipsPerSec)];
+
+    exp.rectLWaveID(:,o) = [zeros(1,exp.initialFixation*exp.flipsPerSec)...
+    repmat([repmat(rectTmpLWaveID(:,o)',1,floor(exp.blockLength*exp.flipsPerSec/length(rectTmpLWaveID(:,o)))) rectTmpLWaveID(1:mod(exp.blockLength*exp.flipsPerSec,length(rectTmpLWaveID(:,o))),o)' zeros(1,exp.betweenBlocks*exp.flipsPerSec)],1,exp.numBlocks-1)... %2*ones(1,e.blockLength) zeros(1,e.betweenBlocks)
+    repmat(rectTmpLWaveID(:,o)',1,floor(exp.blockLength*exp.flipsPerSec/length(rectTmpLWaveID(:,o)))) rectTmpLWaveID(1:mod(exp.blockLength*exp.flipsPerSec,length(rectTmpLWaveID(:,o))),o)' zeros(1,exp.finalFixation*exp.flipsPerSec)];
+    
+    exp.rectRWaveID(:,o) = [zeros(1,exp.initialFixation*exp.flipsPerSec)...
+    repmat([repmat(rectTmpRWaveID(:,o)',1,floor(exp.blockLength*exp.flipsPerSec/length(rectTmpRWaveID(:,o)))) rectTmpRWaveID(1:mod(exp.blockLength*exp.flipsPerSec,length(rectTmpRWaveID(:,o))),o)' zeros(1,exp.betweenBlocks*exp.flipsPerSec)],1,exp.numBlocks-1)... %2*ones(1,e.blockLength) zeros(1,e.betweenBlocks)
+    repmat(rectTmpRWaveID(:,o)',1,floor(exp.blockLength*exp.flipsPerSec/length(rectTmpRWaveID(:,o)))) rectTmpRWaveID(1:mod(exp.blockLength*exp.flipsPerSec,length(rectTmpRWaveID(:,o))),o)' zeros(1,exp.finalFixation*exp.flipsPerSec)];
 
 end
 
@@ -305,7 +313,8 @@ exp.RRect =  CenterRectOnPoint([0 0 exp.gaborWidth exp.gaborHeight],xR,yR);
 exp.rectRRect =  CenterRectOnPoint([0 0 exp.rectGaborWidth exp.gaborHeight],xR,yR);
 
 %%% create drifting red dots position
-exp.driftPosDeg = exp.oscillation.*1/exp.stim.spatialFreqDeg;
+exp.driftPosDeg = exp.oscillation.*1/(2*exp.stim.spatialFreqDeg);
+exp.SpatialPhase = (1/2)*exp.ppd;
 exp.driftPos = exp.driftPosDeg.*exp.ppd;
 
 exp.longDriftPos = [zeros(1,exp.initialFixation*exp.flipsPerSec)...
@@ -437,7 +446,7 @@ while n+1 < length(exp.allFlips)
             Screen('DrawTexture', w, exp.RWaveID(n+1,ori), [], exp.RRect);
             %draw red dot
             xOffset = exp.longDriftPos(n+1);
-            Screen('FillOval', w,[0 1 0], [xc+xOffset-round(exp.fixSize/4) yc-round(exp.fixSize/4) xc+xOffset+round(exp.fixSize/4) yc+round(exp.fixSize/4)]);%black fixation solid circle
+            Screen('FillOval', w,[255 0 0], [xc+xOffset-round(exp.fixSize/4) yc-round(exp.fixSize/4) xc+xOffset+round(exp.fixSize/4) yc+round(exp.fixSize/4)]);%black fixation solid circle
             
             
         elseif strfind(conditions(thisCond).name{:}, 'DoubleRect')
@@ -447,7 +456,7 @@ while n+1 < length(exp.allFlips)
             Screen('DrawTexture', w, exp.rectRWaveID(n+1,ori), [], exp.rectRRect);
             %draw red dot
             xOffset = exp.longDriftPos(n+1);
-            Screen('FillOval', w,[0 1 0], [xc+xOffset-round(exp.fixSize/4) yc-round(exp.fixSize/4) xc+xOffset+round(exp.fixSize/4) yc+round(exp.fixSize/4)]);%black fixation solid circle
+            Screen('FillOval', w,[255 0 0], [xc+xOffset-round(exp.fixSize/4) yc-round(exp.fixSize/4) xc+xOffset+round(exp.fixSize/4) yc+round(exp.fixSize/4)]);%black fixation solid circle
             
           
         end
