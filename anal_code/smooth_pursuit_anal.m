@@ -355,7 +355,9 @@ for i =1:length(folders)
 end
 
 %% Plot all trials data for each subject
-
+folderDir = '/Users/loicdaumail/Documents/Research_MacBook/Tong_Lab/Projects/Prototype_phantom_FEM/data/smooth_pursuit_10182022/';
+folders = dir(folderDir);
+folders = {folders(~contains({folders.name},'.')).name};
 %compute average response curves of each subject
 meanx = nan(647, length(folders));
 for i =1:length(folders)
@@ -442,18 +444,18 @@ x = x(107:end);
 x = x(~isnan(meanx(107:end,1)));
 fun = @(a,b,x) a*cos(b*x); %cos(2*pi*(1/exptDat.exp.stimDur)*exptDat.exp.flipTimes)
 
-%obj_fun = @(params) norm(fun(params(1), params(2), x)- y);
-obj_fun = @(params) (y'-fun(params(1), params(2), x)).^2;
+obj_fun = @(params) norm(fun(params(1), params(2), x)- y');
+%obj_fun = @(params) (y'-fun(params(1), params(2), x)).^2;
 %obj_fun = @(params) (y-fun(params(1), params(2), x));
 
 %x0 =rand(1,2);
-x0 = [1, pi/2.5];
+x0 = [1, pi/2];
 [xsol,fval, exitflag] = fminsearch(obj_fun,x0);
 
 a_sol = xsol(1);
 b_sol = xsol(2);
 
-figure;
+figure();
 plot(x, y, '+', 'MarkerSize', 10, 'LineWidth', 2)
 hold on
 plot(x, fun(a_sol, b_sol, x), '-')
@@ -470,7 +472,8 @@ for i =1:length(folders)
     data.y = y';
     data.x = x;
     x0 = [1, pi/2];
-    L = @(params)CosFun(data, params);
+    L = @(params)CosMse(data, params);
+    %L = @(params)CosNorm(data, params);
     [xsol,fval,exitflag,output] = fminsearch(@(params) L(params), x0);
     
     a_sol = xsol(1);
@@ -498,10 +501,105 @@ for i =1:length(folders)
     
     legend('gaze', 'model', 'stimulus')%,'location','bestoutside')
     plotdir = strcat('/Users/loicdaumail/Documents/Research_MacBook/Tong_Lab/Projects/Prototype_phantom_FEM/anal_plots/');
-    saveas(gcf,strcat(plotdir, sprintf('%s_%sbg_mean_model_fminsearch_10182022.png',conditions{:},folders{i})));
+  %  saveas(gcf,strcat(plotdir, sprintf('%s_%sbg_mean_model_fminsearch_10182022.png',conditions{:},folders{i})));
      
 end
 
+%% 
+
+a_sol = [];
+b_sol = [];
+for i =1:length(folders)
+    y = meanx(107:end,i);
+    y = y(~isnan(y));
+    x = 0:1/60:exptDat.exp.blockLength;
+    x = x(1:length(meanx));
+    x = x(107:end);
+    x = x(~isnan(meanx(107:end,i)));
+    data.y = y';
+    data.x = x;
+    x0 = [1, pi/2];
+    L = @(params)CosMse(data, params);
+    %L = @(params)CosNorm(data, params);
+    [xsol,fval,exitflag,output] = fminsearch(@(params) L(params), x0);
+    
+    a_sol = [a_sol xsol(1)];
+    b_sol = [b_sol xsol(2)];
+    
+end
+
+%plot and compare to stimulus a and b
+nlines = 7;
+cmaps = struct();
+cmaps(1).map =cbrewer2('OrRd', nlines);
+cmaps(2).map =cbrewer2('Blues', nlines);
+cmap = flip(cmaps(2).map) ;
+
+%p = figure('Position',[100 100 900 500]);
+p = figure('Position',[100 100 1200 600]); %
+[h,pos]=tight_subplot(1,2,[.02 .05],[.1 .15],[.05 .02]); %use tight plot for adjusting spacing between axes, and vertical and horizontal margin size
+
+%plot the data points
+% and the mean ±95%CI
+yvar = [a_sol; b_sol./(2*pi)]';
+mYvar = nanmean(yvar,1);
+
+%95%CI
+ci_high = mean(yvar,1) + 1.96*std(yvar,[],1)/sqrt(size(yvar,1));
+ci_low = mean(yvar,1) - 1.96*std(yvar,[],1)/sqrt(size(yvar,1));
+yvars = {'Amplitude (normalized)' , 'Frequency (cyc/s)'};
+
+axes(h(1));
+x = 1*ones(1, length(yvar(:,1)));
+scatter(x, yvar(:,1),40,'MarkerFaceColor',cmap(4,:), 'MarkerEdgeColor',cmap(4,:),'LineWidth',1.5);
+hold on;
+scatter(1*1,mYvar(1),60,'MarkerFaceColor',cmaps(1).map(4,:), 'MarkerEdgeColor',cmaps(1).map(4,:),'LineWidth',1.5); %mean
+hold on
+line([1*1 1*1], [ci_low(1) ci_high(1)], 'Color', cmaps(1).map(4,:), 'LineWidth', 2); %95%CI vertical
+hold on
+line([1*1-0.1 1*1+0.1], [ci_low(1) ci_low(1)], 'Color', cmaps(1).map(4,:), 'LineWidth', 2); %95%CI whiskers
+hold on
+line([1*1-0.1 1*1+0.1], [ci_high(1) ci_high(1)], 'Color', cmaps(1).map(4,:), 'LineWidth', 2); %95%CI whiskers
+hold on
+
+% Set up axes.
+xlim([0, length(yvars)]);
+ylim([max(yvar(:,1),[],'all')-0.3, max(yvar(:,1),[],'all')+0.1]);
+curtick = get(gca, 'xTick');
+xticks(unique(round(curtick)));
+ylab = yvars{1};
+ylabel(ylab,'fontweight','bold','fontsize',16)
+yticklab = get(gca,'YTickLabel');
+set(gca,'YTickLabel',yticklab,'fontsize',12)
+
+axes(h(2));
+x = 1*ones(1, length(yvar(:,2)));
+scatter(x, yvar(:,2),40,'MarkerFaceColor',cmap(4,:), 'MarkerEdgeColor',cmap(4,:),'LineWidth',1.5);
+hold on;
+scatter(1*1,mYvar(2),60,'MarkerFaceColor',cmaps(1).map(4,:), 'MarkerEdgeColor',cmaps(1).map(4,:),'LineWidth',1.5); %mean
+hold on
+line([1*1 1*1], [ci_low(2) ci_high(2)], 'Color', cmaps(1).map(4,:), 'LineWidth', 2); %95%CI vertical
+hold on
+line([1*1-0.1 1*1+0.1], [ci_low(2) ci_low(2)], 'Color', cmaps(1).map(4,:), 'LineWidth', 2); %95%CI whiskers
+hold on
+line([1*1-0.1 1*1+0.1], [ci_high(2) ci_high(2)], 'Color', cmaps(1).map(4,:), 'LineWidth', 2); %95%CI whiskers
+hold on
+
+% Set up axes.
+xlim([0, length(yvars)]);
+ylim([max(yvar(:,2),[],'all')-0.02, max(yvar(:,2),[],'all')+0.01]);
+curtick = get(gca, 'xTick');
+xticks(unique(round(curtick)));
+ylab = yvars{2};
+ylabel(ylab,'fontweight','bold','fontsize',16)
+yticklab = get(gca,'YTickLabel');
+set(gca,'YTickLabel',yticklab,'fontsize',12)
+legend('Subject Model fit','95%CI')
+sgtitle('fminsearch mse results', 'FontWeight', 'Bold','fontsize',22)
+
+plotdir = strcat('/Users/loicdaumail/Documents/Research_MacBook/Tong_Lab/Projects/Prototype_phantom_FEM/anal_plots/');
+saveas(gcf,strcat(plotdir, sprintf('%s_model_fminsearch_params_10182022.png',conditions{:})));
+   
 
 %% Compute stdx and stdy and compare across conditions with mean or min background luminance
 % stdx = nan(10, length(exptDat.exp.conds));
