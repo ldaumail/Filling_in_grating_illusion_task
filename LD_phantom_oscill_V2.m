@@ -66,7 +66,7 @@ exp.stim.cycles = 2/2; %number of cycles shifted per lap  (modified to half the 
 exp.initialFixation = 6;        % in seconds
 exp.finalFixation = 2;          % in seconds
 exp.stimDur = (exp.stim.cycles/exp.stim.cycPerSec)*2;        % in seconds. 1.77 sec refers to sine wave grating 1.77 = 2cycles/1.13cyc.sec-1 mutiplied by 2 for back and forth
-exp.stimsPerBlock = 3;      % number of back-and-forth laps of the stimulus drift
+exp.stimsPerBlock = 6;      % number of back-and-forth laps of the stimulus drift
 exp.blockLength = ceil(exp.stimDur*exp.stimsPerBlock);            % in seconds
 exp.betweenBlocks = 2;          % in seconds
 exp.flipsPerSec = 60;  % 12;         % number of phase changes we want from the visual stimulus, and thus the number of times we want to change visual stimulation on the screen
@@ -74,7 +74,7 @@ exp.flipWin = 1/exp.flipsPerSec;         % in seconds then actually in 1 sec the
 %e.numBlocks = 12;  % 6 for single and 6 for pair...
 
 %%%% conditions & layout (across blocks scale)
-exp.conds = {'SquFixMinbg'}; %'vertDoubleRect''horSingleL','horSingleR','horDoubleIndir'
+exp.conds = {'SquFixMinbg', 'SquFixMeanbg'}; %'vertDoubleRect''horSingleL','horSingleR','horDoubleIndir'
 exp.numConds = length(exp.conds);
 % with line of code below we will have 1 condition per block, randomized. we might need to change that
 % later, to have the conditions randomized within each block
@@ -284,8 +284,8 @@ exp.fixSpatialPhase = 0; %(1/(4*exp.stim.spatialFreqDeg))*exp.ppd;
 exp.driftPos = exp.driftPosDeg.*exp.ppd +exp.fixSpatialPhase;
 
 exp.longDriftPos = [zeros(1,exp.initialFixation*exp.flipsPerSec)...
-    repmat([exp.driftPos(1:length(exp.driftPos)/2) zeros(1,length(exp.driftPos)*floor(exp.blockLength*exp.flipsPerSec/length(exp.driftPos))+mod(exp.blockLength*exp.flipsPerSec,length(exp.driftPos))-length(exp.driftPos)/2) zeros(1,exp.betweenBlocks*exp.flipsPerSec)],1,exp.numBlocks-1)... %2*ones(1,e.blockLength) zeros(1,e.betweenBlocks)
-    exp.driftPos(1:length(exp.driftPos)/2) zeros(1,length(exp.driftPos)*floor(exp.blockLength*exp.flipsPerSec/length(exp.driftPos))+mod(exp.blockLength*exp.flipsPerSec,length(exp.driftPos))-length(exp.driftPos)/2) zeros(1,exp.finalFixation*exp.flipsPerSec)];
+    repmat([exp.driftPos zeros(1,length(exp.driftPos)*floor(exp.blockLength*exp.flipsPerSec/length(exp.driftPos))+mod(exp.blockLength*exp.flipsPerSec,length(exp.driftPos))-length(exp.driftPos)) zeros(1,exp.betweenBlocks*exp.flipsPerSec)],1,exp.numBlocks-1)... %2*ones(1,e.blockLength) zeros(1,e.betweenBlocks)
+    exp.driftPos zeros(1,length(exp.driftPos)*floor(exp.blockLength*exp.flipsPerSec/length(exp.driftPos))+mod(exp.blockLength*exp.flipsPerSec,length(exp.driftPos))-length(exp.driftPos)) zeros(1,exp.finalFixation*exp.flipsPerSec)];
 
 % %% %%%%%%%%%%%%%%%%%%%%%%
 %    % Letter task set-up %
@@ -347,7 +347,7 @@ Screen(w, 'DrawText', 'Waiting for Backtick.', 10,10,[0 0 0]);
 Screen(w, 'Flip', 0);
 KbTriggerWait(53, deviceNumber);
 
-DrawFormattedText(w,'Fixate the oscillating fixation circle or follow the visual phantom'... % : press 1 as soon as letter J appears on the screen,\n\n and press 2 as soon as letter K appears on the screen. \n\n Press Space to start'...
+DrawFormattedText(w,'Fixate the oscillating red fixation  point, then follow the visual phantom'... % : press 1 as soon as letter J appears on the screen,\n\n and press 2 as soon as letter K appears on the screen. \n\n Press Space to start'...
     ,'center', 'center',[0 0 0]);
 Screen(w, 'Flip', 0);
 KbTriggerWait(KbName('Space'), deviceNumber);
@@ -363,11 +363,9 @@ KbTriggerWait(KbName('Space'), deviceNumber);
 n=0;
 %%%%%%% START task TASK/FLIPPING
 % [e.totalTime, e.allFlips,n]
-%if strfind(conditions(thisCond).name{:}, 'Minbg')
-gray = repmat(min(min(squeeze(exp.LWave(1,:,:)),[],1)), [1,3]);
-%elseif strfind(conditions(thisCond).name{:}, 'Meanbg')
-    %gray = repmat(mean(squeeze(exp.LWave(1,1,:))), [1,3]);
-%end
+
+gray = repmat(mean(squeeze(exp.LWave(1,1,:))), [1,3]);
+
 Screen('FillRect', w, gray);
     
 if ET
@@ -389,7 +387,6 @@ while n+1 < length(exp.allFlips)
     end
 
     [exp.longFormBlocks(n+1),exp.longFormFlicker(n+1)]
-    thisCond = exp.longFormConds(n+1);
 
     %     KbQueueStart();
     %%%%%%%%%%% FLIP %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -402,7 +399,14 @@ while n+1 < length(exp.allFlips)
 
     %%%% draw sine wave grating stimulus %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     if exp.longFormBlocks(n+1) == 1 && exp.longFormFlicker(n+1) > 0 % zeros correspond to IBI, in which case we skip this next section
-
+        thisCond = exp.longFormConds(n+1);
+        %screen background color
+        if strfind(conditions(thisCond).name{:}, 'Minbg')
+            gray = repmat(min(min(squeeze(exp.LWave(1,:,:)),[],1)), [1,3]);
+        elseif strfind(conditions(thisCond).name{:}, 'Meanbg')
+            gray = repmat(mean(squeeze(exp.LWave(1,1,:))), [1,3]);
+        end
+        Screen('FillRect', w, gray);
         % draw & increment stims
         if strfind(conditions(thisCond).name{:}, 'SquFix')  %|| strcmp(conditions(thisCond).name, 'double-oppdir')  % draw second stim if it is 'double-indir' or 'double-oppdir' %if it's randomized or incognruent
             % top stim

@@ -74,7 +74,7 @@ exp.flipWin = 1/exp.flipsPerSec;         % in seconds then actually in 1 sec the
 %e.numBlocks = 12;  % 6 for single and 6 for pair...
 
 %%%% conditions & layout (across blocks scale)
-exp.conds = {'SquFixMinbg'}; %'vertDoubleRect''horSingleL','horSingleR','horDoubleIndir'
+exp.conds = {'SquFixMinbg', 'SquFixMeanbg'}; %'vertDoubleRect''horSingleL','horSingleR','horDoubleIndir'
 exp.numConds = length(exp.conds);
 % with line of code below we will have 1 condition per block, randomized. we might need to change that
 % later, to have the conditions randomized within each block
@@ -363,11 +363,11 @@ KbTriggerWait(KbName('Space'), deviceNumber);
 n=0;
 %%%%%%% START task TASK/FLIPPING
 % [e.totalTime, e.allFlips,n]
-%if strfind(conditions(thisCond).name{:}, 'Minbg')
+if strfind(conditions(thisCond).name{:}, 'Minbg')
 gray = repmat(min(min(squeeze(exp.LWave(1,:,:)),[],1)), [1,3]);
-%elseif strfind(conditions(thisCond).name{:}, 'Meanbg')
-    %gray = repmat(mean(squeeze(exp.LWave(1,1,:))), [1,3]);
-%end
+elseif strfind(conditions(thisCond).name{:}, 'Meanbg')
+    gray = repmat(mean(squeeze(exp.LWave(1,1,:))), [1,3]);
+end
 Screen('FillRect', w, gray);
     
 if ET
@@ -548,7 +548,8 @@ if ET
 %     end
     
     Eyelink('Shutdown');
-    save(strcat(savedir,'ET_pilot_nofix.mat'), EyeData)
+    savename = fullfile(savedir, strcat(sprintf('/s%d_smooth_pursuit_v2_sn%d_rn%d_date%s_fix_eyeDat',subject,exp.scanNum,exp.runNum,num2str(exp.date)), '.mat'));
+    save(savename, EyeData)
 end  
 
 
