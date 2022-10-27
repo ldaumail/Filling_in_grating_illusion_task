@@ -1,20 +1,23 @@
-%function phantom_v2(subject, session, vertOffset, debug) 
+%function phantom_v3(subject, session, vertOffset, debug) 
 %In this version, we add breaks
 subject = 1;
 session = 1;
 debug = 0;
 vertOffset = 0;
-
+% eyetracking on (1) or off (0)
+ET = 1;
 global EyeData rect w xc yc %eye_used
 %%%% resolution
 if debug == 1
     exp.screenWidth = 17;             % in cm; %laptop=27.5,office=43, %19=%T3b, miniHelm=39;
     exp.viewingDist = 48;             % in cm; 3Tb/office=43, miniHelm=57;
 	exp.resolution = SetResolution(max(Screen('Screens')),1024,768,0); % laptop
+    exp.gammaCorrection = 0;       % make sure this = 1 when you're at the scanner!
  else
     exp.screenWidth = 16;             % in cm; % 16 in eye tracking room 425%laptop=27.5,office=43, %19=%T3b, miniHelm=39;
     exp.viewingDist = 23;             % in cm; %23 in eye tracking room 425 3Tb/office=43, miniHelm=57;
     exp.resolution = SetResolution(max(Screen('Screens')),1024,768,60); % scanner
+    exp.gammaCorrection = 1;       % make sure this = 1 when you're at the scanner!
 end
 
 %%%% keyboard
@@ -29,7 +32,7 @@ Screen('Preference', 'SkipSyncTests', 0);
 exp.scanNum = input('Scan number :');
 exp.runNum = input('Run number :');
 exp.vertOffset = vertOffset;    % vertical offset from FindScreenSize.m
-exp.gammaCorrect = 1;       % make sure this = 1 when you're at the scanner!
+
 exp.whichCLUT = '7T_Sam.mat'; %'linearizedCLUT_SoniaMPB.mat';
 
 %%% basic naming set-up
@@ -162,8 +165,8 @@ Priority(9);
 
 %%%% open screen
 screen=max(Screen('Screens'));
-[w, rect]=Screen('OpenWindow',screen,exp.backgroundColor,[100 100 900 600],[],[],[],[],kPsychNeed32BPCFloat); %might need to switch 900 and 600 by 1600 and 1200 for room 425
-%[w, rect]=Screen('OpenWindow',screen,exp.backgroundColor,[],[],[],[],[],kPsychNeed32BPCFloat); %might need to switch 900 and 600 by 1600 and 1200 for room 425
+%[w, rect]=Screen('OpenWindow',screen,exp.backgroundColor,[100 100 900 600],[],[],[],[],kPsychNeed32BPCFloat); %might need to switch 900 and 600 by 1600 and 1200 for room 425
+[w, rect]=Screen('OpenWindow',screen,exp.backgroundColor,[],[],[],[],[],kPsychNeed32BPCFloat); %might need to switch 900 and 600 by 1600 and 1200 for room 425
 Screen(w, 'TextSize', exp.fontSize);
 Screen('BlendFunction', w, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
@@ -172,7 +175,12 @@ Screen('BlendFunction', w, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 %     load(e.whichCLUT);
 %     Screen('LoadNormalizedGammaTable', screen, linearizedCLUT);
 % end
-
+%gamma correction, file prepared for room 425
+if exp.gammaCorrection 
+  %load gamma correction file
+  load('/Users/tongtesting2/Desktop/MonitorCal/425dell/phase2_photometry.mat')
+  Screen('LoadNormalizedGammaTable', w, inverseCLUT);
+end
 %%%% timing optimization
 frameInt = Screen('GetFlipInterval',w);
 slack = frameInt/2;
@@ -206,7 +214,7 @@ exp.stim.phases = exp.stim.oscillation.*180*exp.stim.cycles+exp.stim.spatialPhas
 %5)Then we subtract the phase at each flip at time t which here is 0.
 
 %6)The amplitude of cos() varies between -1 and +1. Here we want our
-%displacement (grating shift) in degrees with a displacement of 360° (of the spatial grating) every half temporal oscillation so we multiply by 180 for the range to be [-180;+180].
+%displacement (grating shift) in degrees with a displacement of 360? (of the spatial grating) every half temporal oscillation so we multiply by 180 for the range to be [-180;+180].
 
 %7) we multiply by the number of cycles desired to drift over one lap
 %(exp.stim.cycles).
@@ -334,8 +342,7 @@ exp.longDriftPos = [zeros(1,exp.initialFixation*exp.flipsPerSec)...
 % exp.letterSequence = Expand(exp.letterSequence,flipsPerTrial,1);%e.flipsPerSec,1); 
 
 %% Eyetracking parameters
-% eyetracking on (1) or off (0)
-ET = 0;
+
 if ET 
     EyelinkSetup(0);
     eye_used = Eyelink('EyeAvailable');
@@ -544,9 +551,9 @@ exp.runTime = GetSecs - exp.startRun;
 % exp.accuracy = (sum(exp.hits)/size(exp.targetTimes,2))*100;
 % exp.meanRT = nanmean(exp.RTs);
 
-savedir = fullfile(exp.root,'data',sprintf('s%d/sess%d/',subject,session),'smooth_pursuit_v2');
+savedir = fullfile(exp.root,'data',sprintf('s%d/sess%d/',subject,session),'smooth_pursuit_v3');
 if ~exist(savedir); mkdir(savedir); end
-savename = fullfile(savedir, strcat(sprintf('/s%d_smooth_pursuit_v2_sn%d_rn%d_date%s_fix',subject,exp.scanNum,exp.runNum,num2str(exp.date)), '.mat'));
+savename = fullfile(savedir, strcat(sprintf('/s%d_smooth_pursuit_v3_sn%d_rn%d_date%s_fix',subject,exp.scanNum,exp.runNum,num2str(exp.date)), '.mat'));
 save(savename,'exp');
 
 %KbQueueRelease();
@@ -578,6 +585,6 @@ if ET
 %     end
     
     Eyelink('Shutdown');
-    savename = fullfile(savedir, strcat(sprintf('/s%d_smooth_pursuit_v2_sn%d_rn%d_date%s_fix_eyeDat',subject,exp.scanNum,exp.runNum,num2str(exp.date)), '.mat'));
-    save(savename, EyeData)
+    savename = fullfile(savedir, strcat(sprintf('/s%d_smooth_pursuit_v3_sn%d_rn%d_date%s_fix_eyeDat',subject,exp.scanNum,exp.runNum,num2str(exp.date)), '.mat'));
+    save(savename, 'EyeData')
 end  
