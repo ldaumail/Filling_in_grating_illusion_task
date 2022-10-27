@@ -439,7 +439,11 @@ while n+1 < length(exp.allFlips)
             tr = (tstartcnt-1)/2+1;
             Eyelink('Message', 'TRIALID %d', tr);
             Eyelink('Message', 'STIM_ONSET');
+        elseif isempty(find(mod(tstartcnt,2)))
+            Eyelink('Message', 'STIM_OFFSET');
         end
+        
+        
     end
     
     if nnz(cnt) && mod(cnt,4) == 0 && GetSecs-time >= 1
