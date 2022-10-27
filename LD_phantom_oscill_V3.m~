@@ -382,6 +382,7 @@ end
 
 onOffs = [diff(exp.longFormBlocks) 0];
 cnt = 0;
+tstartcnt = 0;
 while n+1 < length(exp.allFlips)
 
     if ET
@@ -433,15 +434,36 @@ while n+1 < length(exp.allFlips)
     if nnz(onOffs(n+1)) == 1
         cnt = cnt +1;
         time = GetSecs;
+        tstartcnt = tstartcnt +1;
+        if ~isempty(find(mod(tstartcnt,2)))
+            tr = (tstartcnt-1)/2+1;
+            Eyelink('Message', 'TRIALID %d', tr);
+            Eyelink('Message', 'STIM_ONSET');
+        end
     end
     
-    if nnz(cnt) && mod(cnt,4) == 0 
-        DrawFormattedText(w,'take a break, you deserve many breaks!'... % : press 1 as soon as letter J appears on the screen,\n\n and press 2 as soon as letter K appears on the screen. \n\n Press Space to start'...
+    if nnz(cnt) && mod(cnt,4) == 0 && GetSecs-time >= 1
+        DrawFormattedText(w,'Take a break, you deserve many breaks!'... % : press 1 as soon as letter J appears on the screen,\n\n and press 2 as soon as letter K appears on the screen. \n\n Press Space to start'...
             ,'center', 'center',[0 0 0]);
         Screen(w, 'Flip', 0);
         KbTriggerWait(KbName('Space'), deviceNumber);
         cnt = 0;
     end
+    
+    
+    while 1 %loop until error
+        err = Eyelink('CheckRecording');
+        if(err ~= 0)
+            fprintf('EyeLink Recording stopped!\n');
+            %Transfer a copy of EDF file to Display PC
+            Eyelink('SetOfflineMode');%Put tracker in idle/offline mode
+            Eyelink('CloseFile'); %Close EDF file on Host PC
+            Eyelink('Command', 'clear_screen 0'); %clear trial image on host PC at the end of the experiment
+            WaitSecs(0.1) %Allow some time for screen drawing
+            % Transfer copy of the EDF file to Display PC
+            transferFile; % See transferFile function below
+            error('EyeLink is not in record mode when it should be. Unknown
+        
     %     % select new character if starting new trial
 %     if mod(n, flipsPerTrial) == 0
 % 
