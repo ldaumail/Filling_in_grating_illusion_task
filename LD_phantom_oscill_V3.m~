@@ -1,20 +1,23 @@
-%function phantom_v2(subject, session, vertOffset, debug) 
+%function phantom_v3(subject, session, vertOffset, debug) 
+%In this version, we add breaks
 subject = 1;
 session = 1;
-debug = 0;
+debug = 1;
 vertOffset = 0;
-
-
+% eyetracking on (1) or off (0)
+ET = 0;
 global EyeData rect w xc yc %eye_used
 %%%% resolution
 if debug == 1
     exp.screenWidth = 17;             % in cm; %laptop=27.5,office=43, %19=%T3b, miniHelm=39;
     exp.viewingDist = 48;             % in cm; 3Tb/office=43, miniHelm=57;
-	exp.resolution = SetResolution(max(Screen('Screens')),1024,768,0); % laptop
+	exp.resolution = SetResolution(max(Screen('Screens')),1024,768,60); % laptop
+    exp.gammaCorrection = 0;       % make sure this = 1 when you're at the scanner!
  else
     exp.screenWidth = 16;             % in cm; % 16 in eye tracking room 425%laptop=27.5,office=43, %19=%T3b, miniHelm=39;
     exp.viewingDist = 23;             % in cm; %23 in eye tracking room 425 3Tb/office=43, miniHelm=57;
     exp.resolution = SetResolution(max(Screen('Screens')),1024,768,60); % scanner
+    exp.gammaCorrection = 1;       % make sure this = 1 when you're at the scanner!
 end
 
 %%%% keyboard
@@ -29,7 +32,7 @@ Screen('Preference', 'SkipSyncTests', 0);
 exp.scanNum = input('Scan number :');
 exp.runNum = input('Run number :');
 exp.vertOffset = vertOffset;    % vertical offset from FindScreenSize.m
-exp.gammaCorrect = 1;       % make sure this = 1 when you're at the scanner!
+
 exp.whichCLUT = '7T_Sam.mat'; %'linearizedCLUT_SoniaMPB.mat';
 
 %%% basic naming set-up
@@ -66,7 +69,7 @@ exp.stim.cycles = 2/2; %number of cycles shifted per lap  (modified to half the 
 exp.initialFixation = 6;        % in seconds
 exp.finalFixation = 2;          % in seconds
 exp.stimDur = (exp.stim.cycles/exp.stim.cycPerSec)*2;        % in seconds. 1.77 sec refers to sine wave grating 1.77 = 2cycles/1.13cyc.sec-1 mutiplied by 2 for back and forth
-exp.stimsPerBlock = 3;      % number of back-and-forth laps of the stimulus drift
+exp.stimsPerBlock = 6;      % number of back-and-forth laps of the stimulus drift
 exp.blockLength = ceil(exp.stimDur*exp.stimsPerBlock);            % in seconds
 exp.betweenBlocks = 2;          % in seconds
 exp.flipsPerSec = 60;  % 12;         % number of phase changes we want from the visual stimulus, and thus the number of times we want to change visual stimulation on the screen
@@ -172,7 +175,12 @@ Screen('BlendFunction', w, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 %     load(e.whichCLUT);
 %     Screen('LoadNormalizedGammaTable', screen, linearizedCLUT);
 % end
-
+%gamma correction, file prepared for room 425
+if exp.gammaCorrection 
+  %load gamma correction file
+  load('/Users/tongtesting2/Desktop/MonitorCal/425dell/phase2_photometry.mat')
+  Screen('LoadNormalizedGammaTable', w, inverseCLUT);
+end
 %%%% timing optimization
 frameInt = Screen('GetFlipInterval',w);
 slack = frameInt/2;
@@ -206,7 +214,7 @@ exp.stim.phases = exp.stim.oscillation.*180*exp.stim.cycles+exp.stim.spatialPhas
 %5)Then we subtract the phase at each flip at time t which here is 0.
 
 %6)The amplitude of cos() varies between -1 and +1. Here we want our
-%displacement (grating shift) in degrees with a displacement of 360° (of the spatial grating) every half temporal oscillation so we multiply by 180 for the range to be [-180;+180].
+%displacement (grating shift) in degrees with a displacement of 360? (of the spatial grating) every half temporal oscillation so we multiply by 180 for the range to be [-180;+180].
 
 %7) we multiply by the number of cycles desired to drift over one lap
 %(exp.stim.cycles).
@@ -269,12 +277,12 @@ xc = rect(3)/2; % rect and center, with the flexibility to resize & shift center
 yc = rect(4)/2; %+e.vertOffset;
 
 xL = rect(3)/2; % % = stimulus center located on the horizontal center of the screen
-yL = rect(4)/2 - exp.stim.gaborHDeg*exp.ppd; % stimulus located 4 degrees above screen center
+yL = rect(4)/2 - exp.stim.gaborHDeg*exp.ppd+0.5*exp.ppd; % stimulus located 4 degrees above screen center
 exp.LRect =  CenterRectOnPoint([0 0 exp.gaborWidth exp.gaborHeight],xL,yL);
 exp.rectLRect =  CenterRectOnPoint([0 0 exp.rectGaborWidth exp.gaborHeight],xL,yL);
 
 xR = rect(3)/2 ; % = stimulus center located on the horizontal center of the screen
-yR = rect(4)/2+ exp.stim.gaborHDeg*exp.ppd; % stimulus located 4 degrees below screen center
+yR = rect(4)/2+ exp.stim.gaborHDeg*exp.ppd-0.5*exp.ppd; % stimulus located 4 degrees below screen center
 exp.RRect =  CenterRectOnPoint([0 0 exp.gaborWidth exp.gaborHeight],xR,yR);
 exp.rectRRect =  CenterRectOnPoint([0 0 exp.rectGaborWidth exp.gaborHeight],xR,yR);
 
@@ -284,8 +292,8 @@ exp.fixSpatialPhase = 0; %(1/(4*exp.stim.spatialFreqDeg))*exp.ppd;
 exp.driftPos = exp.driftPosDeg.*exp.ppd +exp.fixSpatialPhase;
 
 exp.longDriftPos = [zeros(1,exp.initialFixation*exp.flipsPerSec)...
-    repmat([exp.driftPos(1:length(exp.driftPos)/2) zeros(1,length(exp.driftPos)*floor(exp.blockLength*exp.flipsPerSec/length(exp.driftPos))+mod(exp.blockLength*exp.flipsPerSec,length(exp.driftPos))-length(exp.driftPos)/2) zeros(1,exp.betweenBlocks*exp.flipsPerSec)],1,exp.numBlocks-1)... %2*ones(1,e.blockLength) zeros(1,e.betweenBlocks)
-    exp.driftPos(1:length(exp.driftPos)/2) zeros(1,length(exp.driftPos)*floor(exp.blockLength*exp.flipsPerSec/length(exp.driftPos))+mod(exp.blockLength*exp.flipsPerSec,length(exp.driftPos))-length(exp.driftPos)/2) zeros(1,exp.finalFixation*exp.flipsPerSec)];
+    repmat([exp.driftPos zeros(1,length(exp.driftPos)*floor(exp.blockLength*exp.flipsPerSec/length(exp.driftPos))+mod(exp.blockLength*exp.flipsPerSec,length(exp.driftPos))-length(exp.driftPos)) zeros(1,exp.betweenBlocks*exp.flipsPerSec)],1,exp.numBlocks-1)... %2*ones(1,e.blockLength) zeros(1,e.betweenBlocks)
+    exp.driftPos zeros(1,length(exp.driftPos)*floor(exp.blockLength*exp.flipsPerSec/length(exp.driftPos))+mod(exp.blockLength*exp.flipsPerSec,length(exp.driftPos))-length(exp.driftPos)) zeros(1,exp.finalFixation*exp.flipsPerSec)];
 
 % %% %%%%%%%%%%%%%%%%%%%%%%
 %    % Letter task set-up %
@@ -334,8 +342,7 @@ exp.longDriftPos = [zeros(1,exp.initialFixation*exp.flipsPerSec)...
 % exp.letterSequence = Expand(exp.letterSequence,flipsPerTrial,1);%e.flipsPerSec,1); 
 
 %% Eyetracking parameters
-% eyetracking on (1) or off (0)
-ET = 0;
+
 if ET 
     EyelinkSetup(0);
     eye_used = Eyelink('EyeAvailable');
@@ -347,7 +354,7 @@ Screen(w, 'DrawText', 'Waiting for Backtick.', 10,10,[0 0 0]);
 Screen(w, 'Flip', 0);
 KbTriggerWait(53, deviceNumber);
 
-DrawFormattedText(w,'Fixate the oscillating fixation circle or follow the visual phantom'... % : press 1 as soon as letter J appears on the screen,\n\n and press 2 as soon as letter K appears on the screen. \n\n Press Space to start'...
+DrawFormattedText(w,'Fixate the oscillating red fixation point, then follow the visual phantom \n\n as best as you can, even after the red dot'... % : press 1 as soon as letter J appears on the screen,\n\n and press 2 as soon as letter K appears on the screen. \n\n Press Space to start'...
     ,'center', 'center',[0 0 0]);
 Screen(w, 'Flip', 0);
 KbTriggerWait(KbName('Space'), deviceNumber);
@@ -363,11 +370,9 @@ KbTriggerWait(KbName('Space'), deviceNumber);
 n=0;
 %%%%%%% START task TASK/FLIPPING
 % [e.totalTime, e.allFlips,n]
-if strfind(conditions(thisCond).name{:}, 'Minbg')
-gray = repmat(min(min(squeeze(exp.LWave(1,:,:)),[],1)), [1,3]);
-elseif strfind(conditions(thisCond).name{:}, 'Meanbg')
-    gray = repmat(mean(squeeze(exp.LWave(1,1,:))), [1,3]);
-end
+
+gray = repmat(mean(squeeze(exp.LWave(1,1,:))), [1,3]);
+
 Screen('FillRect', w, gray);
     
 if ET
@@ -382,6 +387,9 @@ end
 %EyeStart = GetSecs(); %time we start caring about eyetracking
 %currPosID = i;
 
+onOffs = [diff(exp.longFormBlocks) 0];
+cnt = 0;
+tstartcnt = 0;
 while n+1 < length(exp.allFlips)
 
     if ET
@@ -389,7 +397,6 @@ while n+1 < length(exp.allFlips)
     end
 
     [exp.longFormBlocks(n+1),exp.longFormFlicker(n+1)]
-    thisCond = exp.longFormConds(n+1);
 
     %     KbQueueStart();
     %%%%%%%%%%% FLIP %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -402,7 +409,14 @@ while n+1 < length(exp.allFlips)
 
     %%%% draw sine wave grating stimulus %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     if exp.longFormBlocks(n+1) == 1 && exp.longFormFlicker(n+1) > 0 % zeros correspond to IBI, in which case we skip this next section
-
+        thisCond = exp.longFormConds(n+1);
+        %screen background color
+        if strfind(conditions(thisCond).name{:}, 'Minbg')
+            gray = repmat(min(min(squeeze(exp.LWave(1,:,:)),[],1)), [1,3]);
+        elseif strfind(conditions(thisCond).name{:}, 'Meanbg')
+            gray = repmat(mean(squeeze(exp.LWave(1,1,:))), [1,3]);
+        end
+        Screen('FillRect', w, gray);
         % draw & increment stims
         if strfind(conditions(thisCond).name{:}, 'SquFix')  %|| strcmp(conditions(thisCond).name, 'double-oppdir')  % draw second stim if it is 'double-indir' or 'double-oppdir' %if it's randomized or incognruent
             % top stim
@@ -424,8 +438,32 @@ while n+1 < length(exp.allFlips)
         end
         
     end
+    if nnz(onOffs(n+1)) == 1
+        cnt = cnt +1;
+        time = GetSecs;
+        tstartcnt = tstartcnt +1;
+        if ~isempty(find(mod(tstartcnt,2))) && ET == 1
+            tr = (tstartcnt-1)/2+1;
+            %Eyelink('Message', 'Cond %s', conditions(thisCond).name{:})
+            Eyelink('Message', 'TRIALID %d', tr);
+            Eyelink('Message', 'STIM_ONSET');
+        elseif isempty(find(mod(tstartcnt,2))) && ET == 1
+            Eyelink('Message', 'STIM_OFFSET');
+        end
+        
+        
+    end
+    
+    if nnz(cnt) && mod(cnt,4) == 0 && GetSecs-time >= 1
+        DrawFormattedText(w,'Take a break, you deserve many breaks!'... % : press 1 as soon as letter J appears on the screen,\n\n and press 2 as soon as letter K appears on the screen. \n\n Press Space to start'...
+            ,'center', 'center',[0 0 0]);
+        Screen(w, 'Flip', 0);
+        KbTriggerWait(KbName('Space'), deviceNumber);
+        cnt = 0;
+    end
     
     
+
     %     % select new character if starting new trial
 %     if mod(n, flipsPerTrial) == 0
 % 
@@ -514,9 +552,9 @@ exp.runTime = GetSecs - exp.startRun;
 % exp.accuracy = (sum(exp.hits)/size(exp.targetTimes,2))*100;
 % exp.meanRT = nanmean(exp.RTs);
 
-savedir = fullfile(exp.root,'data',sprintf('s%d/sess%d/',subject,session),'smooth_pursuit_v2');
+savedir = fullfile(exp.root,'data',sprintf('s%d/sess%d/',subject,session),'smooth_pursuit_v3');
 if ~exist(savedir); mkdir(savedir); end
-savename = fullfile(savedir, strcat(sprintf('/s%d_smooth_pursuit_v2_sn%d_rn%d_date%s_fix',subject,exp.scanNum,exp.runNum,num2str(exp.date)), '.mat'));
+savename = fullfile(savedir, strcat(sprintf('/s%d_smooth_pursuit_v3_sn%d_rn%d_date%s_fix',subject,exp.scanNum,exp.runNum,num2str(exp.date)), '.mat'));
 save(savename,'exp');
 
 %KbQueueRelease();
@@ -548,10 +586,6 @@ if ET
 %     end
     
     Eyelink('Shutdown');
-    savename = fullfile(savedir, strcat(sprintf('/s%d_smooth_pursuit_v2_sn%d_rn%d_date%s_fix_eyeDat',subject,exp.scanNum,exp.runNum,num2str(exp.date)), '.mat'));
-    save(savename, EyeData)
+    savename = fullfile(savedir, strcat(sprintf('/s%d_smooth_pursuit_v3_sn%d_rn%d_date%s_fix_eyeDat',subject,exp.scanNum,exp.runNum,num2str(exp.date)), '.mat'));
+    save(savename, 'EyeData')
 end  
-
-
-
-

@@ -2,16 +2,16 @@
 %In this version, we add breaks
 subject = 1;
 session = 1;
-debug = 0;
+debug = 1;
 vertOffset = 0;
 % eyetracking on (1) or off (0)
-ET = 1;
+ET = 0;
 global EyeData rect w xc yc %eye_used
 %%%% resolution
 if debug == 1
     exp.screenWidth = 17;             % in cm; %laptop=27.5,office=43, %19=%T3b, miniHelm=39;
     exp.viewingDist = 48;             % in cm; 3Tb/office=43, miniHelm=57;
-	exp.resolution = SetResolution(max(Screen('Screens')),1024,768,0); % laptop
+	exp.resolution = SetResolution(max(Screen('Screens')),1024,768,60); % laptop
     exp.gammaCorrection = 0;       % make sure this = 1 when you're at the scanner!
  else
     exp.screenWidth = 16;             % in cm; % 16 in eye tracking room 425%laptop=27.5,office=43, %19=%T3b, miniHelm=39;
@@ -165,8 +165,8 @@ Priority(9);
 
 %%%% open screen
 screen=max(Screen('Screens'));
-%[w, rect]=Screen('OpenWindow',screen,exp.backgroundColor,[100 100 900 600],[],[],[],[],kPsychNeed32BPCFloat); %might need to switch 900 and 600 by 1600 and 1200 for room 425
-[w, rect]=Screen('OpenWindow',screen,exp.backgroundColor,[],[],[],[],[],kPsychNeed32BPCFloat); %might need to switch 900 and 600 by 1600 and 1200 for room 425
+[w, rect]=Screen('OpenWindow',screen,exp.backgroundColor,[100 100 900 600],[],[],[],[],kPsychNeed32BPCFloat); %might need to switch 900 and 600 by 1600 and 1200 for room 425
+%[w, rect]=Screen('OpenWindow',screen,exp.backgroundColor,[],[],[],[],[],kPsychNeed32BPCFloat); %might need to switch 900 and 600 by 1600 and 1200 for room 425
 Screen(w, 'TextSize', exp.fontSize);
 Screen('BlendFunction', w, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
@@ -277,12 +277,12 @@ xc = rect(3)/2; % rect and center, with the flexibility to resize & shift center
 yc = rect(4)/2; %+e.vertOffset;
 
 xL = rect(3)/2; % % = stimulus center located on the horizontal center of the screen
-yL = rect(4)/2 - exp.stim.gaborHDeg*exp.ppd; % stimulus located 4 degrees above screen center
+yL = rect(4)/2 - exp.stim.gaborHDeg*exp.ppd+0.5*exp.ppd; % stimulus located 4 degrees above screen center
 exp.LRect =  CenterRectOnPoint([0 0 exp.gaborWidth exp.gaborHeight],xL,yL);
 exp.rectLRect =  CenterRectOnPoint([0 0 exp.rectGaborWidth exp.gaborHeight],xL,yL);
 
 xR = rect(3)/2 ; % = stimulus center located on the horizontal center of the screen
-yR = rect(4)/2+ exp.stim.gaborHDeg*exp.ppd; % stimulus located 4 degrees below screen center
+yR = rect(4)/2+ exp.stim.gaborHDeg*exp.ppd-0.5*exp.ppd; % stimulus located 4 degrees below screen center
 exp.RRect =  CenterRectOnPoint([0 0 exp.gaborWidth exp.gaborHeight],xR,yR);
 exp.rectRRect =  CenterRectOnPoint([0 0 exp.rectGaborWidth exp.gaborHeight],xR,yR);
 
@@ -354,7 +354,7 @@ Screen(w, 'DrawText', 'Waiting for Backtick.', 10,10,[0 0 0]);
 Screen(w, 'Flip', 0);
 KbTriggerWait(53, deviceNumber);
 
-DrawFormattedText(w,'Fixate the oscillating red fixation point, then follow the visual phantom'... % : press 1 as soon as letter J appears on the screen,\n\n and press 2 as soon as letter K appears on the screen. \n\n Press Space to start'...
+DrawFormattedText(w,'Follow the oscillating visual phantom within the gap \n\n as best as you can using the red dot as a guide, even after the red dot is gone'... % : press 1 as soon as letter J appears on the screen,\n\n and press 2 as soon as letter K appears on the screen. \n\n Press Space to start'...
     ,'center', 'center',[0 0 0]);
 Screen(w, 'Flip', 0);
 KbTriggerWait(KbName('Space'), deviceNumber);
@@ -442,11 +442,12 @@ while n+1 < length(exp.allFlips)
         cnt = cnt +1;
         time = GetSecs;
         tstartcnt = tstartcnt +1;
-        if ~isempty(find(mod(tstartcnt,2)))
+        if ~isempty(find(mod(tstartcnt,2))) && ET == 1
             tr = (tstartcnt-1)/2+1;
+            %Eyelink('Message', 'Cond %s', conditions(thisCond).name{:})
             Eyelink('Message', 'TRIALID %d', tr);
             Eyelink('Message', 'STIM_ONSET');
-        elseif isempty(find(mod(tstartcnt,2)))
+        elseif isempty(find(mod(tstartcnt,2))) && ET == 1
             Eyelink('Message', 'STIM_OFFSET');
         end
         
