@@ -4,16 +4,19 @@ subject = 1;
 session = 1;
 debug = 1;
 vertOffset = 0;
-% eyetracking on (1) or off (0)
-ET = 0;
+
 global EyeData rect w xc yc %eye_used
 %%%% resolution
 if debug == 1
+    % eyetracking on (1) or off (0)
+    ET = 0;
     exp.screenWidth = 17;             % in cm; %laptop=27.5,office=43, %19=%T3b, miniHelm=39;
     exp.viewingDist = 48;             % in cm; 3Tb/office=43, miniHelm=57;
 	exp.resolution = SetResolution(max(Screen('Screens')),1024,768,60); % laptop
     exp.gammaCorrection = 0;       % make sure this = 1 when you're at the scanner!
- else
+else
+    
+    ET = 1;
     exp.screenWidth = 16;             % in cm; % 16 in eye tracking room 425%laptop=27.5,office=43, %19=%T3b, miniHelm=39;
     exp.viewingDist = 23;             % in cm; %23 in eye tracking room 425 3Tb/office=43, miniHelm=57;
     exp.resolution = SetResolution(max(Screen('Screens')),1024,768,60); % scanner
@@ -58,7 +61,7 @@ exp.stim.orientation = [90]; %[90 180];                                         
 exp.stim.degFromFix = .6;                                              % in degrees of visual angle
 exp.stim.gaborHDeg = 4;                                                  % in degrees of visual angle
 exp.stim.gaborWDeg = 4;
-exp.stim.rectGaborWDeg = 8;
+%exp.stim.rectGaborWDeg = 8;
 exp.stim.contrastMultiplicator = .075;                                     % for sine wave 0.5 = 100% contrast, 0.2 = 40%
 exp.stim.contrastOffset = [.5 .5 .5 0];                                  % for procedural gabor
 exp.stim.cycPerSec = 1.13/2; % (modified to half the speed)
@@ -77,11 +80,16 @@ exp.flipWin = 1/exp.flipsPerSec;         % in seconds then actually in 1 sec the
 %e.numBlocks = 12;  % 6 for single and 6 for pair...
 
 %%%% conditions & layout (across blocks scale)
-exp.conds = {'SquFixMinbg', 'SquFixMeanbg'}; %'vertDoubleRect''horSingleL','horSingleR','horDoubleIndir'
+exp.conds = {'SquMinbgSp4', 'SquMeanbgSp4',...
+    'SquMinbgSp3', 'SquMeanbgSp3', ...
+    'SquMinbgSp2', 'SquMeanbgSp2', ...
+    'RectMinbgSp4', 'RectMeanbgSp4', ...
+    'RectMinbgSp3', 'RectMeanbgSp3',...
+    'RectMinbgSp2', 'RectMeanbgSp2'}; %'vertDoubleRect''horSingleL','horSingleR','horDoubleIndir'
 exp.numConds = length(exp.conds);
 % with line of code below we will have 1 condition per block, randomized. we might need to change that
 % later, to have the conditions randomized within each block
-exp.repsPerRun = 10;              % repetitions of each object type per run
+exp.repsPerRun = 4;              % repetitions of each condition per run
 exp.numBlocks = exp.numConds*exp.repsPerRun;
 exp.condShuffle = Shuffle(repmat([1:exp.numConds],1,exp.repsPerRun)); % %e.stimsPerBlock make same number of blocks with each condition, randomize order
 exp.totalTime = exp.initialFixation + ((exp.numBlocks-1) * (exp.blockLength + exp.betweenBlocks)) + exp.blockLength + exp.finalFixation;
@@ -224,16 +232,16 @@ exp.ppd = pi* rect(3) / (atan(exp.screenWidth/exp.viewingDist/2)) / 360;
 exp.fixSize = round(exp.fixSizeDeg*exp.ppd);
 exp.gaborHeight = round(exp.stim.gaborHDeg*exp.ppd);                 % in pixels, the size of our objects
 exp.gaborWidth = round(exp.stim.gaborWDeg*exp.ppd);                 % in pixels, the size of our objects
-exp.rectGaborWidth = round(exp.stim.rectGaborWDeg*exp.ppd); 
+exp.rectGaborWidth = round(exp.stim.gaborWDeg*2*exp.ppd); 
 %exp.driftSpeedDeg = exp.stim.cycPerSec/exp.stim.spatialFreqDeg;
 %% create sine wave gratings and store all phase transitions in structure
 %%% along with pointers
 
 %square
-exp.LWave = nan(length(flipTimes),exp.gaborHeight,exp.gaborWidth,length(exp.stim.orientation));
-exp.RWave = nan(length(flipTimes),exp.gaborHeight,exp.gaborWidth,length(exp.stim.orientation));
-exp.LWaveID = nan(length(exp.longFormFlicker),length(exp.stim.orientation));
-exp.RWaveID = nan(length(exp.longFormFlicker),length(exp.stim.orientation));
+exp.squLWave = nan(length(flipTimes),exp.gaborHeight,exp.gaborWidth,length(exp.stim.orientation));
+exp.squRWave = nan(length(flipTimes),exp.gaborHeight,exp.gaborWidth,length(exp.stim.orientation));
+exp.squLWaveID = nan(length(exp.longFormFlicker),length(exp.stim.orientation));
+exp.squRWaveID = nan(length(exp.longFormFlicker),length(exp.stim.orientation));
 
 for o =1:length(exp.stim.orientation)
     for f = 1:length(flipTimes)
@@ -245,46 +253,61 @@ for o =1:length(exp.stim.orientation)
         %contrast offset in percent    %contrast multiplicator  %ppd = 0 if freq already in cycles per stimulus
         %background color (unused if the grating is not an annulus)
         % square
-        exp.LWave(f,:,:,o) = makeSineGrating(exp.gaborHeight,exp.gaborWidth,exp.stim.spatialFreqDeg,...
+        exp.squLWave(f,:,:,o) = makeSineGrating(exp.gaborHeight,exp.gaborWidth,exp.stim.spatialFreqDeg,...
             exp.stim.orientation(o),LPhase,exp.stim.contrastOffset(1),exp.stim.contrastMultiplicator,...
             exp.ppd);
-        exp.RWave(f,:,:,o) = makeSineGrating(exp.gaborHeight,exp.gaborWidth,exp.stim.spatialFreqDeg,...
+        exp.squRWave(f,:,:,o) = makeSineGrating(exp.gaborHeight,exp.gaborWidth,exp.stim.spatialFreqDeg,...
             exp.stim.orientation(o),RPhase,exp.stim.contrastOffset(1),exp.stim.contrastMultiplicator,...
             exp.ppd);
         %    figure();
         %   imshow(squeeze(topWave(f,:,:)));
 
-        tmpLWaveID(f,o) = Screen('MakeTexture', w, squeeze(exp.LWave(f,:,:,o)));
-        tmpRWaveID(f,o) = Screen('MakeTexture', w, squeeze(exp.RWave(f,:,:,o)));
-        
+        tmpsquLWaveID(f,o) = Screen('MakeTexture', w, squeeze(exp.squLWave(f,:,:,o)));
+        tmpsquRWaveID(f,o) = Screen('MakeTexture', w, squeeze(exp.squRWave(f,:,:,o)));
+        % rect
+        exp.rectLWave(f,:,:,o) = makeSineGrating(exp.gaborHeight,exp.gaborWidth*2,exp.stim.spatialFreqDeg,...
+            exp.stim.orientation(o),LPhase,exp.stim.contrastOffset(1),exp.stim.contrastMultiplicator,...
+            exp.ppd);
+        exp.rectRWave(f,:,:,o) = makeSineGrating(exp.gaborHeight,exp.gaborWidth*2,exp.stim.spatialFreqDeg,...
+            exp.stim.orientation(o),RPhase,exp.stim.contrastOffset(1),exp.stim.contrastMultiplicator,...
+            exp.ppd);
+        %    figure();
+        %   imshow(squeeze(topWave(f,:,:)));
+
+        tmprectLWaveID(f,o) = Screen('MakeTexture', w, squeeze(exp.rectLWave(f,:,:,o)));
+        tmprectRWaveID(f,o) = Screen('MakeTexture', w, squeeze(exp.rectRWave(f,:,:,o)));
+  
          
     end
     
     %% extend stimulus matrix to include the same total number of flips as the whole experiment
-
-    exp.LWaveID(:,o) = [zeros(1,exp.initialFixation*exp.flipsPerSec)...
-    repmat([repmat(tmpLWaveID(:,o)',1,floor(exp.blockLength*exp.flipsPerSec/length(tmpLWaveID(:,o)))) tmpLWaveID(1:mod(exp.blockLength*exp.flipsPerSec,length(tmpLWaveID(:,o))),o)' zeros(1,exp.betweenBlocks*exp.flipsPerSec)],1,exp.numBlocks-1)... %2*ones(1,e.blockLength) zeros(1,e.betweenBlocks)
-    repmat(tmpLWaveID(:,o)',1,floor(exp.blockLength*exp.flipsPerSec/length(tmpLWaveID(:,o)))) tmpLWaveID(1:mod(exp.blockLength*exp.flipsPerSec,length(tmpLWaveID(:,o))),o)' zeros(1,exp.finalFixation*exp.flipsPerSec)];
     
-    exp.RWaveID(:,o) = [zeros(1,exp.initialFixation*exp.flipsPerSec)...
-    repmat([repmat(tmpRWaveID(:,o)',1,floor(exp.blockLength*exp.flipsPerSec/length(tmpRWaveID(:,o)))) tmpRWaveID(1:mod(exp.blockLength*exp.flipsPerSec,length(tmpRWaveID(:,o))),o)' zeros(1,exp.betweenBlocks*exp.flipsPerSec)],1,exp.numBlocks-1)... %2*ones(1,e.blockLength) zeros(1,e.betweenBlocks)
-    repmat(tmpRWaveID(:,o)',1,floor(exp.blockLength*exp.flipsPerSec/length(tmpRWaveID(:,o)))) tmpRWaveID(1:mod(exp.blockLength*exp.flipsPerSec,length(tmpRWaveID(:,o))),o)' zeros(1,exp.finalFixation*exp.flipsPerSec)];
+    %square
+    exp.squLWaveID(:,o) = [zeros(1,exp.initialFixation*exp.flipsPerSec)...
+    repmat([repmat(tmpsquLWaveID(:,o)',1,floor(exp.blockLength*exp.flipsPerSec/length(tmpsquLWaveID(:,o)))) tmpsquLWaveID(1:mod(exp.blockLength*exp.flipsPerSec,length(tmpsquLWaveID(:,o))),o)' zeros(1,exp.betweenBlocks*exp.flipsPerSec)],1,exp.numBlocks-1)... %2*ones(1,e.blockLength) zeros(1,e.betweenBlocks)
+    repmat(tmpsquLWaveID(:,o)',1,floor(exp.blockLength*exp.flipsPerSec/length(tmpsquLWaveID(:,o)))) tmpsquLWaveID(1:mod(exp.blockLength*exp.flipsPerSec,length(tmpsquLWaveID(:,o))),o)' zeros(1,exp.finalFixation*exp.flipsPerSec)];
+    
+    exp.squRWaveID(:,o) = [zeros(1,exp.initialFixation*exp.flipsPerSec)...
+    repmat([repmat(tmpsquRWaveID(:,o)',1,floor(exp.blockLength*exp.flipsPerSec/length(tmpsquRWaveID(:,o)))) tmpsquRWaveID(1:mod(exp.blockLength*exp.flipsPerSec,length(tmpsquRWaveID(:,o))),o)' zeros(1,exp.betweenBlocks*exp.flipsPerSec)],1,exp.numBlocks-1)... %2*ones(1,e.blockLength) zeros(1,e.betweenBlocks)
+    repmat(tmpsquRWaveID(:,o)',1,floor(exp.blockLength*exp.flipsPerSec/length(tmpsquRWaveID(:,o)))) tmpsquRWaveID(1:mod(exp.blockLength*exp.flipsPerSec,length(tmpsquRWaveID(:,o))),o)' zeros(1,exp.finalFixation*exp.flipsPerSec)];
+    
+    %rect
+    exp.rectLWaveID(:,o) = [zeros(1,exp.initialFixation*exp.flipsPerSec)...
+        repmat([repmat(tmprectLWaveID(:,o)',1,floor(exp.blockLength*exp.flipsPerSec/length(tmprectLWaveID(:,o)))) tmprectLWaveID(1:mod(exp.blockLength*exp.flipsPerSec,length(tmprectLWaveID(:,o))),o)' zeros(1,exp.betweenBlocks*exp.flipsPerSec)],1,exp.numBlocks-1)... %2*ones(1,e.blockLength) zeros(1,e.betweenBlocks)
+        repmat(tmprectLWaveID(:,o)',1,floor(exp.blockLength*exp.flipsPerSec/length(tmprectLWaveID(:,o)))) tmprectLWaveID(1:mod(exp.blockLength*exp.flipsPerSec,length(tmprectLWaveID(:,o))),o)' zeros(1,exp.finalFixation*exp.flipsPerSec)];
+    
+    exp.rectRWaveID(:,o) = [zeros(1,exp.initialFixation*exp.flipsPerSec)...
+        repmat([repmat(tmprectRWaveID(:,o)',1,floor(exp.blockLength*exp.flipsPerSec/length(tmprectRWaveID(:,o)))) tmprectRWaveID(1:mod(exp.blockLength*exp.flipsPerSec,length(tmprectRWaveID(:,o))),o)' zeros(1,exp.betweenBlocks*exp.flipsPerSec)],1,exp.numBlocks-1)... %2*ones(1,e.blockLength) zeros(1,e.betweenBlocks)
+        repmat(tmprectRWaveID(:,o)',1,floor(exp.blockLength*exp.flipsPerSec/length(tmprectRWaveID(:,o)))) tmprectRWaveID(1:mod(exp.blockLength*exp.flipsPerSec,length(tmprectRWaveID(:,o))),o)' zeros(1,exp.finalFixation*exp.flipsPerSec)];
 
 end
 
-%% Sine wave gratings locations
+%% Sine wave gratings locations (in the task loop since it changes)
 xc = rect(3)/2; % rect and center, with the flexibility to resize & shift center - change vars to zero if not used.
 yc = rect(4)/2; %+e.vertOffset;
 
 xL = rect(3)/2; % % = stimulus center located on the horizontal center of the screen
-yL = rect(4)/2 - exp.stim.gaborHDeg*exp.ppd+0.5*exp.ppd; % stimulus located 4 degrees above screen center
-exp.LRect =  CenterRectOnPoint([0 0 exp.gaborWidth exp.gaborHeight],xL,yL);
-exp.rectLRect =  CenterRectOnPoint([0 0 exp.rectGaborWidth exp.gaborHeight],xL,yL);
-
-xR = rect(3)/2 ; % = stimulus center located on the horizontal center of the screen
-yR = rect(4)/2+ exp.stim.gaborHDeg*exp.ppd-0.5*exp.ppd; % stimulus located 4 degrees below screen center
-exp.RRect =  CenterRectOnPoint([0 0 exp.gaborWidth exp.gaborHeight],xR,yR);
-exp.rectRRect =  CenterRectOnPoint([0 0 exp.rectGaborWidth exp.gaborHeight],xR,yR);
+xR = rect(3)/2; % = stimulus center located on the horizontal center of the screen
 
 %%% create drifting red dots position
 exp.driftPosDeg = exp.stim.oscillation.*1/(2*exp.stim.spatialFreqDeg);
@@ -354,7 +377,7 @@ Screen(w, 'DrawText', 'Waiting for Backtick.', 10,10,[0 0 0]);
 Screen(w, 'Flip', 0);
 KbTriggerWait(53, deviceNumber);
 
-DrawFormattedText(w,'Fixate the oscillating red fixation point, then follow the visual phantom \n\n as best as you can, even after the red dot'... % : press 1 as soon as letter J appears on the screen,\n\n and press 2 as soon as letter K appears on the screen. \n\n Press Space to start'...
+DrawFormattedText(w,'Follow the oscillating visual phantom within the gap at the center of the screen \n\n as best as you can using the red dot as a guide, even after the red dot is gone. \n\n Press Space to start'... % :  '...
     ,'center', 'center',[0 0 0]);
 Screen(w, 'Flip', 0);
 KbTriggerWait(KbName('Space'), deviceNumber);
@@ -371,7 +394,7 @@ n=0;
 %%%%%%% START task TASK/FLIPPING
 % [e.totalTime, e.allFlips,n]
 
-gray = repmat(mean(squeeze(exp.LWave(1,1,:))), [1,3]);
+gray = repmat(mean(squeeze(exp.squLWave(1,1,:))), [1,3]);
 
 Screen('FillRect', w, gray);
     
@@ -412,31 +435,53 @@ while n+1 < length(exp.allFlips)
         thisCond = exp.longFormConds(n+1);
         %screen background color
         if strfind(conditions(thisCond).name{:}, 'Minbg')
-            gray = repmat(min(min(squeeze(exp.LWave(1,:,:)),[],1)), [1,3]);
+            gray = repmat(min(min(squeeze(exp.squLWave(1,:,:)),[],1)), [1,3]);
         elseif strfind(conditions(thisCond).name{:}, 'Meanbg')
-            gray = repmat(mean(squeeze(exp.LWave(1,1,:))), [1,3]);
+            gray = repmat(mean(squeeze(exp.squLWave(1,1,:))), [1,3]);
         end
         Screen('FillRect', w, gray);
         % draw & increment stims
-        if strfind(conditions(thisCond).name{:}, 'SquFix')  %|| strcmp(conditions(thisCond).name, 'double-oppdir')  % draw second stim if it is 'double-indir' or 'double-oppdir' %if it's randomized or incognruent
-            % top stim
-            Screen('DrawTexture', w, exp.LWaveID(n+1),[],exp.LRect);
-            % bottom stim
-            Screen('DrawTexture', w, exp.RWaveID(n+1), [], exp.RRect);
-            %draw red dot
-            if nnz(exp.longDriftPos(n+1))
-                xOffset = exp.longDriftPos(n+1);
-                Screen('FillOval', w,[255 0 0], [xc+xOffset-round(exp.fixSize/4) yc-round(exp.fixSize/4) xc+xOffset+round(exp.fixSize/4) yc+round(exp.fixSize/4)]);%black fixation solid circle
-            end
+        if strfind(conditions(thisCond).name{:}, 'Sp4')  %|| strcmp(conditions(thisCond).name, 'double-oppdir')  % draw second stim if it is 'double-indir' or 'double-oppdir' %if it's randomized or incognruent
+            yL = rect(4)/2 - exp.stim.gaborHDeg*exp.ppd+0*exp.ppd; % stimulus located 4 degrees above screen center
+            yR = rect(4)/2+ exp.stim.gaborHDeg*exp.ppd-0*exp.ppd; % stimulus located 4 degrees below screen center
             
-%         elseif strfind(conditions(thisCond).name{:}, 'SquNoFix')
-%             % top stim
-%             Screen('DrawTexture', w, exp.LWaveID(n+1),[],exp.LRect);
-%             % bottom stim
-%             Screen('DrawTexture', w, exp.RWaveID(n+1), [], exp.RRect);        
-          
+        elseif strfind(conditions(thisCond).name{:}, 'Sp3')  %|| strcmp(conditions(thisCond).name, 'double-oppdir')  % draw second stim if it is 'double-indir' or 'double-oppdir' %if it's randomized or incognruent
+            yL = rect(4)/2 - exp.stim.gaborHDeg*exp.ppd+0.5*exp.ppd; % stimulus located 4 degrees above screen center
+            yR = rect(4)/2+ exp.stim.gaborHDeg*exp.ppd-0.5*exp.ppd; % stimulus located 4 degrees below screen center
+
+        elseif strfind(conditions(thisCond).name{:}, 'Sp2')  %|| strcmp(conditions(thisCond).name, 'double-oppdir')  % draw second stim if it is 'double-indir' or 'double-oppdir' %if it's randomized or incognruent
+            yL = rect(4)/2 - exp.stim.gaborHDeg*exp.ppd+1*exp.ppd; % stimulus located 4 degrees above screen center
+            yR = rect(4)/2+ exp.stim.gaborHDeg*exp.ppd-1*exp.ppd; % stimulus located 4 degrees below screen center
+
         end
         
+        if strfind(conditions(thisCond).name{:}, 'Squ')  %|| strcmp(conditions(thisCond).name, 'double-oppdir')  % draw second stim if it is 'double-indir' or 'double-oppdir' %if it's randomized or incognruent
+            
+            exp.LRect =  CenterRectOnPoint([0 0 exp.gaborWidth exp.gaborHeight],xL,yL);
+            exp.RRect =  CenterRectOnPoint([0 0 exp.gaborWidth exp.gaborHeight],xR,yR);
+
+            % top stim
+            Screen('DrawTexture', w, exp.squLWaveID(n+1),[],exp.LRect);
+            % bottom stim
+            Screen('DrawTexture', w, exp.squRWaveID(n+1), [], exp.RRect);
+
+            
+         elseif strfind(conditions(thisCond).name{:}, 'Rect')  %|| strcmp(conditions(thisCond).name, 'double-oppdir')  % draw second stim if it is 'double-indir' or 'double-oppdir' %if it's randomized or incognruent
+            
+            exp.rectLRect =  CenterRectOnPoint([0 0 exp.rectGaborWidth exp.gaborHeight],xL,yL);
+            exp.rectRRect =  CenterRectOnPoint([0 0 exp.rectGaborWidth exp.gaborHeight],xR,yR);
+
+            % top stim
+            Screen('DrawTexture', w, exp.rectLWaveID(n+1),[],exp.rectLRect);
+            % bottom stim
+            Screen('DrawTexture', w, exp.rectRWaveID(n+1), [], exp.rectRRect);
+     
+        end
+        %draw red dot
+        if nnz(exp.longDriftPos(n+1))
+            xOffset = exp.longDriftPos(n+1);
+            Screen('FillOval', w,[255 0 0], [xc+xOffset-round(exp.fixSize/4) yc-round(exp.fixSize/4) xc+xOffset+round(exp.fixSize/4) yc+round(exp.fixSize/4)]);%black fixation solid circle
+        end
     end
     if nnz(onOffs(n+1)) == 1
         cnt = cnt +1;
@@ -455,7 +500,7 @@ while n+1 < length(exp.allFlips)
     end
     
     if nnz(cnt) && mod(cnt,4) == 0 && GetSecs-time >= 1
-        DrawFormattedText(w,'Take a break, you deserve many breaks!'... % : press 1 as soon as letter J appears on the screen,\n\n and press 2 as soon as letter K appears on the screen. \n\n Press Space to start'...
+        DrawFormattedText(w,'Press Space whenever you feel ready'... % : press 1 as soon as letter J appears on the screen,\n\n and press 2 as soon as letter K appears on the screen. \n\n Press Space to start'...
             ,'center', 'center',[0 0 0]);
         Screen(w, 'Flip', 0);
         KbTriggerWait(KbName('Space'), deviceNumber);
