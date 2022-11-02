@@ -2,7 +2,7 @@
 %In this version, we add breaks
 subject = 1;
 session = 1;
-debug = 1;
+debug = 0;
 vertOffset = 0;
 
 global EyeData rect w xc yc %eye_used
@@ -173,8 +173,8 @@ Priority(9);
 
 %%%% open screen
 screen=max(Screen('Screens'));
-[w, rect]=Screen('OpenWindow',screen,exp.backgroundColor,[100 100 900 600],[],[],[],[],kPsychNeed32BPCFloat); %might need to switch 900 and 600 by 1600 and 1200 for room 425
-%[w, rect]=Screen('OpenWindow',screen,exp.backgroundColor,[],[],[],[],[],kPsychNeed32BPCFloat); %might need to switch 900 and 600 by 1600 and 1200 for room 425
+%[w, rect]=Screen('OpenWindow',screen,exp.backgroundColor,[100 100 900 600],[],[],[],[],kPsychNeed32BPCFloat); %might need to switch 900 and 600 by 1600 and 1200 for room 425
+[w, rect]=Screen('OpenWindow',screen,exp.backgroundColor,[],[],[],[],[],kPsychNeed32BPCFloat); %might need to switch 900 and 600 by 1600 and 1200 for room 425
 Screen(w, 'TextSize', exp.fontSize);
 Screen('BlendFunction', w, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
@@ -484,12 +484,13 @@ while n+1 < length(exp.allFlips)
         end
     end
     if nnz(onOffs(n+1)) == 1
+        thisCond = exp.longFormConds(n+2);
         cnt = cnt +1;
         time = GetSecs;
         tstartcnt = tstartcnt +1;
         if ~isempty(find(mod(tstartcnt,2))) && ET == 1
             tr = (tstartcnt-1)/2+1;
-            %Eyelink('Message', 'Cond %s', conditions(thisCond).name{:})
+            Eyelink('Message', char(sprintf('Cond %s', conditions(thisCond).name{:})))
             Eyelink('Message', 'TRIALID %d', tr);
             Eyelink('Message', 'STIM_ONSET');
         elseif isempty(find(mod(tstartcnt,2))) && ET == 1
@@ -597,9 +598,9 @@ exp.runTime = GetSecs - exp.startRun;
 % exp.accuracy = (sum(exp.hits)/size(exp.targetTimes,2))*100;
 % exp.meanRT = nanmean(exp.RTs);
 
-savedir = fullfile(exp.root,'data',sprintf('s%d/sess%d/',subject,session),'smooth_pursuit_v3');
+savedir = fullfile(exp.root,'data',sprintf('s%d/sess%d/',subject,session),'smooth_pursuit_v4');
 if ~exist(savedir); mkdir(savedir); end
-savename = fullfile(savedir, strcat(sprintf('/s%d_smooth_pursuit_v3_sn%d_rn%d_date%s_fix',subject,exp.scanNum,exp.runNum,num2str(exp.date)), '.mat'));
+savename = fullfile(savedir, strcat(sprintf('/s%d_smooth_pursuit_v4_sn%d_rn%d_date%s_fix',subject,exp.scanNum,exp.runNum,num2str(exp.date)), '.mat'));
 save(savename,'exp');
 
 %KbQueueRelease();
@@ -631,6 +632,6 @@ if ET
 %     end
     
     Eyelink('Shutdown');
-    savename = fullfile(savedir, strcat(sprintf('/s%d_smooth_pursuit_v3_sn%d_rn%d_date%s_fix_eyeDat',subject,exp.scanNum,exp.runNum,num2str(exp.date)), '.mat'));
+    savename = fullfile(savedir, strcat(sprintf('/s%d_smooth_pursuit_v4_sn%d_rn%d_date%s_fix_eyeDat',subject,exp.scanNum,exp.runNum,num2str(exp.date)), '.mat'));
     save(savename, 'EyeData')
 end  
