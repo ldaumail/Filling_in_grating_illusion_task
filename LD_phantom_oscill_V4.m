@@ -178,9 +178,9 @@ screen=max(Screen('Screens'));
 Screen(w, 'TextSize', exp.fontSize);
 Screen('BlendFunction', w, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-%%%% gamma correction
-% if e.gammaCorrect > 0
-%     load(e.whichCLUT);
+% %%%% gamma correction
+% if exp.gammaCorrect > 0
+%     load(exp.whichCLUT);
 %     Screen('LoadNormalizedGammaTable', screen, linearizedCLUT);
 % end
 %gamma correction, file prepared for room 425
