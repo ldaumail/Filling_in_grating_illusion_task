@@ -26,7 +26,7 @@ end
 deviceNumber = keyboardIndices(1);
 responseKeys = zeros(1,256);
 responseKeys(KbName('1!'))=1; % button box 1
-responseKeys(KbName('2@'))=1; % button box 2
+%responseKeys(KbName('2@'))=1; % button box 2
 
 Screen('Preference', 'SkipSyncTests', 0);
 
@@ -92,21 +92,31 @@ exp.backgroundColor = [127 127 127];%[108.3760 108.3760 108.3760];%;  % color ba
 exp.fontSize = 12; %26;
 
 %%%% RSVP task setup
-exp.targetProb = .1;              % proportion of trials where the target letters will come up
-exp.firstPossibleTarget = 20;     % no targets in the first X flips
-exp.lastPossibleTarget = 20;      % no targets in the last X flips
-exp.targetLetters = {'J' 'K'};
-exp.distractors = {'A' 'S' 'D' 'F' 'G' 'H' 'L'};
-exp.trialFreq = 0.5;               % duration of fixation trials (seconds) (time it takes to switch from one letter to blank then back to one letter)
-flipsPerTrial = exp.trialFreq/exp.flipWin;
-exp.trialDur = exp.trialFreq/2;               % duration in seconds of the letter presentation of each fixation trial (.25s letter ON, .25 letter OFF)
-exp.trialOnFlips = floor(exp.trialDur/exp.flipWin); %number of flips the letter is on over the course of 1 trial
-%e.cueColor = 0;%[50 50 255];   % letter color
-exp.totalLetters = (exp.totalTime/exp.trialFreq); %total number of letters that COULD BE presented during the e (though based on prob, much less will be presented)
-exp.responseBack = 3;    % the response is correct if the preceding N letters were the target
-%e.letterTiming = (0:e.RSVPrate:e.totalTime);
+% exp.targetProb = .1;              % proportion of trials where the target letters will come up
+% exp.firstPossibleTarget = 20;     % no targets in the first X flips
+% exp.lastPossibleTarget = 20;      % no targets in the last X flips
+% exp.targetLetters = {'J' 'K'};
+% exp.distractors = {'A' 'S' 'D' 'F' 'G' 'H' 'L'};
+%exp.trialFreq = 0.5;               % duration of fixation trials (seconds) (time it takes to switch from one letter to blank then back to one letter)
+%flipsPerTrial = exp.trialFreq/exp.flipWin;
+% exp.trialDur = exp.trialFreq/2;               % duration in seconds of the letter presentation of each fixation trial (.25s letter ON, .25 letter OFF)
+% exp.trialOnFlips = floor(exp.trialDur/exp.flipWin); %number of flips the letter is on over the course of 1 trial
+% %e.cueColor = 0;%[50 50 255];   % letter color
+% exp.totalLetters = (exp.totalTime/exp.trialFreq); %total number of letters that COULD BE presented during the e (though based on prob, much less will be presented)
+% exp.responseBack = 3;    % the response is correct if the preceding N letters were the target
 
-%%%% character identification task
+%% Color discrimination task setup
+exp.targetProb = .1;              % proportion of trials where the target color will come up
+exp.firstPossibleTarget = 5;     % no targets in the first X flips
+exp.lastPossibleTarget = 5;      % no targets in the last X flips
+exp.targetColor = {'red'};
+exp.distractors = {'green'};
+exp.trialDur = 2;
+exp.totalColors = (exp.totalTime/exp.trialDur);
+exp.responseBack = 1;    % the response is correct if the preceding N colors were the target
+exp.flipsPerTrial = exp.trialDur/exp.flipWin;
+exp.trialOnFlips = floor(exp.trialDur/exp.flipWin);
+%%%% color identification task
 exp.targets = [];
 exp.targetTimes = [];
 exp.responses = [];
@@ -114,7 +124,7 @@ exp.responseTimes=[];
 exp.accuracy = 0;
 exp.meanRT = 0;
 
-taskText = 'characters';
+taskText = 'colors';
 
 
 
@@ -286,14 +296,14 @@ exp.RRect =  CenterRectOnPoint([0 0 exp.gaborWidth exp.gaborHeight],xR,yR);
    %%%%%%%%%%%%%%%%%%%%%%
 
 %%%% find the target positioning for this run (index of repeated letters)
-exp.numTargets = length(find(rand(1,exp.totalLetters)<exp.targetProb)); %draw targets from uniform distribution between 0 nd 1, only keep the density we need (0.1) of them
-targetInd = zeros(1,exp.totalLetters+1); % this has to go to +1, but it's only for the repeat check
+exp.numTargets = length(find(rand(1,exp.totalColors)<exp.targetProb)); %draw targets from uniform distribution between 0 nd 1, only keep the density we need (0.1) of them
+targetInd = zeros(1,exp.totalColors+1); % this has to go to +1, but it's only for the repeat check
 if exp.numTargets > 0
     while 1
         %check previous (-1,-2) and following indices (+1,+2) if they might constitute a
-        %repeated letter
-        maybeRep = exp.firstPossibleTarget+Randi(exp.totalLetters-exp.firstPossibleTarget-exp.lastPossibleTarget);    % a possible index for a target letter, picked randomly
-        if targetInd(maybeRep-1) == 0 && targetInd(maybeRep+1) == 0 && targetInd(maybeRep-2) == 0 && targetInd(maybeRep+2) == 0 % make sure the previous  TWO and following TWO letters weren't already a repeat
+        %repeated color
+        maybeRep = exp.firstPossibleTarget+Randi(exp.totalColors-exp.firstPossibleTarget-exp.lastPossibleTarget);    % a possible index for a target letter, picked randomly
+        if targetInd(maybeRep-1) == 0 && targetInd(maybeRep+1) == 0 && targetInd(maybeRep-2) == 0 && targetInd(maybeRep+2) == 0 % make sure the previous  TWO and following TWO colors weren't already a repeat
             targetInd(maybeRep) = 1; %record this index if it is not a repeat
         end
         if sum(targetInd) == exp.numTargets %if the sum of target letters reach the number of targets, stop the check
@@ -301,31 +311,31 @@ if exp.numTargets > 0
         end
     end
 end
-targetInd = targetInd(1:exp.totalLetters); % trim this back for sanity
+targetInd = targetInd(1:exp.totalColors); % trim this back for sanity
 
 
-%%%% fill the sequence out with actual letters
-exp.letterSequence = [];
+%%%% fill the sequence out with actual Colors
+exp.colorSequence = [];
 for k = 1:length(targetInd)
     if targetInd(k) == 1 % targets - we know these don't repeat
-        exp.letterSequence{k} = exp.targetLetters{randi(length(exp.targetLetters))}; %pick a random target
+        exp.colorSequence{k} = exp.targetColors{randi(length(exp.targetColors))}; %pick a random target
     else % distractors - we need to make sure these don't repeat
         if k > 1 % the first letter can be whatever
             while 1
-                maybeLetter = exp.distractors{randi(length(exp.distractors))};
-                if strcmp(maybeLetter, exp.letterSequence{k-1}) == 0
-                    exp.letterSequence{k} = maybeLetter;
+                maybeColor = exp.distractors{randi(length(exp.distractors))};
+                if strcmp(maybeColor, exp.colorSequence{k-1}) == 0
+                    exp.colorSequence{k} = maybeColor;
                     break
                 end
             end
         else %% (the first letter can be whatever)
-            exp.letterSequence{k} = exp.distractors{randi(length(exp.distractors))};
+            exp.colorSequence{k} = exp.distractors{randi(length(exp.distractors))};
         end
     end
 end
 
 % %%%% scale up the task based on flips
-exp.letterSequence = Expand(exp.letterSequence,flipsPerTrial,1);%e.flipsPerSec,1); 
+exp.colorSequence = Expand(exp.colorSequence,flipsPerTrial,1);%e.flipsPerSec,1); 
 
 %% Eyetracking parameters
 % eyetracking on (1) or off (0)
@@ -337,7 +347,7 @@ Screen(w, 'DrawText', 'Waiting for Backtick.', 10,10,[0 0 0]);
 Screen(w, 'Flip', 0);
 KbTriggerWait(53, deviceNumber);
 
-DrawFormattedText(w,'Attend to the fixation circle: press 1 as soon as letter J appears on the screen,\n\n and press 2 as soon as letter K appears on the screen. \n\n Press Space to start'...
+DrawFormattedText(w,'Attend to the fixation circle: press 1 as soon as color red appears on the screen,\n\n Press Space to start'...
     ,'center', 'center',[0 0 0]);
 Screen(w, 'Flip', 0);
 WaitSecs(1);
@@ -405,36 +415,28 @@ while n+1 < length(exp.allFlips)
         
     end
     
-    % select new character if starting new trial
+    % select new color if starting new trial
     if mod(n, flipsPerTrial) == 0
 
-%         % draw character
-%         l = randperm(numel(letters));
-%         fixChar = letters(l(1));
-          fixChar = exp.letterSequence(n+1);
+          fixCol = exp.colorSequence(n+1);
 
-       if strcmp(fixChar,'J') == 1
+       if strcmp(fixCol,'red') == 1
             exp.targets = [exp.targets, 1];
             exp.targetTimes = [exp.targetTimes, GetSecs - exp.startRun];
-        elseif strcmp(fixChar,'K') == 1
-            exp.targets = [exp.targets, 2];
-            exp.targetTimes = [exp.targetTimes, GetSecs - exp.startRun];
+
        end
 
 
     end
     
-    %%%% draw fixation letter in fixation circle
+    %%%% draw fixation color in center of the screen
     
-    if mod(n, flipsPerTrial) <= exp.trialOnFlips
-        Screen('FillOval', w,[255 255 255], [xc-round(exp.fixSize/2) yc-round(exp.fixSize/2) xc+round(exp.fixSize/2) yc+round(exp.fixSize/2)]);%white fixation solid circle
-        %DrawFormattedText(w, fixChar, 'center', 8+vertOffset+rect(4)/2,0); %either text function works
-        %Screen('DrawText', w, fixChar, -5+rect(3)/2, -10+vertOffset+rect(4)/2,[0 0 0]);
-        [width,height] = RectSize(Screen('TextBounds',w,fixChar{:}));
-        Screen('DrawText', w, fixChar{:}, xc-width/2 +0.3, yc-height/2-0.2,[0 0 0]);
-     else
-        Screen('FillOval', w,[255 255 255], [xc-round(exp.fixSize/2) yc-round(exp.fixSize/2) xc+round(exp.fixSize/2) yc+round(exp.fixSize/2)]);%white fixation solid circle
-   
+    if mod(n, flipsPerTrial) <= exp.trialOnFlips && strcmp(fixCol{:}, 'red')
+        Screen('FillOval', w,[255 0 0], [xc-round(exp.fixSize/4) yc-round(exp.fixSize/4) xc+round(exp.fixSize/4) yc+round(exp.fixSize/4)]);%red fixation solid circle
+        
+    elseif mod(n, flipsPerTrial) <= exp.trialOnFlips && strcmp(fixCol{:}, 'green')
+        Screen('FillOval', w,[0 255 0], [xc-round(exp.fixSize/4) yc-round(exp.fixSize/4) xc+round(exp.fixSize/4) yc+round(exp.fixSize/4)]);%green fixation solid circle
+        
     end
 
 %     n
@@ -442,15 +444,15 @@ while n+1 < length(exp.allFlips)
     KbQueueStop();
     [pressed, firstPress]= KbQueueCheck();
     
-    %%%% character identification
+    %%%% color identification
     if (pressed == 1) && ((firstPress(KbName('1!')) > 0) || (firstPress(KbName('2@')) > 0))
         if firstPress(KbName('1!')) > 0
             exp.responses = [exp.responses, 1];
             exp.responseTimes = [exp.responseTimes, firstPress(KbName('1!')) - exp.startRun];
-        elseif firstPress(KbName('2@')) > 0
-            exp.responses = [exp.responses, 2];
-            exp.responseTimes = [exp.responseTimes, firstPress(KbName('2@')) - exp.startRun];
-        end
+%         elseif firstPress(KbName('2@')) > 0
+%             exp.responses = [exp.responses, 2];
+%             exp.responseTimes = [exp.responseTimes, firstPress(KbName('2@')) - exp.startRun];
+         end
     end
 
     %%%% refresh queue for next character
@@ -489,6 +491,10 @@ for t = 1:size(exp.targetTimes,2)
 end
 exp.accuracy = (sum(exp.hits)/size(exp.targetTimes,2))*100;
 exp.meanRT = nanmean(exp.RTs);
+disp(sprintf('Accuracy: %d', exp.accuracy));
+disp(sprintf('Mean reaction time: %d', exp.meanRT));
+
+
 
 savedir = fullfile(exp.root,'data',subject,session,'fillingin_rsvp_v1');
 if ~exist(savedir); mkdir(savedir); end
