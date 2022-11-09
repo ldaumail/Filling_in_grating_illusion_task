@@ -7,7 +7,7 @@ vertOffset = 0;
 
 global EyeData currPosID rect w xc yc
 %%%% resolution
-if debug == 1
+if debug == 11
     exp.screenWidth = 17;             % in cm; %laptop=27.5,office=43, %19=%T3b, miniHelm=39;
     exp.viewingDist = 48;             % in cm; 3Tb/office=43, miniHelm=57;
 	exp.resolution = SetResolution(max(Screen('Screens')),1024,768,60); % laptop
