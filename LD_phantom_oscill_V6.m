@@ -64,7 +64,7 @@ exp.stim.gaborWDeg = 4;
 %exp.stim.rectGaborWDeg = 8;
 exp.stim.contrastMultiplicator = .075;                                     % for sine wave 0.5 = 100% contrast, 0.2 = 40%
 exp.stim.contrastOffset = [.5 .5 .5 0];                                  % for procedural gabor
-exp.stim.cycPerSec = 1.13/2; % (modified to half the speed)
+exp.stim.cycPerSec = 1.13*3/2; % (modified to half the speed)
 exp.stim.motionRate = exp.stim.cycPerSec*360;                                          % 1.13 cycles per second = 360 deg of phase *1.13 per sec
 exp.stim.cycles = 3; %number of cycles shifted per lap  (modified to half the number of cycles per lap)
 %%%% sine wave grating timing (within block scale)
@@ -97,7 +97,7 @@ exp.totalTime = exp.initialFixation + ((exp.numBlocks-1) * (exp.blockLength + ex
 exp.allFlips = (0:exp.flipWin:exp.totalTime);
 
 %%%% fixation 
-exp.fixSizeDeg =  .6;            % in degrees, the size of the biggest white dot in the fixation
+exp.fixSizeDeg =  .5;            % in degrees, the size of the biggest white dot in the fixation
 
 %%%% screen
 exp.backgroundColor = [127 127 127];%[108.3760 108.3760 108.3760];%;  % color based on minimum gating luminance 
@@ -222,6 +222,13 @@ exp.squLWave = nan(length(flipTimes),exp.gaborHeight,exp.gaborWidth,length(exp.s
 exp.squRWave = nan(length(flipTimes),exp.gaborHeight,exp.gaborWidth,length(exp.stim.orientation));
 exp.squLWaveID = nan(length(exp.longFormFlicker),length(exp.stim.orientation));
 exp.squRWaveID = nan(length(exp.longFormFlicker),length(exp.stim.orientation));
+
+%rectangle 
+%square
+exp.rectLWave = nan(length(flipTimes),exp.gaborHeight,exp.gaborWidth*2,length(exp.stim.orientation));
+exp.rectRWave = nan(length(flipTimes),exp.gaborHeight,exp.gaborWidth*2,length(exp.stim.orientation));
+exp.rectLWaveID = nan(length(exp.longFormFlicker),length(exp.stim.orientation));
+exp.rectRWaveID = nan(length(exp.longFormFlicker),length(exp.stim.orientation));
 
 for o =1:length(exp.stim.orientation)
     for f = 1:length(flipTimes)
