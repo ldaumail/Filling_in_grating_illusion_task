@@ -10,7 +10,7 @@ tmp = EyelinkInit(0);
 end
 el = EyelinkInitDefaults(w);
 
-el.backgroundcolour = 255;
+el.backgroundcolour = 127.5387; %255;
 el.foregroundcolour = 255;  %what's the differenece btwn foregroundcolour and calibtargetcolour?
 el.calibrationtargetcolour= 0;
 el.msgfontcolour  = 0;
@@ -28,7 +28,7 @@ Eyelink('Command', 'link_sample_data = LEFT,RIGHT,GAZE,AREA');
 Eyelink('Command', 'file_sample_data = LEFT,RIGHT,GAZE,AREA');
 
 
-EyeData.edfFile=sprintf('demo_nofix.edf'); % overwrite the edf each time. or it would full the hard drive of eyelink computer
+EyeData.edfFile=sprintf('demo_fix.edf'); % overwrite the edf each time. or it would full the hard drive of eyelink computer
 Eyelink('Openfile', EyeData.edfFile);
 
 % Calibrate the eye tracker

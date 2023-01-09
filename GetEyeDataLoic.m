@@ -2,20 +2,8 @@ global el EyeData
 
 if ET
     errormes=Eyelink('CheckRecording');
-%     while 1 %loop until error
-%         err = Eyelink('CheckRecording');
-%         if(err ~= 0)
-%             fprintf('EyeLink Recording stopped!\n');
-%             %Transfer a copy of EDF file to Display PC
-%             Eyelink('SetOfflineMode');%Put tracker in idle/offline mode
-%             Eyelink('CloseFile'); %Close EDF file on Host PC
-%             Eyelink('Command', 'clear_screen 0'); %clear trial image on host PC at the end of the experiment
-%             WaitSecs(0.1) %Allow some time for screen drawing
-%             % Transfer copy of the EDF file to Display PC
-%             transferFile; % See transferFile function below
-%             error('EyeLink is not in record mode when it should be. Unknown error. EDF transferred from from Host PC, please check its integrity.');
-%         end
-%     end
+    %         if(errormes~=0)
+    %         end
     if Eyelink('NewFloatSampleAvailable') > 0
         % get the sample in the form of an event structure
         evt = Eyelink('NewestFloatSample');
@@ -59,10 +47,10 @@ if ET
         end
         
        % Plot real-time gaze positions
-if ~isempty(exp.ShowRealTimeGaze) % length(gazex)>0 &&
+if ~isempty(ex.ShowRealTimeGaze) % length(gazex)>0 &&
     
 	if gcnt>=params.nGazetoShow %  length(gazex)>=s.nGazetoShow
-        Screen('DrawDots', win, [EyeData.mx(gcnt-exp.nGazetoShow+1:gcnt); EyeData.my(gcnt-exp.nGazetoShow+1:gcnt)], 10, [ repmat(cmap', 1, exp.nGazetoShow);  linspace(10,255, exp.nGazetoShow) ], [], 0);                           
+        Screen('DrawDots', win, [EyeData.mx(gcnt-ex.nGazetoShow+1:gcnt); EyeData.my(gcnt-ex.nGazetoShow+1:gcnt)], 10, [ repmat(cmap', 1, ex.nGazetoShow);  linspace(10,255, ex.nGazetoShow) ], [], 0);                           
 %     	Screen('DrawDots', w, [gazex(end-s.nGazetoShow+1:end); gazey(end-s.nGazetoShow+1:end)], 1, [repmat([255 0 0]', 1, s.nGazetoShow);  linspace(10,255, s.nGazetoShow) ], [], 0);                           
 	elseif gcnt>0 % length(gazex)>0
         Screen('DrawDots', win, [EyeData.mx(1:gcnt); EyeData.my(1:gcnt)], 10, [ repmat(cmap', 1, gcnt);  linspace(.2,255, gcnt) ], [], 0);            
