@@ -573,7 +573,7 @@ save(savename,'ex');
 ShowCursor;
 Screen('Close');
 Screen('CloseAll');
-fclose all;
+fclose all;                                                                                                                           
 
 
 if ET
