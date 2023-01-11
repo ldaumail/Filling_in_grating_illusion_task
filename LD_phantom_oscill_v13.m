@@ -1,5 +1,5 @@
 %In this version, we add multiple velocities
-subject = 'Loic';
+subject = 'Lasya'                                                                                                                              ';
 session = 1;
 debug = 0;
 vertOffset = 0;
@@ -489,7 +489,7 @@ while n+1 < length(ex.allFlips)
             %longDriftPos = 'longDriftPos2';
             bLength = ex.blockLength(2);
         end
-        if strfind(conditions(thisCond).name{:}, 'Rect')  %|| strcmp(conditions(thisCond).name, 'double-oppdir')  % draw second stim if it is 'double-indir' or 'double-oppdir' %if it's randomized or incognruent
+        if strfind(conditions(thisCond).name{:}, 'Rect')  
             
             ex.rectLRect =  CenterRectOnPoint([0 0 ex.rectGaborWidth ex.gaborHeight],xL,yL);
             ex.rectRRect =  CenterRectOnPoint([0 0 ex.rectGaborWidth ex.gaborHeight],xR,yR);
