@@ -1,6 +1,6 @@
 %In this version, we add multiple velocities
-subject = 'Lasya'                                                                                                                              ';
-session = 1;
+subject = 'Dave';                                                                                                                                                                                                                                                     
+session = 1;                                                                                                                           
 debug = 0;
 vertOffset = 0;
 
@@ -16,9 +16,9 @@ if debug == 1
     ex.gammaCorrection = 0;       % make sure this = 1 when you're at the scanner!
 else
     
-    ET = 1;
+    ET = 1;                                                                                                                             
     ex.screenWidth = 53.1;             % in cm; % 16 in eye tracking room 425%laptop=27.5,office=43, %19=%T3b, miniHelm=39;
-    ex.viewingDist = 53.5;             % in cm; %23 in eye tracking room 425 3Tb/office=43, miniHelm=57;
+    ex.viewingDist = 53.5;             % in cm; %23 in eye tracking                                                                                                                          room 425 3Tb/office=43, miniHelm=57;
     ex.resolution = SetResolution(max(Screen('Screens')),1600,900,60); % scanner
     ex.gammaCorrection = 1;       % make sure this = 1 when you're at the scanner!
 end
@@ -181,11 +181,12 @@ Priority(9);
 %%%% open screen
 screen=max(Screen('Screens'));
 if debug
-     [w, rect]=Screen('OpenWindow',screen,ex.backgroundColor,[100 100 600 400],[],[],[],[],kPsychNeed32BPCFloat); %might need to switch 900 and 600 by 1600 and 1200 for room 425
-%      [w, rect]=Screen('OpenWindow',screen,ex.backgroundColor,[],[],[],[],[],kPsychNeed32BPCFloat); %might need to switch 900 and 600 by 1600 and 1200 for room 425
-
+    [w, rect]=Screen('OpenWindow',screen,ex.backgroundColor,[100 100 600 400],[],[],[],[],kPsychNeed32BPCFloat); %might need to switch 900 and 600 by 1600 and 1200 for room 425
+    
 else
-    [w, rect]=Screen('OpenWindow',screen,ex.backgroundColor,[],[],[],[],[],kPsychNeed32BPCFloat); %might need to switch 900 and 600 by 1600 and 1200 for room 425
+    [w, rect]=Screen('OpenWindow',screen,ex.backgroundColor,[100 100 600 400],[],[],[],[],kPsychNeed32BPCFloat); %might need to switch 900 and 600 by 1600 and 1200 for room 425
+    
+    %[w, rect]=Screen('OpenWindow',screen,ex.backgroundColor,[],[],[],[],[],kPsychNeed32BPCFloat); %might need to switch 900 and 600 by 1600 and 1200 for room 425
 end
 Screen(w, 'TextSize', ex.fontSize);
 Screen('BlendFunction', w, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -449,6 +450,7 @@ onOffs = [diff(ex.longFormBlocks) 0];
 flipCnt = 0;
 cnt = 0;
 tstartcnt = 0;
+tend = [];
 while n+1 < length(ex.allFlips)
 
     if ET
@@ -468,7 +470,6 @@ while n+1 < length(ex.allFlips)
     %%%% draw sine wave grating stimulus %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     if ex.longFormBlocks(n+1) == 1 && ex.longFormFlicker(n+1) > 0 % zeros correspond to IBI, in which case we skip this next section
         thisCond = ex.longFormConds(n+1);
-        
         %screen background color
         if strfind(conditions(thisCond).name{:}, 'Minbg')
             gray = repmat(min(min(squeeze(ex.rectLWave1(1,:,:)),[],1)), [1,3]);
@@ -538,8 +539,10 @@ while n+1 < length(ex.allFlips)
             Eyelink('Message', char(sprintf('Cond %s', conditions(thisCond).name{:})))
             Eyelink('Message', 'TRIALID %d', tr);
             Eyelink('Message', 'STIM_ONSET');
+%             tic 
         elseif isempty(find(mod(tstartcnt,2))) && ET == 1
             Eyelink('Message', 'STIM_OFFSET');
+%             tend = [tend toc];     
         end
         
         
