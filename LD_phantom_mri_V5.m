@@ -94,16 +94,17 @@ ex.backgroundColor = [127 127 127];%[108.3760 108.3760 108.3760];%;  % color bas
 ex.fontSize = 12; %26;
 
 %% Color discrimination task setup
-ex.targetProb = .2;              % proportion of trials where the target color will come up
+ex.targetProb = .4;              % proportion of trials where the target color will come up
 ex.firstPossibleTarget = 5;     % no targets in the first X seconds
 ex.lastPossibleTarget = 5;      % no targets in the last X seconds
 ex.targetColors = {'red'};
 ex.distractColors = {'green'};
 ex.trialDur = 2;
+ex.targetOn = 0.5;
 % exp.totalColors = (exp.totalTime/exp.trialDur);
-ex.responseBack = 1;    % the response is correct if the preceding N colors were the target
+%ex.responseBack = 1;    % the response is correct if the preceding N colors were the target
 ex.flipsPerTrial = ex.trialDur/ex.flipWin;
-%ex.trialOnFlips = floor(ex.trialDur/ex.flipWin);
+ex.trialOnFlips = floor(ex.targetOn/ex.flipWin);
 %%%% color identification task
 ex.targets = [];
 ex.distractors = [];
@@ -327,13 +328,13 @@ cnt = 1; %block number
 backtickBlock = 0; %record backticks emitted by scanner machine
 fixCol = {'NaN'}; %initialize color
 % tend = [];
-
-while(1) 
-    %KbQueueStart();
-    
+probs = [1]; %first probability is 1 to allow for potential next target to occur
+probsCnt = 1; %start from 1 since we already have probs = [1]
+while(1)
+    KbQueueStart();
     %%%%%%% specify condition to draw at the start of the next block
     if n == 1 && cnt == 1 %for first block
-        expStart = GetSecs();
+        start = GetSecs();
         Screen('FillRect', w, gray);
         Screen(w, 'Flip', 0);
     end
@@ -363,47 +364,57 @@ while(1)
         end
     end
     %%%%%%%%% Color discrimination task %%%%%
-        % select new color if starting new trial
-    if mod(n, ex.flipsPerTrial) == 0
+    % select new color if starting new trial
+    if n < ex.flipsPerTrial
+        fixCol = ex.distractColors(randi(length(ex.distractColors)));
+    elseif mod(n, ex.flipsPerTrial) == 0
         prob = rand(1);
-        if prob < 0.2 %&& (GetSecs() - expStart > ex.firstPossibleTarget)
+        probs = [probs, prob];
+        probsCnt = probsCnt + 1;
+        
+        if prob < ex.targetProb %&& probs(probsCnt-1) >= ex.targetProb % make sure previous trial did not have a target
             fixCol = ex.targetColors(randi(length(ex.targetColors)));
             ex.targets = [ex.targets, 1];
-            ex.targetTimes = [ex.targetTimes, GetSecs - expStart];
-        else %if prob >= 0.2 %&& (GetSecs() - expStart > ex.firstPossibleTarget)
+            ex.targetTimes = [ex.targetTimes, GetSecs - start];
+        elseif prob >= ex.targetProb %|| probs(probsCnt-1) < ex.targetProb %if previous trial already had a target, show green
             fixCol = ex.distractColors(randi(length(ex.distractColors)));
             ex.distractors = [ex.distractors, 1];
+            
         end
     end
     
     %%%% draw fixation color in center of the screen
     
-    if mod(n, ex.flipsPerTrial) <= ex.flipsPerTrial && strcmp(fixCol{:}, 'red')
+    if mod(n, ex.flipsPerTrial) <= ex.trialOnFlips && strcmp(fixCol{:}, 'red')
         Screen('FillOval', w,[255 0 0], [xc-round(ex.fixSize/4) yc-round(ex.fixSize/4) xc+round(ex.fixSize/4) yc+round(ex.fixSize/4)]);%red fixation solid circle
         
-    elseif mod(n, ex.flipsPerTrial) <= ex.flipsPerTrial && strcmp(fixCol{:}, 'green')
+    elseif (mod(n, ex.flipsPerTrial) <= ex.flipsPerTrial && strcmp(fixCol{:}, 'green')) || (mod(n, ex.flipsPerTrial) > ex.trialOnFlips && strcmp(fixCol{:}, 'red')) % also accounts for after the target flashed
         Screen('FillOval', w,[0 255 0], [xc-round(ex.fixSize/4) yc-round(ex.fixSize/4) xc+round(ex.fixSize/4) yc+round(ex.fixSize/4)]);%green fixation solid circle
         
     end
     
     %%%%%%%%%%% FLIP %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    %[pressed, ~,~,lastPress]= KbQueueCheck();
-    if (n == 1 && cnt ==1) && KbTriggerWait(53, deviceNumber) > 0%((pressed == 1) && lastPress(KbName('`~')) > 0) 
+    
+    if n == 1
+        [~,keyCode,~] = KbWait(deviceNumber,2);
+    end
+    
+    if (n == 1 && cnt ==1) && nnz(keyCode(53)) %backTick > 0%%%%%%%
         
         [VBLT, ex.startRun, FlipT, missed] = Screen(w, 'Flip', 0);%[VBLTimestamp StimulusOnsetTime FlipTimestamp Missed] = Screen('Flip', windowPtr [, when] [, dontclear]...
         ex.flipTime(n,cnt) = ex.startRun;
         start = ex.startRun;
         backtickBlock = 1;
         n = n+1;
-        
-    elseif (n == 1 && cnt ~= 1) && KbTriggerWait(53, deviceNumber) > 0 %((pressed == 1) && lastPress(KbName('`~')) > 0)  %use second condition if we wait for backticks from scanner
+       
+    elseif (n == 1 && cnt ~= 1) && nnz(keyCode(53)) %backTick > 0 %% %%%%   %use second condition if we wait for backticks from scanner
         
         [VBLT, ex.startRun, FlipT, missed] = Screen(w, 'Flip', 0);%[VBLTimestamp StimulusOnsetTime FlipTimestamp Missed] = Screen('Flip', windowPtr [, when] [, dontclear]...
         ex.flipTime(n,cnt) = ex.startRun;
         start = ex.startRun;
         backtickBlock = 1;
         n = n+1;
-        
+
     elseif (n ~= 1 && cnt ~= 1) && backtickBlock == 1
         [VBLT, ex.flipTime(n,cnt), FlipT, missed] = Screen(w, 'Flip', start+ ex.allFlipTimes(n) - slack);%[VBLTimestamp StimulusOnsetTime FlipTimestamp Missed] = Screen('Flip', windowPtr [, when] [, dontclear]...
         
@@ -411,23 +422,20 @@ while(1)
         [VBLT, ex.flipTime(n,cnt), FlipT, missed] = Screen(w, 'Flip', start+ ex.allFlipTimes(n) - slack);%[VBLTimestamp StimulusOnsetTime FlipTimestamp Missed] = Screen('Flip', windowPtr [, when] [, dontclear]...
         
     end
-
-
-% 
-%     KbQueueStop();
-%     [pressed, firstPress]= KbQueueCheck();
-%     %%%% color identification
-%     if (pressed == 1) && ((firstPress(KbName('1!')) > 0) || (firstPress(KbName('2@')) > 0))
-%         if firstPress(KbName('1!')) > 0
-%             exp.responses = [exp.responses, 1];
-%             exp.responseTimes = [exp.responseTimes, firstPress(KbName('1!')) - exp.startRun];
-%          end
-%     end
-
-    %%%% refresh queue for next character
-%     KbQueueFlush();
     
-    if cnt > ex.numBlocks
+    KbQueueStop();
+    [pressed, firstPress]= KbQueueCheck();
+    %     %%%% color identification
+    if (pressed == 1) && (firstPress(KbName('1!')) > 0) %|| (firstPress(KbName('2@')) > 0))
+        ex.responses = [ex.responses, 1];
+        ex.responseTimes = [ex.responseTimes, firstPress(KbName('1!')) - start];
+    end
+    
+    %%%% refresh queue for next character
+    KbQueueFlush();
+    
+    
+    if cnt == ex.numBlocks
         break;
     end
     if n ~= 1
@@ -435,9 +443,6 @@ while(1)
     end
     
     if (n == (length(ex.allFlipTimes))) % for any other block , reset frame index when previous trial ends
-%         Screen('FillRect', w, gray);
-%         Screen(w, 'Flip', 0);
-%         WaitSecs(ex.betweenBlocks);
         n = 1;
         cnt = cnt+1;
         backtickBlock = 0;
@@ -474,7 +479,7 @@ for t = 1:size(ex.targetTimes,2)
         end
     end
 end
-ex.accuracy = (sum(ex.hits)/size(ex.targetTimes,2))*100;
+ex.accuracy = (sum(ex.hits)/size(ex.targets,2))*100;
 ex.meanRT = nanmean(ex.RTs);
 disp(sprintf('Accuracy: %d', ex.accuracy));
 disp(sprintf('Mean reaction time: %d', ex.meanRT));
