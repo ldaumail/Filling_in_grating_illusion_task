@@ -1,4 +1,4 @@
-function LD_phantom_mri_V5(subject, session, vertOffset, debug, figSizeDeg) 
+function LD_phantom_mri_V6(subject, session, vertOffset, debug, figSizeDeg) 
 
 %%MRI phantom task
 %Loic 01312023
@@ -8,7 +8,7 @@ function LD_phantom_mri_V5(subject, session, vertOffset, debug, figSizeDeg)
 % debug = 1;
 % vertOffset = 0;
 
-ex.version = 'v5';
+ex.version = 'v6';
 %global EyeData rect w xc yc %eye_used
 %%%% resolution 
 if debug == 1
@@ -398,11 +398,11 @@ while(1)
     
     %%%%%%%%%%% FLIP %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     
-    if n == 1
-        [~,keyCode,~] = KbWait(deviceNumber,2);
-    end
+%     if n == 1
+%         [~,keyCode,~] = KbWait(deviceNumber,2);
+%     end
     
-    if (n == 1 && cnt ==1) && nnz(keyCode(53)) %backTick > 0%%%%%%%
+    if (n == 1 && cnt ==1) %&& nnz(keyCode(53)) %backTick > 0%%%%%%%
         
         [VBLT, ex.startRun, FlipT, missed] = Screen(w, 'Flip', 0);%[VBLTimestamp StimulusOnsetTime FlipTimestamp Missed] = Screen('Flip', windowPtr [, when] [, dontclear]...
         ex.flipTime(n,cnt) = ex.startRun;
@@ -411,7 +411,7 @@ while(1)
         backtickBlock = 1;
         n = n+1;
        
-    elseif (n == 1 && cnt ~= 1) && nnz(keyCode(53)) %backTick > 0 %% %%%%   %use second condition if we wait for backticks from scanner
+    elseif (n == 1 && cnt ~= 1) %&& nnz(keyCode(53)) %backTick > 0 %% %%%%   %use second condition if we wait for backticks from scanner
         
         [VBLT, ex.startRun, FlipT, missed] = Screen(w, 'Flip', 0);%[VBLTimestamp StimulusOnsetTime FlipTimestamp Missed] = Screen('Flip', windowPtr [, when] [, dontclear]...
         ex.flipTime(n,cnt) = ex.startRun;
@@ -438,7 +438,7 @@ while(1)
     
     %%%% refresh queue for next character
     KbQueueFlush();
-
+    
     if n ~= 1
         n = n+1;
     end
@@ -498,4 +498,3 @@ ShowCursor;
 Screen('Close');
 Screen('CloseAll');
 fclose all;
-
