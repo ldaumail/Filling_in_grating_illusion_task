@@ -1,4 +1,4 @@
-function vertOffset = findVertOffset_LD(subject, session, debug, figSizeDeg)
+function vertOffset = findVertOffset_LD(subject, session, debug)
 
 %%%%%%%%%%%%%%%%%%%
 % BASIC SETTINGS
@@ -8,7 +8,7 @@ function vertOffset = findVertOffset_LD(subject, session, debug, figSizeDeg)
 if debug == 1
 	SetResolution(max(Screen('Screens')),1024,768,0); % laptop
 else
-    SetResolution(max(Screen('Screens')),1024,768,0); % scanner
+    SetResolution(max(Screen('Screens')),1024,768,60); % scanner
 end
 
 %%%% keyboards
@@ -17,8 +17,8 @@ deviceNumber = keyboardIndices(1);
 
 %%%% input this at the beginning of the scan session for 7T
 scSize.vertOffset = 0;                      % vertical offset from FindScreenSize.m
-scSize.screenDegY = figSizeDeg;
-scSize.screenDegX = figSizeDeg*3;%9;                      % pRF screen size
+scSize.screenDegY = 8; %figSizeDeg;
+scSize.screenDegX = 16; %figSizeDeg*3;%9;                      % pRF screen size
 
 
 %%%% scales all of the stimuli in DVA to the screensize
@@ -66,7 +66,7 @@ KbQueueCreate(deviceNumber,responseKeys);
 %%%% find center Y
 Screen('FillRect',win,params.backgroundColor)
 text = 'Find CENTER Y. 1 = Up, 2 = Down, 3 = Accept\n\nPress any button to start';
-width = RectWidth(Screen('TextBounds',win,text));
+%width = RectWidth(Screen('TextBounds',win,text));
 DrawFormattedText(win, text, 'center', 'center');
 Screen(win, 'Flip', 0);
 WaitSecs(1); KbPressWait; KbQueueFlush();

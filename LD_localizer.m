@@ -9,7 +9,7 @@ function LD_localizer(subject, session, vertOffset, locSize, debug)
 if debug == 1
 	experiment.resolution = SetResolution(max(Screen('Screens')),1024,768,0); % laptop
 else
-    experiment.resolution = SetResolution(max(Screen('Screens')),1024,768,0); % scanner
+    experiment.resolution = SetResolution(max(Screen('Screens')),1024,768,60); % scanner
 end
 
 %%%% keyboard
@@ -34,7 +34,7 @@ experiment.runNum = input('Run number :');
 %%%% input this at the beginning of the scan session for 7T
 loc.vertOffset = vertOffset;    % vertical offset from FindScreenSize.m
 loc.gammaCorrect = 1;       % make sure this = 1 when you're at the scanner!
-loc.whichCLUT = '7T_Sam.mat'; %'linearizedCLUT_SoniaMPB.mat';
+loc.whichCLUT = '/Users/tonglab/Desktop/Loic/CLUTs/7T_Sam.mat'; %'linearizedCLUT_SoniaMPB.mat';
 
 %%% basic naming set-up
 experiment.subject = subject;
@@ -56,14 +56,14 @@ experiment.date = datestr(now,30);
 %%%% timing
 loc.blockLength = 12;            % in seconds
 loc.betweenBlocks = 12;          % in seconds
-loc.initialFixation = 16;        % in seconds
-loc.finalFixation = 16;          % in seconds
+loc.initialFixation = 12;        % in seconds
+loc.finalFixation = 12;          % in seconds
 % loc.flickerRate = .100;         % in seconds
-loc.flickerRate = .050;         % in seconds
-loc.numBlocks = 16;
+loc.flickerRate = .050;        % in seconds
+loc.numBlocks = 12;
 
 %%%% checkerboard
-loc.stim.spatialFreqDeg = 1.5;                                           % cycles per degree
+loc.stim.spatialFreqDeg = 2;                                           % cycles per degree
 loc.stim.contrast =  1;                                                  % in %, maybe??
 loc.stim.stimSizeDeg = locSize;                                           % diam in degrees
 loc.stim.annulusRad = 0;                                               % in degrees
