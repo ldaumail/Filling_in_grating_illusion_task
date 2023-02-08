@@ -1,10 +1,11 @@
+function contrast_matching_control_v2(subject, session, debug) 
+
 %%contrast matching control
 %Loic 01252023
 %In this version, we add multiple velocities
 subject = 'Dave';                                                                                                                                                                                                                                                     
 session = 1;                                                                                                                           
 debug = 1;
-vertOffset = 0;
 
 ex.version = 'v13';
 global EyeData rect w xc yc %eye_used
@@ -38,21 +39,13 @@ responseKeys(KbName('ENTER'))=1; % button box 3
 
 Screen('Preference', 'SkipSyncTests', 0);
 
-% ex.scanNum = input('Scan number :');
-% ex.runNum = input('Run number :');
-ex.vertOffset = vertOffset;    % vertical offset from FindScreenSize.m
-
-
 %%% basic naming set-up
 ex.subject = subject;
 ex.session = session;
 
-
 %%%% set-up rand
-%  rand('twister', sum(100*clock));
-%  ex.rand = rand;
-
-rng(sum(100*clock));
+ex.startTime = clock;
+rng(sum(100*ex.startTime));
 ex.rand = rng;
 %%%% files and things
 ex.root = pwd;
@@ -61,20 +54,26 @@ ex.date = datestr(now,30);
 
 %%%% 2D sine wave grating properties
 ex.stim.spatialFreqDeg = 0.5/2; %0.286;                                          % cycles per degree of visual angle
-% ex.stim.contrast = 0.3 ;                                                 % in %, maybe??
 ex.stim.orientation = [90]; %[90 180];                                                % in degrees
 ex.stim.degFromFix = .6;                                              % in degrees of visual angle
 ex.stim.gaborHDeg = 8;                                                  % in degrees of visual angle
 ex.stim.gaborWDeg = 8;
 %ex.stim.rectGaborWDeg = 8;
-ex.stim.contrastMultiplicator = 0.075;                                     % for sine wave 0.5 = 100% contrast, 0.2 = 40%
-ex.stim.contrastMults = linspace(0,0.075,20);                            %contrast multiplicators for the adjustable sine wave from 0 to 0.6 contrast
-ex.stim.contrastOffset = [.5 .5 .5 0];                                  % for procedural gabor
+ex.stim.contrast = 0.15 ;                                                 % in %, maybe??
+ex.stim.contrastMultiplicator = ex.stim.contrast/2;                                     % for sine wave 0.5 = 100% contrast, 0.2 = 40%
+ex.match.contrastMults = linspace(0,ex.stim.contrastMultiplicator/4,20);%linspace(0,0.075,20);                            %contrast multiplicators for the adjustable sine wave from 0 to 0.6 contrast
+ex.stim.contrastOffset = .5;                                  % for procedural gabor
+ex.match.contrastOffset = ex.stim.contrastOffset-ex.stim.contrastMultiplicator-ex.match.contrastMults; 
+%-ex.stim.contrastMultiplicator because we want the maximum luminance value to match the background luminance (which corresponds to ex.stim.contrastOffset-ex.stim.contrastMultiplicator, the dark stim grating luminance)
+%thus our baseline luminance is ex.stim.contrastOffset-ex.stim.contrastMultiplicator
+%In addition, we subtract -ex.match.contrastMults to make sure that
+%for every matching contrast level, the maximum luminance remains equal to
+%the dark stripe luminance, thus we lower the baseline luminance according to each contrast level.
 ex.stim.cycPerSec = [1.13*1/2,1.13*3/2]; % try multiple speeds
 ex.stim.motionRate = ex.stim.cycPerSec.*360;                                          % 1.13 cycles per second = 360 deg of phase *1.13 per sec
 ex.stim.cycles =[1, 3]; %number of cycles shifted per lap  (modified to half the number of cycles per lap)
-%%%% sine wave grating timing (within block scale)
 
+%%%% sine wave grating timing (within block scale)
 ex.initialFixation = 6;        % in seconds
 ex.finalFixation = 2;          % in seconds
 ex.trialFixation = 0;          % in seconds
@@ -94,10 +93,10 @@ ex.numConds = length(ex.conds);
 % later, to have the conditions randomized within each block
 ex.repsPerRun = 20;              % repetitions of each condition per run
 ex.nTrials = ex.numConds*ex.repsPerRun;
-condShuffle1 = Shuffle(repmat([1:ex.numConds/2],1,ex.repsPerRun)); % %e.stimsPerBlock make same number of blocks with each condition, randomize order
-condShuffle2 = Shuffle(repmat([ex.numConds/2+1:ex.numConds],1,ex.repsPerRun));
-
-ex.condShuffle = [condShuffle1 condShuffle2];
+% condShuffle1 = Shuffle(repmat([1:ex.numConds/2],1,ex.repsPerRun)); % %e.stimsPerBlock make same number of blocks with each condition, randomize order
+% condShuffle2 = Shuffle(repmat([ex.numConds/2+1:ex.numConds],1,ex.repsPerRun));
+% 
+% ex.condShuffle = [condShuffle1 condShuffle2];
 
 %% This section is only required for preallocating data for eye movements
 % ex.totalTime = [];
@@ -117,59 +116,16 @@ ex.fixSizeDeg =  .5;            % in degrees, the size of the biggest white dot 
 
 %%%% screen
 ex.backgroundColor = [127 127 127];%[108.3760 108.3760 108.3760];%;  % color based on minimum gating luminance 
-ex.fontSize = 12; %26;
+ex.fontSize = 14; %26;
 
 %% %%%%%%%%%%%%%%%%%
    % timing model  %
    %%%%%%%%%%%%%%%%%
-%    clear t
-% for t =1:length(ex.blockLength) %there is a different block length for every drifting speed
-%     if t == 1
-%         ex.onSecs = [zeros(1,ex.initialFixation)...
-%             repmat([ones(1,ex.blockLength(t)) zeros(1,ex.betweenBlocks)],1,ex.nTrials/length(ex.blockLength))];
-%     elseif t <length(ex.blockLength) && t > 1
-%         ex.onSecs = [ex.onSecs...
-%             repmat([ones(1,ex.blockLength(t)) zeros(1,ex.betweenBlocks)],1,ex.nTrials/length(ex.blockLength))];
-% 
-%     elseif t == length(ex.blockLength)
-%                 ex.onSecs = [ex.onSecs...
-%                     repmat([ones(1,ex.blockLength(t)) zeros(1,ex.betweenBlocks)],1,ex.nTrials/length(ex.blockLength)-1)... %2*ones(1,e.blockLength) zeros(1,e.betweenBlocks)
-%                     ones(1,ex.blockLength(t)) zeros(1,ex.finalFixation)];
-%     end
-% end
+
 ex.onSecs = ones(1,ex.blockLength(1));
 ex.longFormBlocks = Expand(ex.onSecs,ex.flipsPerSec,1); %1 when block, 0 when between block
 ex.longFormFlicker = repmat(ones(1,1),1,length(ex.longFormBlocks)); %1 all the way to ensure flip at every time selected
 length(ex.longFormBlocks)
-
-
-%set up the timing model for stimulus pairing conditions ( pair square, pair rectangle ) and stimulus orientation
-%longform condition timing, which aligns with the flicker timing
-% clear t
-% ex.longFormConds = zeros(1,ex.initialFixation);
-% for t =1:length(ex.blockLength) %length(blockLength) indicates the number of different velocities
-%     if t <length(ex.blockLength)
-%         for i = 1+(ex.nTrials/length(ex.blockLength))*(t-1):ex.nTrials/length(ex.blockLength)+(ex.nTrials/length(ex.blockLength))*(t-1)
-%             ex.longFormConds = [ex.longFormConds, repmat(ex.condShuffle(i),1,ex.blockLength(t))]; % blocks
-%             ex.longFormConds = [ex.longFormConds, zeros(1,ex.betweenBlocks)]; % inter-block blanks
-%         end
-%     elseif t == length(ex.blockLength)
-% %         take care of the last speed trials
-%         for i =  1+(ex.nTrials/length(ex.blockLength))*(t-1):ex.nTrials/length(ex.blockLength)+(ex.nTrials/length(ex.blockLength))*(t-1)-1
-%             ex.longFormConds = [ex.longFormConds, repmat(ex.condShuffle(i),1,ex.blockLength(end))]; % blocks
-%             ex.longFormConds = [ex.longFormConds, zeros(1,ex.betweenBlocks)]; % inter-block blanks
-%         end
-%     end
-% end
-% ex.longFormConds = [ex.longFormConds, repmat(ex.condShuffle(end),1,ex.blockLength(end)), zeros(1,ex.finalFixation)]; % the last block
-% ex.longFormConds = Expand(ex.longFormConds, ex.flipsPerSec,1);
-% length(ex.longFormConds)
-% %% create the timing model of stimulus conditions for this particular run
-% clear i
-% for i =1:ex.numConds
-%     conditions(i).name = ex.conds(i);
-%     conditions(i).startTimes = [];
-% end
 
 %%
 %%%%%%%%%%%%%%%
@@ -287,10 +243,10 @@ for o =1:length(ex.stim.orientation)
             
             % rect
             ex.(rectLWave)(f,:,:,o) = makeSineGrating(ex.gaborHeight,ex.gaborWidth*2,ex.stim.spatialFreqDeg,...
-                ex.stim.orientation(o),LPhase,ex.stim.contrastOffset(1),ex.stim.contrastMultiplicator,...
+                ex.stim.orientation(o),LPhase,ex.stim.contrastOffset,ex.stim.contrastMultiplicator,...
                 ex.ppd);
             ex.(rectRWave)(f,:,:,o) = makeSineGrating(ex.gaborHeight,ex.gaborWidth*2,ex.stim.spatialFreqDeg,...
-                ex.stim.orientation(o),RPhase,ex.stim.contrastOffset(1),ex.stim.contrastMultiplicator,...
+                ex.stim.orientation(o),RPhase,ex.stim.contrastOffset,ex.stim.contrastMultiplicator,...
                 ex.ppd);
             %                 figure();
             %                imshow(squeeze(ex.(rectRWave)(f,:,:,o))./max(squeeze(ex.(rectRWave)(f,:,:,o)),[],'all'));
@@ -323,7 +279,7 @@ end
 %% Create contrast adjustable sine wave grating
 
 clear t
-for c =1:length(ex.stim.contrastMults)
+for c =1:length(ex.match.contrastMults)
     rectCWaveIDO = nan(length(flipTimes),length(ex.stimDur)) ;
     for s =1:length(ex.stim.cycPerSec)
         flipt =sprintf('flipTimes%d',s);
@@ -332,7 +288,7 @@ for c =1:length(ex.stim.contrastMults)
         %rect
         rectCWave = sprintf('rectCWave%d',s);
         
-        ex.(rectCWave) = nan(length(flipTimes),ex.gaborHeight,ex.gaborWidth*2,length(ex.stim.contrastMults));
+        ex.(rectCWave) = nan(length(flipTimes),ex.gaborHeight,ex.gaborWidth*2,length(ex.match.contrastMults));
         
         phaseNum = sprintf('phases%d',s);
         phases = ex.stim.(phaseNum) ;
@@ -345,11 +301,11 @@ for c =1:length(ex.stim.contrastMults)
             %tilt/orientation of the grating in degrees %phase in degrees (not degrees of visual angle)
             %contrast offset in percent    %contrast multiplicator  %ppd = 0 if freq already in cycles per stimulus
             %background color (unused if the grating is not an annulus)
-            
+             
             % rect
             ex.(rectCWave)(f,:,:,c) = makeSineGrating(ex.gaborHeight,ex.gaborWidth*2,ex.stim.spatialFreqDeg,...
-                ex.stim.orientation(1),CPhase,ex.stim.contrastOffset(1),ex.stim.contrastMults(c),...
-                ex.ppd);
+                ex.stim.orientation(1),CPhase,ex.match.contrastOffset(c) ,ex.match.contrastMults(c),...
+                ex.ppd);%-min(min(squeeze(ex.rectLWave1(1,:,:)),[],1));  %center contrast level to dark luminance background so that the max luminance matches the dark luminance background
             %                 figure();
             %                imshow(squeeze(ex.(rectRWave)(f,:,:,o))./max(squeeze(ex.(rectRWave)(f,:,:,o)),[],'all'));
             %
@@ -363,7 +319,6 @@ for c =1:length(ex.stim.contrastMults)
             %rect
             rectCWaveIDO(:,s) = tmprectCWaveID(:,c);            
         elseif s == length(ex.stimDur)
-            
             %rect
             rectCWaveIDO(:,s) = tmprectCWaveID(:,c);
             ex.rectCWaveID(1:length(rectCWaveIDO),1:2,c) = rectCWaveIDO;
@@ -396,7 +351,7 @@ end
 % Screen(w, 'Flip', 0);
 % KbTriggerWait(53, deviceNumber);
 
-DrawFormattedText(w,'Match the contrast level of the oscillating visual phantom within the gap \n\n at the center-left side of the screen \n\n with that of the sinewave grating on the right side of the screen. \n\n Increase contrast = 1, decrease contrast = 2  \n\n Press Space to start'... % :  '...
+DrawFormattedText(w,'Match the contrast level of the oscillating visual phantom within the gap \n\n at the center-left side of the screen \n\n with that of the sinewave grating on the right side of the screen. \n\n To increase contrast press 1, to decrease contrast press 2  \n\n Press Space to start'... % :  '...
     ,'center', 'center',[0 0 0]);
 Screen(w, 'Flip', 0);
 %  WaitSecs(2);  
@@ -411,9 +366,8 @@ KbQueueCreate(deviceNumber,responseKeys);
 %                         experiment                         %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-n=0;
+
 %%%%%%% START task TASK/FLIPPING
-% [e.totalTime, e.allFlips,n]
 
 gray = repmat(mean(squeeze(ex.rectLWave1(1,1,:))), [1,3]);
 
@@ -432,6 +386,7 @@ if ET
     EyeData.Fixated = nan(1,1);
 end
 
+n=1; %initialize at first flip
 cont = 10; %initial contrast level index for adjustable stimulus
 ex.cont = [];
 cnt = 0;
@@ -444,17 +399,7 @@ while(1) %n+1 < length(ex.allFlips)
     if ET
         run GetEyeDataLoic; %check eyetracker
     end
-    
-    %[ex.longFormBlocks(n+1),ex.longFormFlicker(n+1)]
-    
-    %%%%%%%%%%% FLIP %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    if n == 0
-        [VBLT, ex.startRun, FlipT, missed] = Screen(w, 'Flip', 0);%[VBLTimestamp StimulusOnsetTime FlipTimestamp Missed] = Screen('Flip', windowPtr [, when] [, dontclear]...
-        ex.flipTime(n+1) = ex.startRun;
-    else
-        [VBLT, ex.flipTime(n+1), FlipT, missed] = Screen(w, 'Flip', ex.startRun + ex.flipTimes1(n+1) - slack);
-    end
-    
+
     %%%% draw sine wave grating stimulus %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     %if ex.longFormBlocks(n+1) == 1 && ex.longFormFlicker(n+1) > 0 % zeros correspond to IBI, in which case we skip this next section
     
@@ -462,22 +407,28 @@ while(1) %n+1 < length(ex.allFlips)
     %screen background color
     
     gray = repmat(min(min(squeeze(ex.rectLWave1(1,:,:)),[],1)), [1,3]);
-    
-    
     Screen('FillRect', w, gray);
     
     ex.rectLRect =  CenterRectOnPoint([0 0 ex.rectGaborWidth ex.gaborHeight],xL,yL);
     ex.rectRRect =  CenterRectOnPoint([0 0 ex.rectGaborWidth ex.gaborHeight],xR,yR);
     ex.rectCRect =  CenterRectOnPoint([0 0 ex.rectGaborWidth ex.gaborHeight],xC,yC);
     
-    if nnz(find(ex.rectLWaveID(n+1,1)))
+    if nnz(find(ex.rectLWaveID(n,1)))
         % top stim
-        Screen('DrawTexture', w, ex.rectLWaveID(n+1,1),[],ex.rectLRect);
+        Screen('DrawTexture', w, ex.rectLWaveID(n,1),[],ex.rectLRect);
         % bottom stim
-        Screen('DrawTexture', w, ex.rectRWaveID(n+1,1 ),[], ex.rectRRect);
+        Screen('DrawTexture', w, ex.rectRWaveID(n,1 ),[], ex.rectRRect);
         % side stim
-        Screen('DrawTexture', w, ex.rectCWaveID(n+1,s,cont), [], ex.rectCRect);
+        Screen('DrawTexture', w, ex.rectCWaveID(n,s,cont), [], ex.rectCRect);
     end
+        %%%%%%%%%%% FLIP %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    if n == 1
+        [VBLT, ex.startRun, FlipT, missed] = Screen(w, 'Flip', 0);%[VBLTimestamp StimulusOnsetTime FlipTimestamp Missed] = Screen('Flip', windowPtr [, when] [, dontclear]...
+        ex.flipTime(n) = ex.startRun;
+    else
+        [VBLT, ex.flipTime(n), FlipT, missed] = Screen(w, 'Flip', ex.startRun + ex.flipTimes1(n) - slack);
+    end
+    
     KbQueueStop();
     [pressed, firstPress]= KbQueueCheck();
     if (pressed && ismember(find(firstPress,1), [KbName('1') KbName('2') KbName('1!') KbName('2@')]))
@@ -486,11 +437,11 @@ while(1) %n+1 < length(ex.allFlips)
         elseif (find(firstPress,1) == KbName('2')|find(firstPress,1) == KbName('2@'))
             cont = cont-1; % decrease contrast
         end
-        if cont == 0 || cont == length(ex.stim.contrastMults)+1
+        if cont == 0 || cont == length(ex.match.contrastMults)+1
             cont = 10;
         end
     elseif (pressed && ismember(find(firstPress,1), [KbName('Return') KbName('ENTER')]))
-        ex.cont = [ex.cont ex.stim.contrastMults(cont)];
+        ex.cont = [ex.cont ex.match.contrastMults(cont)];
         n = 0;
         t = t+1;
         cont = 10; 
@@ -506,20 +457,18 @@ while(1) %n+1 < length(ex.allFlips)
     end
     % end
     KbQueueFlush();
-    
-    if n == numel(ex.flipTimes1)-1 
-        n = 0;
+    n = n+1;
+    if (n == length(ex.flipTimes1)+1) % for any other block , reset frame index when previous trial ends 
+        n = 1;
     end
     if t > ex.nTrials
         break;
     end
-    
   
-        %             thisCond = ex.longFormConds(n+2);
-
+%             thisCond = ex.longFormConds(n+2);
 %             Eyelink('Message', char(sprintf('Cond %s',
 %             conditions(thisCond).name{:}))) 
-    n = n+1;
+
 end
 
 %%%%%%%%%%%%%%%%%%
@@ -565,4 +514,4 @@ if ET
     Eyelink('Shutdown');
     savename = fullfile(savedir, strcat(sprintf('/s%s_smooth_pursuit_v13_date%s_fix_eyeDat',subject,num2str(ex.date)), '.mat'));
     save(savename, 'EyeData')
-end 
+end
