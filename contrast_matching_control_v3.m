@@ -91,7 +91,8 @@ ex.flipWin = 1/ex.flipsPerSec;         % in seconds then actually in 1 sec the s
 
 %%%% conditions & layout (across blocks scale)
 
-ex.conds = {'Cont1Vel1';'Cont2Vel1';'Cont3Vel1';'Cont1Vel2';'Cont2Vel2';'Cont3Vel2'};%'MinbgMatchVel2'};
+ex.conds = {'Cont1Vel1';'Cont2Vel1';'Cont3Vel1';'Cont4Vel1';'Cont5Vel1';'Cont6Vel1';'Cont7Vel1';'Cont8Vel1';'Cont9Vel1';'Cont10Vel1';...
+    'Cont1Vel2';'Cont2Vel2';'Cont3Vel2';'Cont4Vel2';'Cont5Vel2';'Cont6Vel2';'Cont7Vel2';'Cont8Vel2';'Cont9Vel2';'Cont10Vel2'};%'MinbgMatchVel2'};
 ex.numConds = length(ex.conds);
 % with line of code below we will have 1 condition per block, randomized. we might need to change that
 % later, to have the conditions randomized within each block
@@ -100,9 +101,10 @@ ex.nTrials = ex.numConds*ex.repsPerRun;
 
 ex.condShuffle = [];
 for i =1:ex.repsPerRun
-ex.condShuffle = [ex.condShuffle, Shuffle([1:ex.numConds])];
+    ex.condShuffle = [ex.condShuffle, Shuffle([1:ex.numConds])];
 end
-
+% vel2Idx = find(ex.condShuffle >10);
+% ex.condShuffle(vel2Idx) = ex.condShuffle(vel2Idx)-10;
 %% This section is only required for preallocating data for eye movements
 % ex.totalTime = [];
 % for t =1:length(ex.blockLength) %there is a different block length for every drifting speed
@@ -217,7 +219,9 @@ ex.rectGaborWidth = round(ex.stim.gaborWDeg*2*ex.ppd);
 %% create sine wave gratings and store all phase transitions in structure
 %%% along with pointers
 %rect
-
+DrawFormattedText(w,'Wait while the task is loading'... % :  '...
+    ,'center', 'center',[0 0 0]);
+Screen(w, 'Flip', 0);
 % rectLWaveIDO = nan(length(flipTimes),length(ex.stimDur),length(ex.stim.contrast));
 % rectRWaveIDO = nan(length(flipTimes),length(ex.stimDur),length(ex.stim.contrast));
 for s =1:length(ex.stim.cycPerSec)
@@ -264,7 +268,9 @@ for s =1:length(ex.stim.cycPerSec)
 end
 
 %% Create contrast adjustable sine wave grating
-
+DrawFormattedText(w,'The task is still loading'... % :  '...
+    ,'center', 'center',[0 0 0]);
+Screen(w, 'Flip', 0);
 clear c
 %rectCWaveIDO = nan(length(flipTimes),length(ex.stimDur),length(ex.stim.contrast)) ;
 for s =1:length(ex.stim.cycPerSec)
@@ -369,7 +375,7 @@ end
 
 n=1; %initialize at first flip
 contM = size(ex.match.contrastMults,1)/2; %initial contrast level index for adjustable stimulus
-ex.contM = nan(1,length(ex.stim.contrast));
+ex.contM = nan(ex.nTrials,length(ex.stim.contrast));
 % tstartcnt = 0;
 % tend = [];
 t =1; %trial number
@@ -385,20 +391,25 @@ while(1) %n+1 < length(ex.allFlips)
     speed = speed(end);
     s = str2double(speed);
     rectLWave = sprintf('rectLWave%s', speed);
-    gray = repmat(min(min(squeeze(ex.(rectLWave)(:,:,1,thisCond)),[],1)), [1,3]);
+    if thisCond >length(ex.conds)/2 % we need to do this because with n conditions, n/2 are at velocity 1 and n/2 at velocity 2
+        condInd = thisCond -length(ex.conds)/2;
+    else 
+        condInd = thisCond;
+    end
+    gray = repmat(min(min(squeeze(ex.(rectLWave)(:,:,1,condInd)),[],1)), [1,3]);
     Screen('FillRect', w, gray);
     
     ex.rectLRect =  CenterRectOnPoint([0 0 ex.rectGaborWidth ex.gaborHeight],xL,yL);
     ex.rectRRect =  CenterRectOnPoint([0 0 ex.rectGaborWidth ex.gaborHeight],xR,yR);
     ex.rectCRect =  CenterRectOnPoint([0 0 ex.rectGaborWidth ex.gaborHeight],xC,yC);
     
-    if nnz(find(ex.rectLWaveID(n,s,thisCond)))
+    if nnz(find(ex.rectLWaveID(n,s,condInd)))
         % top stim
-        Screen('DrawTexture', w, ex.rectLWaveID(n,s,thisCond),[],ex.rectLRect);
+        Screen('DrawTexture', w, ex.rectLWaveID(n,s,condInd),[],ex.rectLRect);
         % bottom stim
-        Screen('DrawTexture', w, ex.rectRWaveID(n,s,thisCond),[], ex.rectRRect);
+        Screen('DrawTexture', w, ex.rectRWaveID(n,s,condInd),[], ex.rectRRect);
         % side stim
-        Screen('DrawTexture', w, ex.rectCWaveID(n,s,contM,thisCond), [], ex.rectCRect);
+        Screen('DrawTexture', w, ex.rectCWaveID(n,s,contM,condInd), [], ex.rectCRect);
     end
         %%%%%%%%%%% FLIP %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     if n == 1
@@ -420,7 +431,7 @@ while(1) %n+1 < length(ex.allFlips)
             contM = 10;
         end
     elseif (pressed && ismember(find(firstPress,1), [KbName('Return') KbName('ENTER')]))
-        ex.contM(1:length([ex.contM(thisCond) ex.match.contrastMults(contM,thisCond)]),thisCond) = [ex.contM(thisCond) ex.match.contrastMults(contM,thisCond)];
+        ex.contM(t,thisCond) = ex.match.contrastMults(contM,condInd);
         n = 1;
         t = t+1;
         contM = 10; 
@@ -454,10 +465,10 @@ end
 ex.runTime = GetSecs - ex.startRun;
 
 
-savedir = fullfile(ex.root,'data',sprintf('s%s_v13/',subject));
+savedir = fullfile(ex.root,'data',sprintf('s%s_v3/',subject));
 if ~exist(savedir); mkdir(savedir); end
 savename = fullfile(savedir, strcat(sprintf('/s%s_contrast_matching_v3_date%s',subject,num2str(ex.date)), '.mat'));
-save(savename,'ex');
+save savename 'ex' -v7.3
 
 %KbQueueRelease();
 ShowCursor;
