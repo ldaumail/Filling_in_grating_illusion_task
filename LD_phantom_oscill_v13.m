@@ -184,9 +184,9 @@ if debug
     [w, rect]=Screen('OpenWindow',screen,ex.backgroundColor,[100 100 600 400],[],[],[],[],kPsychNeed32BPCFloat); %might need to switch 900 and 600 by 1600 and 1200 for room 425
     
 else
-    [w, rect]=Screen('OpenWindow',screen,ex.backgroundColor,[100 100 600 400],[],[],[],[],kPsychNeed32BPCFloat); %might need to switch 900 and 600 by 1600 and 1200 for room 425
+%     [w, rect]=Screen('OpenWindow',screen,ex.backgroundColor,[100 100 600 400],[],[],[],[],kPsychNeed32BPCFloat); %might need to switch 900 and 600 by 1600 and 1200 for room 425
     
-    %[w, rect]=Screen('OpenWindow',screen,ex.backgroundColor,[],[],[],[],[],kPsychNeed32BPCFloat); %might need to switch 900 and 600 by 1600 and 1200 for room 425
+    [w, rect]=Screen('OpenWindow',screen,ex.backgroundColor,[],[],[],[],[],kPsychNeed32BPCFloat); %might need to switch 900 and 600 by 1600 and 1200 for room 425
 end
 Screen(w, 'TextSize', ex.fontSize);
 Screen('BlendFunction', w, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -539,10 +539,10 @@ while n+1 < length(ex.allFlips)
             Eyelink('Message', char(sprintf('Cond %s', conditions(thisCond).name{:})))
             Eyelink('Message', 'TRIALID %d', tr);
             Eyelink('Message', 'STIM_ONSET');
-%             tic 
+            tic 
         elseif isempty(find(mod(tstartcnt,2))) && ET == 1
             Eyelink('Message', 'STIM_OFFSET');
-%             tend = [tend toc];     
+            tend = [tend toc];     
         end
         
         
