@@ -1,11 +1,11 @@
-function contrast_matching_control_v2(subject, session, debug) 
+function contrast_matching_control_v3(subject, session, debug) 
 
 %%contrast matching control
 %Loic 01252023
 %In this version, we add multiple velocities
-subject = 'Dave';                                                                                                                                                                                                                                                     
-session = 1;                                                                                                                           
-debug = 1;
+% subject = 'Dave';                                                                                                                                                                                                                                                     
+% session = 1;                                                                                                                           
+% debug = 1;
 
 ex.version = 'v13';
 global EyeData rect w xc yc %eye_used
@@ -59,7 +59,7 @@ ex.stim.degFromFix = .6;                                              % in degre
 ex.stim.gaborHDeg = 8;                                                  % in degrees of visual angle
 ex.stim.gaborWDeg = 8;
 %ex.stim.rectGaborWDeg = 8;
-ex.stim.contrast = linspace(0.01,0.20,10);%[0.05, 0.10, 0.15];                                                 % in %, maybe?? %here the number of stimulus contrast levels is the number of different conditions
+ex.stim.contrast = 0.15;%linspace(0.01,0.20,10);%[0.05, 0.10, 0.15];                                                 % in %, maybe?? %here the number of stimulus contrast levels is the number of different conditions
 ex.stim.contrastMultiplicator = ex.stim.contrast/2;                                     % for sine wave 0.5 = 100% contrast, 0.2 = 40%
 ex.match.contrastMults = nan(20,length(ex.stim.contrast));
 ex.match.contrastOffset = nan(20,length(ex.stim.contrast));
@@ -91,8 +91,8 @@ ex.flipWin = 1/ex.flipsPerSec;         % in seconds then actually in 1 sec the s
 
 %%%% conditions & layout (across blocks scale)
 
-ex.conds = {'Cont1Vel1';'Cont2Vel1';'Cont3Vel1';'Cont4Vel1';'Cont5Vel1';'Cont6Vel1';'Cont7Vel1';'Cont8Vel1';'Cont9Vel1';'Cont10Vel1';...
-    'Cont1Vel2';'Cont2Vel2';'Cont3Vel2';'Cont4Vel2';'Cont5Vel2';'Cont6Vel2';'Cont7Vel2';'Cont8Vel2';'Cont9Vel2';'Cont10Vel2'};%'MinbgMatchVel2'};
+ex.conds = {'Cont1Vel1';...%'Cont2Vel1';'Cont3Vel1';'Cont4Vel1';'Cont5Vel1';'Cont6Vel1';'Cont7Vel1';'Cont8Vel1';'Cont9Vel1';'Cont10Vel1';...
+    'Cont1Vel2'};%;'Cont2Vel2';'Cont3Vel2';'Cont4Vel2';'Cont5Vel2';'Cont6Vel2';'Cont7Vel2';'Cont8Vel2';'Cont9Vel2';'Cont10Vel2'};%'MinbgMatchVel2'};
 ex.numConds = length(ex.conds);
 % with line of code below we will have 1 condition per block, randomized. we might need to change that
 % later, to have the conditions randomized within each block
@@ -105,18 +105,6 @@ for i =1:ex.repsPerRun
 end
 % vel2Idx = find(ex.condShuffle >10);
 % ex.condShuffle(vel2Idx) = ex.condShuffle(vel2Idx)-10;
-%% This section is only required for preallocating data for eye movements
-% ex.totalTime = [];
-% for t =1:length(ex.blockLength) %there is a different block length for every drifting speed
-%     if t == 1
-%         ex.totalTime = sum([ex.totalTime, ex.initialFixation + (ex.nTrials/length(ex.blockLength) * (ex.blockLength(t) + ex.betweenBlocks))]);
-%     elseif t <length(ex.blockLength) && t > 1
-%              ex.totalTime = sum([ex.totalTime, (ex.nTrials/length(ex.blockLength) * (ex.blockLength(t) + ex.betweenBlocks))]); 
-%     elseif t == length(ex.blockLength)
-%         ex.totalTime = sum([ex.totalTime, ((ex.nTrials/length(ex.blockLength)-1) * (ex.blockLength(t) + ex.betweenBlocks)) + ex.blockLength(t) + ex.finalFixation]);
-%     end
-% end
-% ex.allFlips = (0:ex.flipWin:ex.totalTime);
 
 %% fixation 
 ex.fixSizeDeg =  .5;            % in degrees, the size of the biggest white dot in the fixation
@@ -145,7 +133,7 @@ Priority(9);
 screen=max(Screen('Screens'));
 if debug
      [w, rect]=Screen('OpenWindow',screen,ex.backgroundColor,[100 100 600 400],[],[],[],[],kPsychNeed32BPCFloat); %might need to switch 900 and 600 by 1600 and 1200 for room 425
-     %  [w, rect]=Screen('OpenWindow',screen,ex.backgroundColor,[],[],[],[],[],kPsychNeed32BPCFloat); %might need to switch 900 and 600 by 1600 and 1200 for room 425
+      % [w, rect]=Screen('OpenWindow',screen,ex.backgroundColor,[],[],[],[],[],kPsychNeed32BPCFloat); %might need to switch 900 and 600 by 1600 and 1200 for room 425
 else   
     [w, rect]=Screen('OpenWindow',screen,ex.backgroundColor,[],[],[],[],[],kPsychNeed32BPCFloat); %might need to switch 900 and 600 by 1600 and 1200 for room 425
 end
@@ -363,15 +351,15 @@ gray = repmat(mean(squeeze(ex.rectLWave1(1,:,1,1))), [1,3]);
 
 Screen('FillRect', w, gray);
     
-if ET
-    gcnt = 0; 
-    EyeData.mx=nan(1,1);
-    EyeData.my=nan(1,1);
-    EyeData.ma=nan(1,1);
-    EyeData.FixDoneT = nan(1,1);
-    EyeData.gazeD = nan(1,1);
-    EyeData.Fixated = nan(1,1);
-end
+% if ET
+%     gcnt = 0; 
+%     EyeData.mx=nan(1,1);
+%     EyeData.my=nan(1,1);
+%     EyeData.ma=nan(1,1);
+%     EyeData.FixDoneT = nan(1,1);
+%     EyeData.gazeD = nan(1,1);
+%     EyeData.Fixated = nan(1,1);
+% end
 
 n=1; %initialize at first flip
 contM = size(ex.match.contrastMults,1)/2; %initial contrast level index for adjustable stimulus
@@ -468,9 +456,9 @@ ex.runTime = GetSecs - ex.startRun;
 savedir = fullfile(ex.root,'data',sprintf('s%s_v3/',subject));
 if ~exist(savedir); mkdir(savedir); end
 savename = fullfile(savedir, strcat(sprintf('/s%s_contrast_matching_v3_date%s',subject,num2str(ex.date)), '.mat'));
-save savename 'ex' -v7.3
+save(savename,'ex','-v7.3')
 
-%KbQueueRelease();
+KbQueueRelease();
 ShowCursor;
 Screen('Close');
 Screen('CloseAll');
