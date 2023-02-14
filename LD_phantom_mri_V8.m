@@ -66,7 +66,6 @@ ex.stim.orientation = [90 180];                                                %
 ex.stim.gaborHDeg = figSizeDeg;                                                  % in degrees of visual angle
 ex.stim.gaborWDeg = figSizeDeg;
 ex.stim.contrastMultiplicator = 0.075;                                     % for sine wave 0.5 = 100% contrast, 0.2 = 40%
-ex.stim.contrastMults = linspace(0,0.075,20);                            %contrast multiplicators for the adjustable sine wave from 0 to 0.6 contrast
 ex.stim.contrastOffset = [.5 .5 .5 0];                                  % for procedural gabor
 ex.stim.cycPerSec = 1.20; % try multiple speeds
 ex.stim.motionRate = ex.stim.cycPerSec.*360;                                          % 1.13 cycles per second = 360 deg of phase *1.13 per sec
