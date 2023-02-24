@@ -6,7 +6,7 @@ function scrSz = findScreenSize_LD(subject, session, debug)
 
 %%%% resolution
 if debug == 1
-	SetResolution(max(Screen('Screens')),1024,768,0); % laptop
+	SetResolution(max(Screen('Screens')),1920,1080,0); % laptop
 else
     SetResolution(max(Screen('Screens')),1024,768,60); % scanner
 end

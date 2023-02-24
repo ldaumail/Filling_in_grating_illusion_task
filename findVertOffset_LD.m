@@ -6,9 +6,11 @@ function vertOffset = findVertOffset_LD(subject, session, debug)
 
 %%%% resolution
 if debug == 1
-	SetResolution(max(Screen('Screens')),1024,768,0); % laptop
+	SetResolution(max(Screen('Screens')),1920,1080,0); % laptop
 else
     SetResolution(max(Screen('Screens')),1024,768,60); % scanner
+    % visible scanner screen size: 1026 wide by 448 high in pixels. This
+    % corresponds to 20.1233 deg wide by 8.7868 deg high.
 end
 
 %%%% keyboards

@@ -15,11 +15,13 @@ if debug == 1
 
     ex.screenWidth = 17;             % in cm; %laptop=27.5,office=43, %19=%T3b, miniHelm=39;
     ex.viewingDist = 48;             % in cm; 3Tb/office=43, miniHelm=57;
-	ex.resolution = SetResolution(max(Screen('Screens')),1024,768,0); % laptop 1920,1080
+	ex.resolution = SetResolution(max(Screen('Screens')),1920,1080,0); % laptop 1920,1080
     ex.gammaCorrect = 0;       % make sure this = 1 when you're at the scanner!
 else
                                                                                                                              
     ex.screenWidth = 17;             % in cm; % 16 in eye tracking room 425%laptop=27.5,office=43, %19=%T3b, miniHelm=39;
+    % visible scanner screen size: 1026 wide by 448 high in pixels. This
+    % corresponds to 20.1233 deg wide by 8.7868 deg high.
     ex.viewingDist = 48;             % in cm; %23 in eye tracking                                                                                                                          room 425 3Tb/office=43, miniHelm=57;
     ex.resolution = SetResolution(max(Screen('Screens')),1024,768,60); % scanner
     ex.gammaCorrect = 1;       % make sure this = 1 when you're at the scanner!
@@ -159,6 +161,7 @@ if debug
 else   
     [w, rect]=Screen('OpenWindow',screen,ex.backgroundColor,[],[],[],[],[],kPsychNeed32BPCFloat); %might need to switch 900 and 600 by 1600 and 1200 for room 425
 end
+print(rect)
 Screen(w, 'TextSize', ex.fontSize);
 Screen('BlendFunction', w, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
