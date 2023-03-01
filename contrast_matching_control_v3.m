@@ -12,14 +12,14 @@ global EyeData rect w xc yc %eye_used
 %%%% resolution 
 if debug == 1
     % eyetracking on (1) or off (0)
-    ET = 0;
+
     ex.screenWidth = 53.1;             % in cm; %laptop=27.5,office=43, %19=%T3b, miniHelm=39;
     ex.viewingDist = 53.5;             % in cm; 3Tb/office=43, miniHelm=57;
 	ex.resolution = SetResolution(max(Screen('Screens')),1024,768,0); % laptop 1920,1080
     ex.gammaCorrection = 0;       % make sure this = 1 when you're at the scanner!
 else
     
-    ET = 1;                                                                                                                             
+                                                                                                                         
     ex.screenWidth = 53.1;             % in cm; % 16 in eye tracking room 425%laptop=27.5,office=43, %19=%T3b, miniHelm=39;
     ex.viewingDist = 53.5;             % in cm; %23 in eye tracking                                                                                                                          room 425 3Tb/office=43, miniHelm=57;
     ex.resolution = SetResolution(max(Screen('Screens')),1600,900,60); % scanner
@@ -61,11 +61,11 @@ ex.stim.gaborWDeg = 8;
 %ex.stim.rectGaborWDeg = 8;
 ex.stim.contrast = 0.15;%linspace(0.01,0.20,10);%[0.05, 0.10, 0.15];                                                 % in %, maybe?? %here the number of stimulus contrast levels is the number of different conditions
 ex.stim.contrastMultiplicator = ex.stim.contrast/2;                                     % for sine wave 0.5 = 100% contrast, 0.2 = 40%
-ex.match.contrastMults = nan(20,length(ex.stim.contrast));
-ex.match.contrastOffset = nan(20,length(ex.stim.contrast));
+ex.match.contrastMults = nan(10,length(ex.stim.contrast));
+ex.match.contrastOffset = nan(10,length(ex.stim.contrast));
 ex.stim.contrastOffset = .5;  % for procedural gabor, 0 = 0 mean luminance, 1 = 100% mean luminance 
 for i =1:length(ex.stim.contrast)
-    ex.match.contrastMults(:,i) = linspace(0,ex.stim.contrastMultiplicator(i)/4,20);%linspace(0,0.075,20);   %contrast multiplicators for the adjustable sine wave from 0 to 0.6 contrast
+    ex.match.contrastMults(:,i) = linspace(0,ex.stim.contrastMultiplicator(i)/4,10);%linspace(0,0.075,20);   %contrast multiplicators for the adjustable sine wave from 0 to 0.6 contrast
     ex.match.contrastOffset(:,i) = ex.stim.contrastOffset-ex.stim.contrastMultiplicator(i)-ex.match.contrastMults(:,i);
 end                            
 %-ex.stim.contrastMultiplicator because we want the maximum luminance value to match the background luminance (which corresponds to ex.stim.contrastOffset-ex.stim.contrastMultiplicator, the dark stim grating luminance)
@@ -316,14 +316,6 @@ yR = rect(4)/2+ ex.stim.gaborHDeg*ex.ppd-0*ex.ppd; % stimulus located 4 degrees 
 yC = rect(4)/2; % stimulus located on screen center
 
 
-%% Eyetracking parameters
-
-if ET 
-    EyelinkSetup(0);
-    eye_used = Eyelink('EyeAvailable');
-    ex.ShowRealTimeGaze = [  ]; % [] or [ something ]
-    ex.nGazetoShow = [ 60 ]; % current~past N fixations
-end
 %% %%%% initial window - instructions and wait for space
 
 DrawFormattedText(w,'Match the contrast level of the oscillating visual phantom within the gap \n\n at the center-left side of the screen \n\n with that of the sinewave grating on the right side of the screen. \n\n To increase contrast press 1, to decrease contrast press 2  \n\n Press Space to start'... % :  '...
@@ -416,13 +408,13 @@ while(1) %n+1 < length(ex.allFlips)
             contM = contM-1; % decrease contrast
         end
         if contM == 0 || contM == length(ex.match.contrastMults)+1
-            contM = 10;
+            contM = size(ex.match.contrastMults,1)/2;
         end
     elseif (pressed && ismember(find(firstPress,1), [KbName('Return') KbName('ENTER')]))
         ex.contM(t,thisCond) = ex.match.contrastMults(contM,condInd);
         n = 1;
         t = t+1;
-        contM = 10; 
+        contM = size(ex.match.contrastMults,1)/2; 
 %         if  ET == 1%isempty(find(mod(tstartcnt,2)))
 %             Eyelink('Message', 'STIM_OFFSET');
 %             Eyelink('Message', 'TRIALID %d', t);
@@ -451,7 +443,12 @@ end
 %%%%%%%%%%%%%%%%%%
 
 ex.runTime = GetSecs - ex.startRun;
-
+ex.rectLWave1 = [];
+ex.rectRWave1 = [];
+ex.rectCWave1 = [];
+ex.rectLWave2 = [];
+ex.rectRWave2 = [];
+ex.rectCWave2 = [];
 
 savedir = fullfile(ex.root,'data',sprintf('s%s_v3/',subject));
 if ~exist(savedir); mkdir(savedir); end
