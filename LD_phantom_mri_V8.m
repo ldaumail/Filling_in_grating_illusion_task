@@ -1,27 +1,28 @@
-function LD_phantom_mri_V7(subject, session, vertOffset, debug, figSizeDeg) 
+function LD_phantom_mri_V8(subject, session, vertOffset, debug, figSizeDeg) 
 
 %%MRI phantom task
 %Loic 01312023
 %In this version, we add multiple velocities
 % subject = 'Dave';                                                                                                                                                                                                                                                     
 % session = 1;                                                                                                                           
-% debug = 1;
+% debug = 0;
 % vertOffset = 0;
+% figSizeDeg = 4;
 
-ex.version = 'v7';
+ex.version = 'v8';
 %global EyeData rect w xc yc %eye_used
 %%%% resolution 
 if debug == 1
 
     ex.screenWidth = 17;             % in cm; %laptop=27.5,office=43, %19=%T3b, miniHelm=39;
     ex.viewingDist = 48;             % in cm; 3Tb/office=43, miniHelm=57;
-	ex.resolution = SetResolution(max(Screen('Screens')),1024,768,0); % laptop 1920,1080
+	ex.resolution = SetResolution(max(Screen('Screens')),1024,768,0); % laptop 1920,1080 2880, 1800
     ex.gammaCorrect = 0;       % make sure this = 1 when you're at the scanner!
 else
                                                                                                                              
     ex.screenWidth = 17;             % in cm; % 16 in eye tracking room 425%laptop=27.5,office=43, %19=%T3b, miniHelm=39;
     ex.viewingDist = 48;             % in cm; %23 in eye tracking                                                                                                                          room 425 3Tb/office=43, miniHelm=57;
-    ex.resolution = SetResolution(max(Screen('Screens')),1024,768,0); % scanner
+    ex.resolution = SetResolution(max(Screen('Screens')),2880, 1800,0); % scanner 1024,768
     ex.gammaCorrect = 1;       % make sure this = 1 when you're at the scanner!
     ex.scanNum = input('Scan number :');
     ex.runNum = input('Run number :');
@@ -532,7 +533,7 @@ ex.meanRT = nanmean(ex.RTs);
 disp(sprintf('Accuracy: %d', ex.accuracy));
 disp(sprintf('Mean reaction time: %d', ex.meanRT));
 
-savedir = fullfile(ex.root,'data',subject,session,'phantom_v1');
+savedir = fullfile(ex.root,'data',sprintf('%s/session%d/',subject,session),'phantom_v1');
 if ~exist(savedir); mkdir(savedir); end
 savename = fullfile(savedir,sprintf('/s%s_phantom_sn%d_rn%d_date%s.mat',subject,ex.scanNum,ex.runNum,num2str(ex.date)));
 save(savename,'ex');

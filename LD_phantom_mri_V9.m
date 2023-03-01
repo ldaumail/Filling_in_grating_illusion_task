@@ -5,17 +5,18 @@ function LD_phantom_mri_V9(subject, session, vertOffset, debug, figSizeDeg)
 %In this version, we add multiple velocities
 % subject = 'Dave';                                                                                                                                                                                                                                                     
 % session = 1;                                                                                                                           
-% debug = 1;
+% debug = 0;
 % vertOffset = 0;
+% figSizeDeg = 4;
 
-ex.version = 'v7';
+ex.version = 'v9';
 %global EyeData rect w xc yc %eye_used
 %%%% resolution 
 if debug == 1
 
     ex.screenWidth = 17;             % in cm; %laptop=27.5,office=43, %19=%T3b, miniHelm=39;
     ex.viewingDist = 48;             % in cm; 3Tb/office=43, miniHelm=57;
-	ex.resolution = SetResolution(max(Screen('Screens')),1920,1080,0); % laptop 1920,1080
+	ex.resolution = SetResolution(max(Screen('Screens')),2880, 1800 ,0); % laptop 1920,1080 % 2880, 1800
     ex.gammaCorrect = 0;       % make sure this = 1 when you're at the scanner!
 else
                                                                                                                              
@@ -23,7 +24,7 @@ else
     % visible scanner screen size: 1026 wide by 448 high in pixels. This
     % corresponds to 20.1233 deg wide by 8.7868 deg high.
     ex.viewingDist = 48;             % in cm; %23 in eye tracking                                                                                                                          room 425 3Tb/office=43, miniHelm=57;
-    ex.resolution = SetResolution(max(Screen('Screens')),1024,768,60); % scanner
+    ex.resolution = SetResolution(max(Screen('Screens')),1024,768, 60); % scanner 1024,768, 60
     ex.gammaCorrect = 1;       % make sure this = 1 when you're at the scanner!
     ex.scanNum = input('Scan number :');
     ex.runNum = input('Run number :');
@@ -38,7 +39,6 @@ responseKeys(KbName('1'))=1; % button box 1
 responseKeys(KbName('2'))=1; % button box 2
 responseKeys(KbName('1!'))=1; % button box 1
 responseKeys(KbName('2@'))=1; % button box 2
-%responseKeys(KbName('`~'))=1; % button box 2 % for backticks
 Screen('Preference', 'SkipSyncTests', 0);
 
 ex.vertOffset = vertOffset;    % vertical offset from FindScreenSize.m
@@ -80,7 +80,7 @@ ex.initialFixation = 14;        % in seconds
 ex.stimDur = (ex.stim.cycles./ex.stim.cycPerSec)*2;        % in seconds. 1.77 sec refers to sine wave grating 1.77 = 2cycles/1.13cyc.sec-1 mutiplied by 2 for back and forth
 ex.stimsPerBlock = 4;%1;      % number of back-and-forth laps of the stimulus drift
 ex.blockLength = ceil(ex.stimDur*ex.stimsPerBlock);           % in seconds
-ex.betweenBlocks = 14;          % in seconds
+ex.betweenBlocks = 13;          % in seconds (14 -1sec to start waiting for backflip)
 ex.flipsPerSec = 12; %60;  % 12;         % number of phase changes we want from the visual stimulus, and thus the number of times we want to change visual stimulation on the screen
 ex.flipWin = 1/ex.flipsPerSec;         % in seconds then actually in 1 sec the stimuli will change 12 times 
 
@@ -161,7 +161,6 @@ if debug
 else   
     [w, rect]=Screen('OpenWindow',screen,ex.backgroundColor,[],[],[],[],[],kPsychNeed32BPCFloat); %might need to switch 900 and 600 by 1600 and 1200 for room 425
 end
-print(rect)
 Screen(w, 'TextSize', ex.fontSize);
 Screen('BlendFunction', w, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
@@ -265,7 +264,7 @@ for o =1:length(ex.stim.orientation)
 end
  
 %% add between block flips
-betweenFlipTimes = [0:frameInt*frameRate/ex.flipsPerSec:ex.betweenBlocks-1]+flipTimes(end); %subtract 1sec to allow for waiting backtick
+betweenFlipTimes = [0:frameInt*frameRate/ex.flipsPerSec:ex.betweenBlocks]+flipTimes(end); %subtract 1sec to allow for waiting backtick
     ex.LWaveID = [ex.LWaveID; zeros(length(betweenFlipTimes)-1, length(ex.stim.orientation))];
     ex.RWaveID = [ex.RWaveID; zeros(length(betweenFlipTimes)-1, length(ex.stim.orientation))];
 ex.betweenFlipTimes = betweenFlipTimes(1:length(betweenFlipTimes)-1);
@@ -321,6 +320,7 @@ ex.stimFlips = zeros(ex.numBlocks,1);
 ex.fixFlips = zeros(ex.numBlocks,1);
 ex.stimFlipT = nan(length(ex.stimFlipTimes),ex.numBlocks);
 ex.fixFlipT = nan(length(ex.betweenFlipTimes),ex.numBlocks);
+ex.backtickT = zeros(ex.numBlocks,1);
 
  %%%%%%%%%%%%%  Initialize task time - Initial fixation
 if n == 1 && cnt == 1 %for first block
@@ -434,7 +434,6 @@ while(1)
         if ex.longFormBlocks(n) == 1
             ex.stimFlips(cnt) = ex.stimFlips(cnt)+1;
             ex.stimFlipT(n,cnt) =  ex.startRun;
-            
         else
             ex.fixFlips(cnt) =  ex.fixFlips(cnt)+1;
             ex.fixFlipT(n,cnt) =  ex.startRun;
@@ -444,8 +443,7 @@ while(1)
         [VBLT, ex.flipTime(n,cnt), FlipT, missed] = Screen(w, 'Flip', start+ ex.allFlipTimes(n) - slack);%[VBLTimestamp StimulusOnsetTime FlipTimestamp Missed] = Screen('Flip', windowPtr [, when] [, dontclear]...
         if ex.longFormBlocks(n) == 1
             ex.stimFlips(cnt) = ex.stimFlips(cnt)+1;
-            ex.stimFlipT(n,cnt) =  ex.flipTime(n,cnt);
-            
+            ex.stimFlipT(n,cnt) =  ex.flipTime(n,cnt);  
         else
             ex.fixFlips(cnt) =  ex.fixFlips(cnt)+1;
             ex.fixFlipT(n,cnt) = ex.flipTime(n,cnt);
@@ -492,6 +490,7 @@ while(1)
     KbQueueFlush();
     
     if n == length(ex.allFlipTimes) && nnz(keyCode(53)) %backTick > 0
+        ex.backtickT(cnt) = GetSecs();
         n = n+1;
         keyCode(53) = 0;
     elseif n ~= length(ex.allFlipTimes)
@@ -541,7 +540,7 @@ ex.meanRT = nanmean(ex.RTs);
 disp(sprintf('Accuracy: %d', ex.accuracy));
 disp(sprintf('Mean reaction time: %d', ex.meanRT));
 
-savedir = fullfile(ex.root,'data',subject,session,'phantom_v1');
+savedir = fullfile(ex.root,'data',sprintf('%s/session%d/',subject,session),'phantom_v1');
 if ~exist(savedir); mkdir(savedir); end
 savename = fullfile(savedir,sprintf('/s%s_phantom_sn%d_rn%d_date%s.mat',subject,ex.scanNum,ex.runNum,num2str(ex.date)));
 save(savename,'ex');
