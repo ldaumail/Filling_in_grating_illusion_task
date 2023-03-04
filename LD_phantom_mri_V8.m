@@ -16,13 +16,13 @@ if debug == 1
 
     ex.screenWidth = 17;             % in cm; %laptop=27.5,office=43, %19=%T3b, miniHelm=39;
     ex.viewingDist = 48;             % in cm; 3Tb/office=43, miniHelm=57;
-	ex.resolution = SetResolution(max(Screen('Screens')),1024,768,0); % laptop 1920,1080 2880, 1800
+	ex.resolution = SetResolution(max(Screen('Screens')),1024,768,0); % laptop 1920,1080 2880, 1800, 0
     ex.gammaCorrect = 0;       % make sure this = 1 when you're at the scanner!
 else
                                                                                                                              
     ex.screenWidth = 17;             % in cm; % 16 in eye tracking room 425%laptop=27.5,office=43, %19=%T3b, miniHelm=39;
     ex.viewingDist = 48;             % in cm; %23 in eye tracking                                                                                                                          room 425 3Tb/office=43, miniHelm=57;
-    ex.resolution = SetResolution(max(Screen('Screens')),2880, 1800,0); % scanner 1024,768
+    ex.resolution = SetResolution(max(Screen('Screens')),1024,768, 60); % scanner 1024,768, 60
     ex.gammaCorrect = 1;       % make sure this = 1 when you're at the scanner!
     ex.scanNum = input('Scan number :');
     ex.runNum = input('Run number :');
@@ -279,31 +279,13 @@ yL = rect(4)/2; % stimulus located 4 degrees above screen center
 xR = rect(3)/2+ ex.gaborWidth; % = stimulus center located on the horizontal center of the screen
 yR = rect(4)/2; % stimulus located 4 degrees below screen center
 
-%% %%%% initial window - wait for backtick
-
-DrawFormattedText(w,'Attend to the fixation cue in the center of the screen: \n\n press 1 as soon as color red appears on the screen, \n\n press 2 as soon as color green appears on the screen.'... %\n\n (use this to change lines)
-    ,'center', 'center',[0 0 0]);
-Screen(w, 'Flip', 0);
-WaitSecs(10);
-Screen(w, 'DrawText', 'Waiting for Backtick.', 10,10,[0 0 0]);
-Screen(w, 'Flip', 0);
-KbTriggerWait(53, deviceNumber);
-
-% %%%% response listening 
-
-KbQueueCreate(deviceNumber,responseKeys);
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %                         experiment                         %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-%%%%%%% START task TASK/FLIPPING
-
-gray = repmat(min(min(squeeze(ex.RWave(1,:,:)),[],1)), [1,3]);
-
-Screen('FillRect', w, gray);
+%% Initialize task parameters
 n = 1; % block flips + between blocks flips
 cnt = 1; %block number
 
@@ -319,8 +301,24 @@ ex.stimFlips = zeros(ex.numBlocks,1);
 ex.fixFlips = zeros(ex.numBlocks,1);
 ex.stimFlipT = nan(length(ex.stimFlipTimes),ex.numBlocks);
 ex.fixFlipT = nan(length(ex.betweenFlipTimes),ex.numBlocks);
+%% %%%% initial window - wait for backtick
 
- %%%%%%%%%%%%%  Initialize task time - Initial fixation
+DrawFormattedText(w,'Attend to the fixation cue in the center of the screen: \n\n press 1 as soon as color red appears on the screen, \n\n press 2 as soon as color green appears on the screen.'... %\n\n (use this to change lines)
+    ,'center', 'center',[0 0 0]);
+Screen(w, 'Flip', 0);
+WaitSecs(10);
+Screen(w, 'DrawText', 'Waiting for Backtick.', 10,10,[0 0 0]);
+Screen(w, 'Flip', 0);
+KbTriggerWait(53, deviceNumber);
+
+gray = repmat(min(min(squeeze(ex.RWave(1,:,:)),[],1)), [1,3]);
+Screen('FillRect', w, gray);
+% %%%% response listening 
+
+KbQueueCreate(deviceNumber,responseKeys);
+
+
+ %%%%%%%%%%%%%  Initialize task - Initial fixation
 if n == 1 && cnt == 1 %for first block
     ex.tasktstart = clock;
     start = GetSecs();
@@ -331,6 +329,7 @@ if n == 1 && cnt == 1 %for first block
     Screen(w, 'Flip', 0);
     WaitSecs(ex.initialFixation);
 end
+%%%%%%% START task TASK/FLIPPING
 
 while(1)
     KbQueueStart();
@@ -409,12 +408,11 @@ while(1)
     
     %%%%%%%%%%% FLIP %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     
-    if (n == 1 && cnt ==1) %&& nnz(keyCode(53)) %backTick > 0%%%%%%%
-        [VBLT, ex.startRun, FlipT, missed] = Screen(w, 'Flip', 0);%[VBLTimestamp StimulusOnsetTime FlipTimestamp Missed] = Screen('Flip', windowPtr [, when] [, dontclear]...
-        ex.flipTime(n,cnt) = ex.startRun;
+    if (n == 1 && cnt ==1) %%%%%%%%
+        [VBLT, ex.startRun, FlipT, missed] = Screen(w, 'Flip', 0);%[VBLTimestamp StimulusOnsetTime FlipTimestamp Missed] = Screen('Flip', windowPtr [, when] [, dontclear]... 
         ex.blockOnsetTime(n,cnt) = ex.startRun;
         start = ex.startRun;
-        
+        ex.flipTime(n,cnt) = ex.startRun;
         if ex.longFormBlocks(n) == 1
             ex.stimFlips(cnt) = ex.stimFlips(cnt)+1;
             ex.stimFlipT(n,cnt) = ex.startRun;
@@ -424,7 +422,7 @@ while(1)
             ex.fixFlipT(n,cnt) =  ex.startRun;
         end
         
-    elseif (n == 1 && cnt ~= 1) %% %%%%   %use second condition if we wait for backticks from scanner
+    elseif (n == 1 && cnt ~= 1) %% %%%%   
         [VBLT, ex.startRun, FlipT, missed] = Screen(w, 'Flip', 0+start+ex.allFlipTimes(end)+ex.flipWin - slack);%[VBLTimestamp StimulusOnsetTime FlipTimestamp Missed] = Screen('Flip', windowPtr [, when] [, dontclear]...
         ex.flipTime(n,cnt) = ex.startRun;
         ex.blockOnsetTime(n,cnt) = ex.startRun;
@@ -438,7 +436,7 @@ while(1)
             ex.fixFlipT(n,cnt) =  ex.startRun;
         end
         
-    elseif (n ~= 1 && cnt ~= 1)
+    elseif n ~= 1 %&& cnt ~= 1)
         [VBLT, ex.flipTime(n,cnt), FlipT, missed] = Screen(w, 'Flip', start+ ex.allFlipTimes(n) - slack);%[VBLTimestamp StimulusOnsetTime FlipTimestamp Missed] = Screen('Flip', windowPtr [, when] [, dontclear]...
         if ex.longFormBlocks(n) == 1
             ex.stimFlips(cnt) = ex.stimFlips(cnt)+1;
@@ -448,15 +446,7 @@ while(1)
             ex.fixFlips(cnt) =  ex.fixFlips(cnt)+1;
             ex.fixFlipT(n,cnt) = ex.flipTime(n,cnt);
         end
-    elseif n ~= 1 && cnt == 1
-        [VBLT, ex.flipTime(n,cnt), FlipT, missed] = Screen(w, 'Flip', start+ ex.allFlipTimes(n) - slack);%[VBLTimestamp StimulusOnsetTime FlipTimestamp Missed] = Screen('Flip', windowPtr [, when] [, dontclear]...
-        if ex.longFormBlocks(n) == 1
-            ex.stimFlips(cnt) = ex.stimFlips(cnt)+1;
-            ex.stimFlipT(n,cnt) =  ex.flipTime(n,cnt);
-        else
-            ex.fixFlips(cnt) =  ex.fixFlips(cnt)+1;
-            ex.fixFlipT(n,cnt) = ex.flipTime(n,cnt);
-        end
+
     end
     
     KbQueueStop();
