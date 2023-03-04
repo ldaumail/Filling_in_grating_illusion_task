@@ -290,7 +290,7 @@ yR = rect(4)/2; % stimulus located 4 degrees below screen center
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-
+%%% Initialize task parameters
 n = 1; % block flips + between blocks flips
 cnt = 1; %block number
 
