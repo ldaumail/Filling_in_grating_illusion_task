@@ -317,7 +317,6 @@ WaitSecs(10);
 Screen(w, 'DrawText', 'Waiting for Backtick.', 10,10,[0 0 0]);
 Screen(w, 'Flip', 0);
 KbTriggerWait(53, deviceNumber);
-%%%%%%% START task TASK/FLIPPING
 
 gray = repmat(min(min(squeeze(ex.RWave(1,:,:)),[],1)), [1,3]);
 Screen('FillRect', w, gray);
@@ -337,6 +336,7 @@ if n == 1 && cnt == 1 %for first block
     Screen(w, 'Flip', 0);
     WaitSecs(ex.initialFixation);
 end
+%%%%%%% START task TASK/FLIPPING
 
 while(1)
     KbQueueStart();
