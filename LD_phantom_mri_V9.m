@@ -39,6 +39,7 @@ responseKeys(KbName('1'))=1; % button box 1
 responseKeys(KbName('2'))=1; % button box 2
 responseKeys(KbName('1!'))=1; % button box 1
 responseKeys(KbName('2@'))=1; % button box 2
+
 Screen('Preference', 'SkipSyncTests', 0);
 
 ex.vertOffset = vertOffset;    % vertical offset from FindScreenSize.m
@@ -280,19 +281,8 @@ yL = rect(4)/2; % stimulus located 4 degrees above screen center
 xR = rect(3)/2+ ex.gaborWidth; % = stimulus center located on the horizontal center of the screen
 yR = rect(4)/2; % stimulus located 4 degrees below screen center
 
-%% %%%% initial window - wait for backtick
 
-DrawFormattedText(w,'Attend to the fixation cue in the center of the screen: \n\n press 1 as soon as color red appears on the screen, \n\n press 2 as soon as color green appears on the screen.'... %\n\n (use this to change lines)
-    ,'center', 'center',[0 0 0]);
-Screen(w, 'Flip', 0);
-WaitSecs(10);
-Screen(w, 'DrawText', 'Waiting for Backtick.', 10,10,[0 0 0]);
-Screen(w, 'Flip', 0);
-KbTriggerWait(53, deviceNumber);
 
-% %%%% response listening 
-
-KbQueueCreate(deviceNumber,responseKeys);
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -300,11 +290,7 @@ KbQueueCreate(deviceNumber,responseKeys);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-%%%%%%% START task TASK/FLIPPING
 
-gray = repmat(min(min(squeeze(ex.RWave(1,:,:)),[],1)), [1,3]);
-
-Screen('FillRect', w, gray);
 n = 1; % block flips + between blocks flips
 cnt = 1; %block number
 
@@ -314,14 +300,32 @@ probs = [1]; %first probability is 1 to allow for potential next target to occur
 probsCnt = 1; %start from 1 since we already have probs = [1]
 fixCol = ex.distractColors(randi(length(ex.distractColors)));
 
-
 %%% timing accuracy check
+triggerWait = 1;
+ex.backtickT = zeros(ex.numBlocks,1);
 ex.stimFlips = zeros(ex.numBlocks,1);
 ex.fixFlips = zeros(ex.numBlocks,1);
 ex.stimFlipT = nan(length(ex.stimFlipTimes),ex.numBlocks);
 ex.fixFlipT = nan(length(ex.betweenFlipTimes),ex.numBlocks);
-ex.backtickT = zeros(ex.numBlocks,1);
 
+%% %%%% initial window - wait for backtick
+
+DrawFormattedText(w,'Attend to the fixation cue in the center of the screen: \n\n press 1 as soon as color red appears on the screen, \n\n press 2 as soon as color green appears on the screen.'... %\n\n (use this to change lines)
+    ,'center', 'center',[0 0 0]);
+Screen(w, 'Flip', 0);
+WaitSecs(10);
+Screen(w, 'DrawText', 'Waiting for Backtick.', 10,10,[0 0 0]);
+Screen(w, 'Flip', 0);
+KbTriggerWait(53, deviceNumber);
+%%%%%%% START task TASK/FLIPPING
+
+gray = repmat(min(min(squeeze(ex.RWave(1,:,:)),[],1)), [1,3]);
+Screen('FillRect', w, gray);
+% %%%% response listening 
+
+KbQueueCreate(deviceNumber,responseKeys);
+%only wait for backtick (needed for kbwait function)
+RestrictKeysForKbCheck(53);
  %%%%%%%%%%%%%  Initialize task time - Initial fixation
 if n == 1 && cnt == 1 %for first block
     ex.tasktstart = clock;
@@ -367,7 +371,6 @@ while(1)
     if mod(n, ex.flipsPerTrial) == 0
         prob = rand(1);
         probs = [probs, prob];
-        %probsCnt = probsCnt + 1;
         
         if prob < ex.targetProb %&& probs(probsCnt-1) >= ex.targetProb % make sure previous trial did not have a target
             fixCol = ex.targetColors(randi(length(ex.targetColors)));
@@ -393,14 +396,14 @@ while(1)
         Screen('FillOval', w,[255 255 255], [xc-round(ex.bigFixSize/2) yc-round(ex.bigFixSize/2) xc+round(ex.bigFixSize/2) yc+round(ex.bigFixSize/2)]); % white fixation ring
         % little fixation dot
         Screen('FillOval', w,[150 0 0], [xc-round(ex.fixSize/2) yc-round(ex.fixSize/2) xc+round(ex.fixSize/2) yc+round(ex.fixSize/2)]); % red fixation dot
-     
+        
     elseif mod(n, ex.flipsPerTrial) <= ex.trialOnFlips && strcmp(fixCol{:}, 'green')
         %big fixation circle
         Screen('FillOval', w,[0 0 0], [xc-round(ex.bigFixSize/2+ex.outerFixPixels ) yc-round(ex.bigFixSize/2+ex.outerFixPixels ) xc+round(ex.bigFixSize/2+ex.outerFixPixels ) yc+round(ex.bigFixSize/2+ex.outerFixPixels )]); % black fixation ring
         Screen('FillOval', w,[255 255 255], [xc-round(ex.bigFixSize/2) yc-round(ex.bigFixSize/2) xc+round(ex.bigFixSize/2) yc+round(ex.bigFixSize/2)]); % white fixation ring
         % little fixation dot
         Screen('FillOval', w,[0 150 0], [xc-round(ex.fixSize/2) yc-round(ex.fixSize/2) xc+round(ex.fixSize/2) yc+round(ex.fixSize/2)]); % green fixation dot
-
+        
     elseif (mod(n, ex.flipsPerTrial) <= ex.flipsPerTrial && strcmp(fixCol{:}, 'black')) || (mod(n, ex.flipsPerTrial) > ex.trialOnFlips && strcmp(fixCol{:}, 'red'))||(mod(n, ex.flipsPerTrial) > ex.trialOnFlips && strcmp(fixCol{:}, 'green')) % also accounts for after the target flashed
         %big fixation circle
         Screen('FillOval', w,[0 0 0], [xc-round(ex.bigFixSize/2+ex.outerFixPixels ) yc-round(ex.bigFixSize/2+ex.outerFixPixels ) xc+round(ex.bigFixSize/2+ex.outerFixPixels ) yc+round(ex.bigFixSize/2+ex.outerFixPixels )]); % black fixation ring
@@ -410,13 +413,16 @@ while(1)
     end
     
     %%%%%%%%%%% FLIP %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    if triggerWait == 1 && cnt ~=1
+        triggerWait =0;
+        [ex.backtickT(cnt),~,~] =KbWait(deviceNumber,2);
+    end
 
-    if (n == 1 && cnt ==1) %&& nnz(keyCode(53)) %backTick > 0%%%%%%%
+    if (n == 1 && cnt ==1) 
         [VBLT, ex.startRun, FlipT, missed] = Screen(w, 'Flip', 0);%[VBLTimestamp StimulusOnsetTime FlipTimestamp Missed] = Screen('Flip', windowPtr [, when] [, dontclear]...
-        ex.flipTime(n,cnt) = ex.startRun;
         ex.blockOnsetTime(n,cnt) = ex.startRun;
         start = ex.startRun;
-        
+        ex.flipTime(n,cnt) = ex.startRun;
         if ex.longFormBlocks(n) == 1
             ex.stimFlips(cnt) = ex.stimFlips(cnt)+1;
             ex.stimFlipT(n,cnt) = ex.startRun;
@@ -425,38 +431,39 @@ while(1)
             ex.fixFlips(cnt) =  ex.fixFlips(cnt)+1;
             ex.fixFlipT(n,cnt) =  ex.startRun;
         end
-        
     elseif (n == 1 && cnt ~= 1) %% %%%%   %use second condition if we wait for backticks from scanner
-        [VBLT, ex.startRun, FlipT, missed] = Screen(w, 'Flip', 0+start+ex.allFlipTimes(end)+ex.flipWin - slack);%[VBLTimestamp StimulusOnsetTime FlipTimestamp Missed] = Screen('Flip', windowPtr [, when] [, dontclear]...
-        ex.flipTime(n,cnt) = ex.startRun;
+        [VBLT, ex.startRun, FlipT, missed] = Screen(w, 'Flip', 0+start - slack);%+ex.allFlipTimes(end)+ex.flipWin%[VBLTimestamp StimulusOnsetTime FlipTimestamp Missed] = Screen('Flip', windowPtr [, when] [, dontclear]...
         ex.blockOnsetTime(n,cnt) = ex.startRun;
-        start = ex.startRun;
+        start = ex.startRun; 
+                ex.flipTime(n,cnt) = ex.startRun;
         if ex.longFormBlocks(n) == 1
             ex.stimFlips(cnt) = ex.stimFlips(cnt)+1;
-            ex.stimFlipT(n,cnt) =  ex.startRun;
+            ex.stimFlipT(n,cnt) = ex.startRun;
+            
         else
             ex.fixFlips(cnt) =  ex.fixFlips(cnt)+1;
             ex.fixFlipT(n,cnt) =  ex.startRun;
         end
-        
-    elseif (n ~= 1 && cnt ~= 1)
-        [VBLT, ex.flipTime(n,cnt), FlipT, missed] = Screen(w, 'Flip', start+ ex.allFlipTimes(n) - slack);%[VBLTimestamp StimulusOnsetTime FlipTimestamp Missed] = Screen('Flip', windowPtr [, when] [, dontclear]...
-        if ex.longFormBlocks(n) == 1
-            ex.stimFlips(cnt) = ex.stimFlips(cnt)+1;
-            ex.stimFlipT(n,cnt) =  ex.flipTime(n,cnt);  
-        else
-            ex.fixFlips(cnt) =  ex.fixFlips(cnt)+1;
-            ex.fixFlipT(n,cnt) = ex.flipTime(n,cnt);
-        end
-    elseif n ~= 1 && cnt == 1
+    elseif n ~= 1 %&& cnt ~= 1)
         [VBLT, ex.flipTime(n,cnt), FlipT, missed] = Screen(w, 'Flip', start+ ex.allFlipTimes(n) - slack);%[VBLTimestamp StimulusOnsetTime FlipTimestamp Missed] = Screen('Flip', windowPtr [, when] [, dontclear]...
         if ex.longFormBlocks(n) == 1
             ex.stimFlips(cnt) = ex.stimFlips(cnt)+1;
             ex.stimFlipT(n,cnt) =  ex.flipTime(n,cnt);
+            
         else
             ex.fixFlips(cnt) =  ex.fixFlips(cnt)+1;
             ex.fixFlipT(n,cnt) = ex.flipTime(n,cnt);
         end
+%     elseif n ~= 1 && cnt == 1
+%         [VBLT, ex.flipTime(n,cnt), FlipT, missed] = Screen(w, 'Flip', start+ ex.allFlipTimes(n) - slack);%[VBLTimestamp StimulusOnsetTime FlipTimestamp Missed] = Screen('Flip', windowPtr [, when] [, dontclear]...
+%         if ex.longFormBlocks(n) == 1
+%             ex.stimFlips(cnt) = ex.stimFlips(cnt)+1;
+%             ex.stimFlipT(n,cnt) =  ex.flipTime(n,cnt);
+%             
+%         else
+%             ex.fixFlips(cnt) =  ex.fixFlips(cnt)+1;
+%             ex.fixFlipT(n,cnt) = ex.flipTime(n,cnt);
+%         end
     end
     
     KbQueueStop();
@@ -483,20 +490,12 @@ while(1)
             ex.correctGreenRespT = [ex.correctGreenRespT, firstPress(KbName('2')) - start];
         end
     end
-    if n == length(ex.allFlipTimes)
-        [~,keyCode,~] = KbWait(deviceNumber,2);
-    end
     %%%% refresh queue for next character
     KbQueueFlush();
-    
-    if n == length(ex.allFlipTimes) && nnz(keyCode(53)) %backTick > 0
-        ex.backtickT(cnt) = GetSecs();
-        n = n+1;
-        keyCode(53) = 0;
-    elseif n ~= length(ex.allFlipTimes)
-        n = n+1;
-    end
-    if (n == length(ex.allFlipTimes)+1) % for any other block , reset frame index when previous trial ends 
+    n =n+1;
+
+    if (n == length(ex.allFlipTimes)+1) % for any other block , reset frame index when previous trial ends
+        triggerWait = 1;
         n = 1;
         cnt = cnt+1;
     end
