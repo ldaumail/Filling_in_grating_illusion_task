@@ -412,40 +412,41 @@ while(1)
         [VBLT, ex.startRun, FlipT, missed] = Screen(w, 'Flip', 0);%[VBLTimestamp StimulusOnsetTime FlipTimestamp Missed] = Screen('Flip', windowPtr [, when] [, dontclear]... 
         ex.blockOnsetTime(n,cnt) = ex.startRun;
         start = ex.startRun;
-        ex.flipTime(n,cnt) = ex.startRun;
-        if ex.longFormBlocks(n) == 1
-            ex.stimFlips(cnt) = ex.stimFlips(cnt)+1;
-            ex.stimFlipT(n,cnt) = ex.startRun;
-            
-        else
-            ex.fixFlips(cnt) =  ex.fixFlips(cnt)+1;
-            ex.fixFlipT(n,cnt) =  ex.startRun;
-        end
+%         ex.flipTime(n,cnt) = ex.startRun;
+%         if ex.longFormBlocks(n) == 1
+%             ex.stimFlips(cnt) = ex.stimFlips(cnt)+1;
+%             ex.stimFlipT(n,cnt) = ex.startRun;
+%             
+%         else
+%             ex.fixFlips(cnt) =  ex.fixFlips(cnt)+1;
+%             ex.fixFlipT(n,cnt) =  ex.startRun;
+%         end
         
     elseif (n == 1 && cnt ~= 1) %% %%%%   
         [VBLT, ex.startRun, FlipT, missed] = Screen(w, 'Flip', 0+start+ex.allFlipTimes(end)+ex.flipWin - slack);%[VBLTimestamp StimulusOnsetTime FlipTimestamp Missed] = Screen('Flip', windowPtr [, when] [, dontclear]...
-        ex.flipTime(n,cnt) = ex.startRun;
+
         ex.blockOnsetTime(n,cnt) = ex.startRun;
-        start = ex.startRun;
-        if ex.longFormBlocks(n) == 1
-            ex.stimFlips(cnt) = ex.stimFlips(cnt)+1;
-            ex.stimFlipT(n,cnt) =  ex.startRun;
-            
-        else
-            ex.fixFlips(cnt) =  ex.fixFlips(cnt)+1;
-            ex.fixFlipT(n,cnt) =  ex.startRun;
-        end
+        start = ex.startRun;        
+%         ex.flipTime(n,cnt) = ex.startRun;
+%         if ex.longFormBlocks(n) == 1
+%             ex.stimFlips(cnt) = ex.stimFlips(cnt)+1;
+%             ex.stimFlipT(n,cnt) =  ex.startRun;
+%             
+%         else
+%             ex.fixFlips(cnt) =  ex.fixFlips(cnt)+1;
+%             ex.fixFlipT(n,cnt) =  ex.startRun;
+%         end
         
     elseif n ~= 1 %&& cnt ~= 1)
         [VBLT, ex.flipTime(n,cnt), FlipT, missed] = Screen(w, 'Flip', start+ ex.allFlipTimes(n) - slack);%[VBLTimestamp StimulusOnsetTime FlipTimestamp Missed] = Screen('Flip', windowPtr [, when] [, dontclear]...
-        if ex.longFormBlocks(n) == 1
-            ex.stimFlips(cnt) = ex.stimFlips(cnt)+1;
-            ex.stimFlipT(n,cnt) =  ex.flipTime(n,cnt);
-            
-        else
-            ex.fixFlips(cnt) =  ex.fixFlips(cnt)+1;
-            ex.fixFlipT(n,cnt) = ex.flipTime(n,cnt);
-        end
+%         if ex.longFormBlocks(n) == 1
+%             ex.stimFlips(cnt) = ex.stimFlips(cnt)+1;
+%             ex.stimFlipT(n,cnt) =  ex.flipTime(n,cnt);
+%             
+%         else
+%             ex.fixFlips(cnt) =  ex.fixFlips(cnt)+1;
+%             ex.fixFlipT(n,cnt) = ex.flipTime(n,cnt);
+%         end
 
     end
     
