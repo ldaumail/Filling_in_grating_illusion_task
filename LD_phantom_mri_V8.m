@@ -16,7 +16,7 @@ if debug == 1
 
     ex.screenWidth = 17;             % in cm; %laptop=27.5,office=43, %19=%T3b, miniHelm=39;
     ex.viewingDist = 48;             % in cm; 3Tb/office=43, miniHelm=57;
-	ex.resolution = SetResolution(max(Screen('Screens')),1024,768,0); % laptop 1920,1080 2880, 1800, 0
+	ex.resolution = SetResolution(max(Screen('Screens')),1024,768,60); % laptop 1920,1080 2880, 1800, 0
     ex.gammaCorrect = 0;       % make sure this = 1 when you're at the scanner!
 else
                                                                                                                              
@@ -100,7 +100,7 @@ ex.outerFixPixels = 2;          % in pixels, the black ring around fixation
 
 %%%% screen
 ex.backgroundColor = [127 127 127];%[108.3760 108.3760 108.3760];%;  % color based on minimum gating luminance 
-ex.fontSize = 26;
+ex.fontSize = 50;
 
 %% Color discrimination task setup
 ex.targetProb = .4;              % proportion of trials where the target color will come up
@@ -411,43 +411,13 @@ while(1)
     if (n == 1 && cnt ==1) %%%%%%%%
         [VBLT, ex.startRun, FlipT, missed] = Screen(w, 'Flip', 0);%[VBLTimestamp StimulusOnsetTime FlipTimestamp Missed] = Screen('Flip', windowPtr [, when] [, dontclear]... 
         ex.blockOnsetTime(n,cnt) = ex.startRun;
-        start = ex.startRun;
-%         ex.flipTime(n,cnt) = ex.startRun;
-%         if ex.longFormBlocks(n) == 1
-%             ex.stimFlips(cnt) = ex.stimFlips(cnt)+1;
-%             ex.stimFlipT(n,cnt) = ex.startRun;
-%             
-%         else
-%             ex.fixFlips(cnt) =  ex.fixFlips(cnt)+1;
-%             ex.fixFlipT(n,cnt) =  ex.startRun;
-%         end
-        
+        start = ex.startRun;   
     elseif (n == 1 && cnt ~= 1) %% %%%%   
         [VBLT, ex.startRun, FlipT, missed] = Screen(w, 'Flip', 0+start+ex.allFlipTimes(end)+ex.flipWin - slack);%[VBLTimestamp StimulusOnsetTime FlipTimestamp Missed] = Screen('Flip', windowPtr [, when] [, dontclear]...
-
         ex.blockOnsetTime(n,cnt) = ex.startRun;
         start = ex.startRun;        
-%         ex.flipTime(n,cnt) = ex.startRun;
-%         if ex.longFormBlocks(n) == 1
-%             ex.stimFlips(cnt) = ex.stimFlips(cnt)+1;
-%             ex.stimFlipT(n,cnt) =  ex.startRun;
-%             
-%         else
-%             ex.fixFlips(cnt) =  ex.fixFlips(cnt)+1;
-%             ex.fixFlipT(n,cnt) =  ex.startRun;
-%         end
-        
     elseif n ~= 1 %&& cnt ~= 1)
         [VBLT, ex.flipTime(n,cnt), FlipT, missed] = Screen(w, 'Flip', start+ ex.allFlipTimes(n) - slack);%[VBLTimestamp StimulusOnsetTime FlipTimestamp Missed] = Screen('Flip', windowPtr [, when] [, dontclear]...
-%         if ex.longFormBlocks(n) == 1
-%             ex.stimFlips(cnt) = ex.stimFlips(cnt)+1;
-%             ex.stimFlipT(n,cnt) =  ex.flipTime(n,cnt);
-%             
-%         else
-%             ex.fixFlips(cnt) =  ex.fixFlips(cnt)+1;
-%             ex.fixFlipT(n,cnt) = ex.flipTime(n,cnt);
-%         end
-
     end
     
     KbQueueStop();
@@ -534,3 +504,21 @@ ShowCursor;
 Screen('Close');
 Screen('CloseAll');
 fclose all;
+
+%         ex.flipTime(n,cnt) = ex.startRun;
+%         if ex.longFormBlocks(n) == 1
+%             ex.stimFlips(cnt) = ex.stimFlips(cnt)+1;
+%             ex.stimFlipT(n,cnt) = ex.startRun;
+%             
+%         else
+%             ex.fixFlips(cnt) =  ex.fixFlips(cnt)+1;
+%             ex.fixFlipT(n,cnt) =  ex.startRun;
+%         end
+%         if ex.longFormBlocks(n) == 1
+%             ex.stimFlips(cnt) = ex.stimFlips(cnt)+1;
+%             ex.stimFlipT(n,cnt) =  ex.flipTime(n,cnt);
+%             
+%         else
+%             ex.fixFlips(cnt) =  ex.fixFlips(cnt)+1;
+%             ex.fixFlipT(n,cnt) = ex.flipTime(n,cnt);
+%         end

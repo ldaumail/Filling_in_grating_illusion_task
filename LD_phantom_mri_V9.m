@@ -102,7 +102,7 @@ ex.outerFixPixels = 2;          % in pixels, the black ring around fixation
 
 %%%% screen
 ex.backgroundColor = [127 127 127];%[108.3760 108.3760 108.3760];%;  % color based on minimum gating luminance 
-ex.fontSize = 26;
+ex.fontSize = 50;
 
 %% Color discrimination task setup
 ex.targetProb = .4;              % proportion of trials where the target color will come up
