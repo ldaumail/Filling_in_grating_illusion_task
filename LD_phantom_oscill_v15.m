@@ -274,22 +274,6 @@ end
 ex.rectLWaveID = rectLWaveID;
 ex.rectRWaveID = rectRWaveID;
 
-%     if t<length(ex.stim.cycPerSec)
-        %rect  
-%     elseif t == length(ex.stim.cycPerSec)
-%         
-%         %rect
-%         rectLWaveIDO = [rectLWaveIDO;...
-%             repmat([zeros(length(ex.stillDotPhase),1); repmat(tmprectLWaveID(:,o),floor((ex.blockLength(t)-ex.trialFixation)*ex.flipsPerSec/length(tmprectLWaveID(:,o))),1); tmprectLWaveID(1:mod((ex.blockLength(t)-ex.trialFixation)*ex.flipsPerSec,length(tmprectLWaveID(:,o))),o); zeros(ex.betweenBlocks*ex.flipsPerSec,1)],ex.numBlocks/length(ex.blockLength)-1,1);... %2*ones(1,e.blockLength) zeros(1,e.betweenBlocks)
-%             zeros(length(ex.stillDotPhase),1); repmat(tmprectLWaveID(:,o),floor((ex.blockLength(t)-ex.trialFixation)*ex.flipsPerSec/length(tmprectLWaveID(:,o))),1); tmprectLWaveID(1:mod((ex.blockLength(t)-ex.trialFixation)*ex.flipsPerSec,length(tmprectLWaveID(:,o))),o); zeros(ex.finalFixation*ex.flipsPerSec,1)];
-%         ex.rectLWaveID(1:length(rectLWaveIDO),o) = rectLWaveIDO;
-%         
-%         rectRWaveIDO = [rectRWaveIDO;...
-%             repmat([zeros(length(ex.stillDotPhase),1); repmat(tmprectRWaveID(:,o),floor((ex.blockLength(t)-ex.trialFixation)*ex.flipsPerSec/length(tmprectRWaveID(:,o))),1); tmprectRWaveID(1:mod((ex.blockLength(t)-ex.trialFixation)*ex.flipsPerSec,length(tmprectRWaveID(:,o))),o); zeros(ex.betweenBlocks*ex.flipsPerSec,1)],ex.numBlocks/length(ex.blockLength)-1,1);... %2*ones(1,e.blockLength) zeros(1,e.betweenBlocks)
-%             zeros(length(ex.stillDotPhase),1); repmat(tmprectRWaveID(:,o),floor((ex.blockLength(t)-ex.trialFixation)*ex.flipsPerSec/length(tmprectRWaveID(:,o))),1); tmprectRWaveID(1:mod((ex.blockLength(t)-ex.trialFixation)*ex.flipsPerSec,length(tmprectRWaveID(:,o))),o); zeros(ex.finalFixation*ex.flipsPerSec,1)];
-%         ex.rectRWaveID(1:length(rectRWaveIDO),o) =rectRWaveIDO ;
-%     end
-
 
 %% Sine wave gratings locations (in the task loop since it changes)
 xc = rect(3)/2; % rect and center, with the flexibility to resize & shift center - change vars to zero if not used.
@@ -324,40 +308,6 @@ for t =1:length(ex.stimDur)
         ex.(driftPos)(1:ex.flipsPerSec*(ex.blockLength(t)-ex.trialFixation)-length(repmat(ex.(driftPos),1,4))) ... %zeros(1,(ex.blockLength(t)-ex.trialFixation)*ex.flipsPerSec-floor(4.5*length(ex.(driftPos))))...
         zeros(1,ex.betweenBlocks*ex.flipsPerSec)];
 end
-
-        
-%     elseif t <length(ex.blockLength) && t > 1
-%         ex.longDriftPos = [ex.longDriftPos...
-%             repmat([repmat(ex.(stillDotPhase),1,ex.flipsPerSec*ex.trialFixation) ex.(driftPos) ex.(driftPos)(1:floor(length(ex.(driftPos))/4))...
-%             zeros(1,(ex.blockLength(t)-ex.trialFixation)*ex.flipsPerSec-floor(1.25*length(ex.(driftPos)))) ...
-%             zeros(1,ex.betweenBlocks*ex.flipsPerSec)],1,ex.numBlocks/length(ex.blockLength))];
-%         
-%          % make lonDriftPos for the red dot only condition
-%         ex.longDriftPos2 = [ex.longDriftPos2...
-%             repmat([repmat(ex.(stillDotPhase),1,ex.flipsPerSec*ex.trialFixation) repmat(ex.(driftPos),1,4) ... 
-%             ex.(driftPos)(1:ex.flipsPerSec*(ex.blockLength(t)-ex.trialFixation)-length(repmat(ex.(driftPos),1,4))) ... %zeros(1,(ex.blockLength(t)-ex.trialFixation)*ex.flipsPerSec-floor(4.5*length(ex.(driftPos))))...
-%             zeros(1,ex.betweenBlocks*ex.flipsPerSec)],1,ex.numBlocks/length(ex.blockLength))];
-        
-%     elseif t == length(ex.blockLength)
-%         
-%         ex.longDriftPos = [ex.longDriftPos...
-%             repmat([repmat(ex.(stillDotPhase),1,ex.flipsPerSec*ex.trialFixation) ex.(driftPos) ex.(driftPos)(1:floor(length(ex.(driftPos))/4))...
-%             zeros(1,(ex.blockLength(t)-ex.trialFixation)*ex.flipsPerSec-floor(1.25*length(ex.(driftPos))))...
-%             zeros(1,ex.betweenBlocks*ex.flipsPerSec)],1,ex.numBlocks/length(ex.blockLength)-1)... %2*ones(1,e.blockLength) zeros(1,e.betweenBlocks)
-%             repmat(ex.(stillDotPhase),1,ex.flipsPerSec*ex.trialFixation) ex.(driftPos) ex.(driftPos)(1:floor(length(ex.(driftPos))/4))...
-%             zeros(1,(ex.blockLength(t)-ex.trialFixation)*ex.flipsPerSec-floor(1.25*length(ex.(driftPos))))...
-%             zeros(1,ex.finalFixation*ex.flipsPerSec)];
-%         
-%                  % make lonDriftPos for the red dot only condition
-%         ex.longDriftPos2 = [ex.longDriftPos2...
-%             repmat([repmat(ex.(stillDotPhase),1,ex.flipsPerSec*ex.trialFixation) repmat(ex.(driftPos),1,4) ... 
-%             ex.(driftPos)(1:ex.flipsPerSec*(ex.blockLength(t)-ex.trialFixation)-length(repmat(ex.(driftPos),1,4)))... %zeros(1,(ex.blockLength(t)-ex.trialFixation)*ex.flipsPerSec-floor(4.5*length(ex.(driftPos))))...
-%             zeros(1,ex.betweenBlocks*ex.flipsPerSec)],1,ex.numBlocks/length(ex.blockLength)-1)... %2*ones(1,e.blockLength) zeros(1,e.betweenBlocks)
-%             repmat(ex.(stillDotPhase),1,ex.flipsPerSec*ex.trialFixation)...
-%             repmat(ex.(driftPos),1,4) ex.(driftPos)(1:ex.flipsPerSec*(ex.blockLength(t)-ex.trialFixation)-length(repmat(ex.(driftPos),1,4)))...%zeros(1,(ex.blockLength(t)-ex.trialFixation)*ex.flipsPerSec-floor(4.5*length(ex.(driftPos))))...
-%             zeros(1,ex.finalFixation*ex.flipsPerSec)];
-%     end
-
 
 
 %% Eyetracking parameters
@@ -503,13 +453,16 @@ for c =1:length(ex.condShuffle)
             end
         else
             [VBLT, ex.flipTime(n,c), FlipT, missed] = Screen(w, 'Flip', ex.startTrial + ex.trialFlips(n) - slack);
+            if ET == 1 && n == bLength*ex.flipsPerSec+1
+                Eyelink('Message', 'STIM_OFFSET');
+            end
             
         end
         if nnz(onOffs(n)) == 1
             time = GetSecs;
             cnt = cnt+1;
         end
-%         if cnt/2 == 1 && GetSecs-time >= 1
+%         if (cnt/2 == 1 && GetSecs-time >= 1) && c ~= length(ex.condShuffle)
 %             DrawFormattedText(w,'Press Space whenever you feel ready'... % : press 1 as soon as letter J appears on the screen,\n\n and press 2 as soon as letter K appears on the screen. \n\n Press Space to start'...
 %                 ,'center', 'center',[0 0 0]);
 %             Screen(w, 'Flip', 0);
@@ -517,9 +470,7 @@ for c =1:length(ex.condShuffle)
 %             cnt = 0;
 %         end
     end
-    if ET == 1
-        Eyelink('Message', 'STIM_OFFSET');
-    end
+
 end
 
     %(FINAL FIXATION) if needed
