@@ -403,18 +403,11 @@ if ET
     ex.nGazetoShow = [ 60 ]; % current~past N fixations
 end
 %% %%%% initial window - wait for backtick
-% Screen(w, 'DrawText', 'Waiting for Backtick.', 10,10,[0 0 0]);
-% Screen(w, 'Flip', 0);
-% KbTriggerWait(53, deviceNumber);
-
 DrawFormattedText(w,'Follow the oscillating visual phantom within the gap at the center of the screen \n\n as best as you can using the red dot as a guide, even after the red dot is gone. \n\n Press Space to start'... % :  '...
     ,'center', 'center',[0 0 0]);
 Screen(w, 'Flip', 0);
 %WaitSecs(2);  
 KbTriggerWait(KbName('Space'), deviceNumber);
-
-%%%%%%%%%%%%%%%%%% Response listening %%%%%%%%%%%%%%%%%%%%%%%%
-%KbQueueCreate(deviceNumber,responseKeys);
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -447,17 +440,14 @@ onOffs = [diff(ex.longFormBlocks) 0];
 tstartcnt = 0;
 tend = [];
 while n < length(ex.allFlips)
-
     if ET
         run GetEyeDataLoic; %check eyetracker
     end
-
     [ex.longFormBlocks(n),ex.longFormFlicker(n)]
-
-
     %%%% draw sine wave grating stimulus %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     if ex.longFormBlocks(n) == 1 && ex.longFormFlicker(n) > 0 % zeros correspond to IBI, in which case we skip this next section
         thisCond = ex.longFormConds(n);
+        
         %screen background color
         if strfind(conditions(thisCond).name{:}, 'Minbg')
             gray = repmat(min(min(squeeze(ex.rectLWave1(1,:,:)),[],1)), [1,3]);
@@ -465,17 +455,14 @@ while n < length(ex.allFlips)
             gray = repmat(mean(squeeze(ex.rectLWave1(1,1,:))), [1,3]);
         end
         Screen('FillRect', w, gray);
-
         %draw red dot
         if strfind(conditions(thisCond).name{:}, 'Vel1')
             stillDotPhase = 'stillDotPhase1';
             driftPos = 'driftPos1';
-            %longDriftPos = 'longDriftPos1';
             bLength = ex.blockLength(1);
         elseif strfind(conditions(thisCond).name{:}, 'Vel2')
             stillDotPhase = 'stillDotPhase2';
             driftPos = 'driftPos2';
-            %longDriftPos = 'longDriftPos2';
             bLength = ex.blockLength(2);
         end
         if strfind(conditions(thisCond).name{:}, 'Rect')  
@@ -489,9 +476,6 @@ while n < length(ex.allFlips)
                 % bottom stim
                 Screen('DrawTexture', w, ex.rectRWaveID(n), [], ex.rectRRect);
             end
-            %if nnz(ex.longDriftPos(n+1))
-            
-            %if flipCnt < 378
             timeOn = length([repmat(ex.(stillDotPhase),1,ex.flipsPerSec*ex.trialFixation) ex.(driftPos) ex.(driftPos)(1:length(ex.(driftPos))/4)]);
             if flipCnt <= timeOn - length(ex.fixCol1Grad)
                 xOffset = ex.longDriftPos(n);
@@ -539,22 +523,20 @@ while n < length(ex.allFlips)
             Eyelink('Message', char(sprintf('Cond %s', conditions(thisCond).name{:})))
             Eyelink('Message', 'TRIALID %d', tr);
             Eyelink('Message', 'STIM_ONSET');
-%             tic 
         elseif isempty(find(mod(tstartcnt,2))) && ET == 1
             Eyelink('Message', 'STIM_OFFSET');
-%             tend = [tend toc];     
         end
         
         
     end
     
-    if nnz(cnt) && mod(cnt,2) == 0 && GetSecs-time >= 1
-        DrawFormattedText(w,'Press Space whenever you feel ready'... % : press 1 as soon as letter J appears on the screen,\n\n and press 2 as soon as letter K appears on the screen. \n\n Press Space to start'...
-            ,'center', 'center',[0 0 0]);
-        Screen(w, 'Flip', 0);
-        KbTriggerWait(KbName('Space'), deviceNumber);
-        cnt = 0;
-    end
+%     if nnz(cnt) && mod(cnt,2) == 0 && GetSecs-time >= 1
+%         DrawFormattedText(w,'Press Space whenever you feel ready'... % : press 1 as soon as letter J appears on the screen,\n\n and press 2 as soon as letter K appears on the screen. \n\n Press Space to start'...
+%             ,'center', 'center',[0 0 0]);
+%         Screen(w, 'Flip', 0);
+%         KbTriggerWait(KbName('Space'), deviceNumber);
+%         cnt = 0;
+%     end
 %     if n == 1382%360%421%420%359%1382%1561%
 %         break;
 %     end
