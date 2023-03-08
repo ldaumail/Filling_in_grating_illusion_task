@@ -100,7 +100,7 @@ ex.outerFixPixels = 2;          % in pixels, the black ring around fixation
 
 %%%% screen
 ex.backgroundColor = [127 127 127];%[108.3760 108.3760 108.3760];%;  % color based on minimum gating luminance 
-ex.fontSize = 50;
+ex.fontSize = 26;
 
 %% Color discrimination task setup
 ex.targetProb = .4;              % proportion of trials where the target color will come up
@@ -271,13 +271,13 @@ ex.betweenFlipTimes = betweenFlipTimes(1:length(betweenFlipTimes)-1);
 ex.allFlipTimes = [ex.stimFlipTimes,ex.betweenFlipTimes];
 %% Sine wave gratings locations (in the task loop since it changes)
 xc = rect(3)/2; % rect and center, with the flexibility to resize & shift center - change vars to zero if not used.
-yc = rect(4)/2; %+e.vertOffset;
+yc = rect(4)/2 + ex.vertOffset; %+e.vertOffset;
 
-xL = rect(3)/2- ex.gaborWidth;  % = stimulus center located on the horizontal center of the screen
-yL = rect(4)/2; % stimulus located 4 degrees above screen center
+xL = rect(3)/2 - ex.gaborWidth;  % = stimulus center located on the horizontal center of the screen
+yL = rect(4)/2 + ex.vertOffset; % stimulus located 4 degrees above screen center
 
-xR = rect(3)/2+ ex.gaborWidth; % = stimulus center located on the horizontal center of the screen
-yR = rect(4)/2; % stimulus located 4 degrees below screen center
+xR = rect(3)/2 + ex.gaborWidth; % = stimulus center located on the horizontal center of the screen
+yR = rect(4)/2 + ex.vertOffset; % stimulus located 4 degrees below screen center
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
