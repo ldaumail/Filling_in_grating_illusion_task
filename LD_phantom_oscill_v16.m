@@ -7,14 +7,14 @@ function LD_phantom_oscill_v16(subject, session, debug)
 
 
 ex.version = 'v16';
-global EyeData rect w xc yc %eye_used
+global EyeData rect w xc yc eye_used 
 %%%% resolution 
 if debug == 1
     % eyetracking on (1) or off (0)
     ET = 0;
     ex.screenWidth = 53.1;             % in cm; %laptop=27.5,office=43, %19=%T3b, miniHelm=39;
     ex.viewingDist = 53.5;             % in cm; 3Tb/office=43, miniHelm=57;
-	ex.resolution = SetResolution(max(Screen('Screens')),2880, 1800 ,0); % laptop 1920,1080/ 2880, 1800 ,0
+	ex.resolution = SetResolution(max(Screen('Screens')),1600,900,60); % laptop 1920,1080/ 2880, 1800 ,0
     ex.gammaCorrection = 0;       % make sure this = 1 when you're at the scanner!
 else
     
@@ -44,8 +44,6 @@ ex.startTime = clock;
 rng(sum(100*ex.startTime));
 ex.rand = rng;
 
-% rng(sum(100*clock));
-% ex.rand = rng;
 %%%% files and things
 ex.root = pwd;
 ex.date = datestr(now,30);
@@ -82,7 +80,7 @@ ex.stimDur = (ex.stim.cycles./ex.stim.cycPerSec)*2;        % in seconds. 1.77 se
 ex.stimsPerBlock = 4.5;      % number of back-and-forth laps of the stimulus drift
 ex.blockLength = ex.trialFixation+ ceil(ex.stimDur*ex.stimsPerBlock);           % in seconds
 ex.betweenBlocks = 2;          % in seconds
-ex.flipsPerSec = 60;  % 12;         % number of phase changes we want from the visual stimulus, and thus the number of times we want to change visual stimulation on the screen
+ex.flipsPerSec = 60;  % 60;         % number of phase changes we want from the visual stimulus, and thus the number of times we want to change visual stimulation on the screen
 ex.flipWin = 1/ex.flipsPerSec;         % in seconds then actually in 1 sec the stimuli will change 12 times 
 %e.numBlocks = 12;  % 6 for single and 6 for pair...
 
@@ -129,7 +127,6 @@ ex.fontSize = 26;
 
 ex.onSecs = [ones(1,ex.blockLength(t)) zeros(1,ex.betweenBlocks)];
 ex.longFormBlocks = Expand(ex.onSecs,ex.flipsPerSec,1); %1 when block, 0 when between block
-ex.longFormFlicker = repmat(ones(1,1),1,length(ex.longFormBlocks)); %1 all the way to ensure flip at every time selected
 length(ex.longFormBlocks)
 
 % %% create the timing model of stimulus conditions for this particular run
@@ -163,7 +160,7 @@ Screen('BlendFunction', w, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 %gamma correction, file prepared for room 425
 if ex.gammaCorrection 
   %load gamma correction file
-  load('/Users/tonglab/Desktop/monitor_calibration/425dell_22-12-09/phase2_photometry_22-12-09.mat')
+  load('/Users/tonglab/Desktop/monitor_calibration/425dell_22-12-09/phase2_photometry_22-12-09.mat');
   Screen('LoadNormalizedGammaTable', w, inverseCLUT);
 end
 %%%% timing optimization
@@ -304,11 +301,11 @@ yc = rect(4)/2; %+e.vertOffset;
 
 xL = rect(3)/2; % % = stimulus center located on the horizontal center of the screen
 xR = rect(3)/2; % = stimulus center located on the horizontal center of the screen
-xC = rect(3)/2;
+xS = rect(3)/2;
 
 yL = rect(4)/2 - ex.stim.gaborHDeg*ex.ppd+0*ex.ppd; % stimulus located 4 degrees above screen center
 yR = rect(4)/2+ ex.stim.gaborHDeg*ex.ppd-0*ex.ppd; % stimulus located 4 degrees below screen cente
-yC = rect(4)/2;
+yS = rect(4)/2;
 
 %% create drifting red dots position
 for t =1:length(ex.stimDur)
@@ -344,7 +341,7 @@ if ET
     ex.nGazetoShow = [ 60 ]; % current~past N fixations
 end
 %% %%%% initial window - wait for backtick
-DrawFormattedText(w,'Follow the oscillating visual phantom within the gap at the center of the screen \n\n as best as you can using the red dot as a guide, even after the red dot is gone. \n\n Do your best not to blink during a trial. \n\n Press Space to start'... % :  '...
+DrawFormattedText(w,'Follow the oscillating grating or visual phantom within the gap at the center of the screen \n\n as best as you can using the red dot as a guide, even after the red dot is gone. \n\n Do your best not to blink during a trial. \n\n Press Space to start'... % :  '...
     ,'center', 'center',[0 0 0]);
 Screen(w, 'Flip', 0);
 %WaitSecs(2);
@@ -375,7 +372,7 @@ blockCnt = 1;
 cnt = 0; %stim onset/ stime offset count
 onOffs = [diff(ex.longFormBlocks) 0];
 bLength = ex.blockLength(1);
-
+ex.flipTime = nan(length(ex.trialFlips),length(ex.condShuffle));
 %%% initial fixation
 if n == 1 && blockCnt == 1 %for first block
     ex.tasktstart = clock;
@@ -386,59 +383,57 @@ if n == 1 && blockCnt == 1 %for first block
 end
 %%% Launch the task
 for c =1:length(ex.condShuffle)
+    flipTime = [];
     cnt = cnt+1;
     thisCond = ex.condShuffle(c);
     condName = conditions(thisCond).name{:};
     %%for each condition, we specify the parameters values before we flip
     %%over the gratings phases
     %screen background color
-    if strfind(condName, 'Minbg')
+    if contains(condName, 'Minbg')
         gray = repmat(min(min(squeeze(ex.rectLWave1(1,:,:)),[],1)), [1,3]);
         ex.fixCol1Grad = linspace(255,gray(1),90);% make red dot disapear in 90 flips = 1.5 sec ; logspace(log10(255),log10(gray(1)));
         ex.fixCol2Grad = linspace(0,gray(1),90);
         
-    elseif strfind(condName, 'Meanbg')
+    elseif contains(condName, 'Meanbg')
         gray = repmat(mean(squeeze(ex.rectLWave1(1,1,:))), [1,3]);
         ex.fixCol1Grad = linspace(255,gray(1),90);% make red dot disapear in 90 flips = 1.5 sec ; logspace(log10(255),log10(gray(1)));
         ex.fixCol2Grad = linspace(0,gray(1),90);
     end
     %draw guide red dot
-    if strfind(condName, 'Vel1')
+    if contains(condName, 'Vel1')
         stillDotPhase = 'stillDotPhase1';
         driftPos = 'driftPos1';
         longDriftPos = 'longDriftPos1';
         t =1;
-    elseif strfind(condName, 'Vel2')
+    elseif contains(condName, 'Vel2')
         stillDotPhase = 'stillDotPhase2';
         driftPos = 'driftPos2';
         longDriftPos = 'longDriftPos2';
         t = 2;
     end
-    if ~isempty(strfind(condName, 'Sp8')) % is there gonna be a grating inducers pair? If yes, indicate the location
+    if contains(condName, 'Sp8') % is there gonna be a grating inducers pair? If yes, indicate the location
         ex.rectLRect =  CenterRectOnPoint([0 0 ex.rectGaborWidth ex.gaborHeight],xL,yL);
         ex.rectRRect =  CenterRectOnPoint([0 0 ex.rectGaborWidth ex.gaborHeight],xR,yR);
         timeOn = length([repmat(ex.(stillDotPhase),1,ex.flipsPerSec*ex.trialFixation) ex.(driftPos) ex.(driftPos)(1:length(ex.(driftPos))/4)]);
         guideFlipCnt = 1;
-    elseif ~isempty(strfind(condName, 'Single'))
-        ex.rectCRect =  CenterRectOnPoint([0 0 ex.rectGaborWidth ex.gaborHeight],xC,yC);
+    elseif contains(condName, 'Single')
+        ex.rectCRect =  CenterRectOnPoint([0 0 ex.rectGaborWidth ex.gaborHeight],xS,yS);
         timeOn = length([repmat(ex.(stillDotPhase),1,ex.flipsPerSec*ex.trialFixation) ex.(driftPos) ex.(driftPos)(1:length(ex.(driftPos))/4)]);
         guideFlipCnt = 1;
-    elseif ~isempty(strfind(condName, 'RedDot'))
+    elseif contains(condName, 'RedDot')
         timeOn = length([repmat(ex.(stillDotPhase),1,ex.flipsPerSec*ex.trialFixation)  repmat(ex.(driftPos),1,4) ex.(driftPos)(1:(ex.blockLength(t)-ex.trialFixation)*ex.flipsPerSec-length(repmat(ex.(driftPos),1,4)))]);
         longDriftPosRed = sprintf('longDriftPosRed%d',t);
         redFlipCnt = 1;
     end
     
     %flip through the block and following between block time
-    for n = 1:length(ex.longFormBlocks)
-        if ET
-            run GetEyeDataLoic; %check eyetracker
-        end
-        [ex.longFormBlocks(n),ex.longFormFlicker(n)]
+    while n <= length(ex.trialFlips)
+        ex.longFormBlocks(n)
         %%%% draw sine wave grating stimulus %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         Screen('FillRect', w, gray);
         
-        if strfind(condName, 'Sp8')
+        if contains(condName, 'Sp8')
             if nnz(find(ex.rectLWaveID(n,t)))
                 % top stim
                 Screen('DrawTexture', w, ex.rectLWaveID(n,t),[],ex.rectLRect);
@@ -453,10 +448,9 @@ for c =1:length(ex.condShuffle)
                 Screen('FillOval', w,[ex.fixCol1Grad(guideFlipCnt-timeOn+length(ex.fixCol1Grad)) ex.fixCol2Grad(guideFlipCnt-timeOn+length(ex.fixCol1Grad)) ex.fixCol2Grad(guideFlipCnt-timeOn+length(ex.fixCol1Grad))], [xc+xOffset-round(ex.fixSize/4) yc-round(ex.fixSize/4) xc+xOffset+round(ex.fixSize/4) yc+round(ex.fixSize/4)]);% fixation solid circle
             elseif guideFlipCnt == length(ex.trialFlips)%bLength*ex.flipsPerSec+1 %make sure to reset the flipCnt once the trial ended, so that the red dot doe not reappear before the end of the trial
                 guideFlipCnt = 0;
-                %clear timeOn
             end
             guideFlipCnt = guideFlipCnt+1;
-        elseif strfind(condName, 'Single')
+        elseif contains(condName, 'Single')
             if nnz(find(ex.rectCWaveID(n,t)))
                 % center stim
                 Screen('DrawTexture', w, ex.rectCWaveID(n,t),[],ex.rectCRect);
@@ -469,11 +463,11 @@ for c =1:length(ex.condShuffle)
                 Screen('FillOval', w,[ex.fixCol1Grad(guideFlipCnt-timeOn+length(ex.fixCol1Grad)) ex.fixCol2Grad(guideFlipCnt-timeOn+length(ex.fixCol1Grad)) ex.fixCol2Grad(guideFlipCnt-timeOn+length(ex.fixCol1Grad))], [xc+xOffset-round(ex.fixSize/4) yc-round(ex.fixSize/4) xc+xOffset+round(ex.fixSize/4) yc+round(ex.fixSize/4)]);% fixation solid circle
             elseif guideFlipCnt == length(ex.trialFlips)%bLength*ex.flipsPerSec+1 %make sure to reset the flipCnt once the trial ended, so that the red dot doe not reappear before the end of the trial
                 guideFlipCnt = 0;
-                %clear timeOn
             end
+
             guideFlipCnt = guideFlipCnt+1;
             
-        elseif strfind(condName, 'RedDot')
+        elseif contains(condName, 'RedDot')
             if redFlipCnt < timeOn
                 xOffset = ex.(longDriftPosRed)(n);
                 Screen('FillOval', w,[255 0 0], [xc+xOffset-round(ex.fixSize/4) yc-round(ex.fixSize/4) xc+xOffset+round(ex.fixSize/4) yc+round(ex.fixSize/4)]);%black fixation solid circle
@@ -489,7 +483,7 @@ for c =1:length(ex.condShuffle)
         %%%%%%%%%%% FLIP %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         if n == 1
             [VBLT, ex.startTrial, FlipT, missed] = Screen(w, 'Flip', 0);%[VBLTimestamp StimulusOnsetTime FlipTimestamp Missed] = Screen('Flip', windowPtr [, when] [, dontclear]...
-            ex.flipTime(n,c) = ex.startTrial;
+            flipTimes = ex.startTrial;
             %%%%% send messages to Eyelink for event times
             if ET == 1
                 Eyelink('Message', char(sprintf('Cond %s', condName)));
@@ -497,34 +491,37 @@ for c =1:length(ex.condShuffle)
                 Eyelink('Message', 'STIM_ONSET');
             end
         else
-            [VBLT, ex.flipTime(n,c), FlipT, missed] = Screen(w, 'Flip', ex.startTrial + ex.trialFlips(n) - slack);
+            [VBLT,flipTime, FlipT, missed] = Screen(w, 'Flip',ex.startTrial + ex.trialFlips(n) - slack); %,   %%% ex.flipTime(n,c)
+            flipTimes = [flipTimes, flipTime];
             if ET == 1 && n == bLength*ex.flipsPerSec+1
                 Eyelink('Message', 'STIM_OFFSET');
             end
             
         end
+        
         if nnz(onOffs(n)) == 1
             time = GetSecs;
             cnt = cnt+1;
         end
-%         if (cnt/2 == 1 && GetSecs-time >= 1) && c ~= length(ex.condShuffle)
-%             DrawFormattedText(w,'Press Space whenever you feel ready'... % : press 1 as soon as letter J appears on the screen,\n\n and press 2 as soon as letter K appears on the screen. \n\n Press Space to start'...
-%                 ,'center', 'center',[0 0 0]);
-%             Screen(w, 'Flip', 0);
-%             KbTriggerWait(KbName('Space'), deviceNumber);
-%             cnt = 0;
-%         end
+        if (cnt/2 == 1 && GetSecs-time >= 1) && c ~= length(ex.condShuffle)
+            DrawFormattedText(w,'Press Space whenever you feel ready'... % : press 1 as soon as letter J appears on the screen,\n\n and press 2 as soon as letter K appears on the screen. \n\n Press Space to start'...
+                ,'center', 'center',[0 0 0]);
+            Screen(w, 'Flip', 0);
+            KbTriggerWait(KbName('Space'), deviceNumber);
+            cnt = 0;
+        end
+        n = n+1;
+        if n == length(ex.trialFlips)+1
+            n = 1;
+        end
     end
+     ex.flipTime(:,c) = flipTimes;
 
 end
-
-    %(FINAL FIXATION) if needed
-    
     
 %     if n == 1382%360%421%420%359%1382%1561%
 %         break;
 %     end
-
 
 %%%%%%%%%%%%%%%%%%
 % done! wrap up  %
@@ -549,7 +546,6 @@ if ET
     Eyelink('StopRecording');   
     Eyelink('CloseFile');
         %download edf file
-%     if downET
         Eyelink('Command', 'set_idle_mode');
     try
         fprintf('Receiving data file ''%s''\n',  EyeData.edfFile);
@@ -564,9 +560,8 @@ if ET
     catch
         fprintf('Problem receiving data file ''%s''\n',  EyeData.edfFile);
     end
-%     end
     
     Eyelink('Shutdown');
-    savename = fullfile(savedir, strcat(sprintf('/s%s_smooth_pursuit_%s_date%s_fix_eyeDat',subject,ex.version,num2str(ex.date)), '.mat'));
-    save(savename, 'EyeData')
+%     savename = fullfile(savedir, strcat(sprintf('/s%s_smooth_pursuit_%s_date%s_fix_eyeDat',subject,ex.version,num2str(ex.date)), '.mat'));
+%     save(savename, 'EyeData')
 end 
