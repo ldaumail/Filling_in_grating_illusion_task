@@ -1,4 +1,4 @@
-function LD_phantom_oscill_v14(subject, session, debug)
+function LD_phantom_oscill_v15(subject, session, debug)
 
 %In this version, we add multiple velocities
 subject = 'Dave';                                                                                                                                                                                                                                                     
@@ -6,7 +6,7 @@ session = 1;
 debug = 1;
 
 
-ex.version = 'v14';
+ex.version = 'v15';
 global EyeData rect w xc yc %eye_used
 %%%% resolution 
 if debug == 1
@@ -443,14 +443,14 @@ for c =1:length(ex.condShuffle)
         
         %%%%%%%%%%% FLIP %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         if n == 1
-            [VBLT, ex.startTrial, FlipT, missed] = Screen(w, 'Flip', 0);%[VBLTimestamp StimulusOnsetTime FlipTimestamp Missed] = Screen('Flip', windowPtr [, when] [, dontclear]...
-            ex.flipTime(n,c) = ex.startTrial;
-            %%%%% send messages to Eyelink for event times
             if ET == 1
                 Eyelink('Message', char(sprintf('Cond %s', condName)));
                 Eyelink('Message', 'TRIALID %d', tr);
                 Eyelink('Message', 'STIM_ONSET');
             end
+            [VBLT, ex.startTrial, FlipT, missed] = Screen(w, 'Flip', 0);%[VBLTimestamp StimulusOnsetTime FlipTimestamp Missed] = Screen('Flip', windowPtr [, when] [, dontclear]...
+            ex.flipTime(n,c) = ex.startTrial;
+            %%%%% send messages to Eyelink for event times
         else
             [VBLT, ex.flipTime(n,c), FlipT, missed] = Screen(w, 'Flip', ex.startTrial + ex.trialFlips(n) - slack);
             if ET == 1 && n == bLength*ex.flipsPerSec+1
@@ -462,13 +462,13 @@ for c =1:length(ex.condShuffle)
             time = GetSecs;
             cnt = cnt+1;
         end
-%         if (cnt/2 == 1 && GetSecs-time >= 1) && c ~= length(ex.condShuffle)
-%             DrawFormattedText(w,'Press Space whenever you feel ready'... % : press 1 as soon as letter J appears on the screen,\n\n and press 2 as soon as letter K appears on the screen. \n\n Press Space to start'...
-%                 ,'center', 'center',[0 0 0]);
-%             Screen(w, 'Flip', 0);
-%             KbTriggerWait(KbName('Space'), deviceNumber);
-%             cnt = 0;
-%         end
+        if (cnt/2 == 1 && GetSecs-time >= 1) && c ~= length(ex.condShuffle)
+            DrawFormattedText(w,'Press Space whenever you feel ready'... % : press 1 as soon as letter J appears on the screen,\n\n and press 2 as soon as letter K appears on the screen. \n\n Press Space to start'...
+                ,'center', 'center',[0 0 0]);
+            Screen(w, 'Flip', 0);
+            KbTriggerWait(KbName('Space'), deviceNumber);
+            cnt = 0;
+        end
     end
 
 end
