@@ -490,8 +490,8 @@ ex.runTime = GetSecs - ex.startRun;
 savedir = fullfile(ex.root,'data',sprintf('s%s_%s/',subject,ex.version));
 if ~exist(savedir); mkdir(savedir); end
 savename = fullfile(savedir, strcat(sprintf('/s%s_smooth_pursuit_%s_date%s_fix',subject,ex.version,num2str(ex.date)), '.mat'));
-save(savename,'ex');
-
+%save(savename,'ex');
+save(savename,'ex','-v7.3')
 
 ShowCursor;
 Screen('Close');
