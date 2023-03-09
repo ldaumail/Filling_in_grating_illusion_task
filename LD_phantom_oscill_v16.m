@@ -67,7 +67,7 @@ ex.stim.motionRate = ex.stim.cycPerSec.*360;                                    
 ex.stim.cycles =[1, 3]; %number of cycles shifted per lap  (modified to half the number of cycles per lap)
 
 %%%%additional properties for single grating
-ex.match.contrastMults = [0.0072 0.0062];
+ex.match.contrastMults = mean([0.0072 0.0062]);
 ex.match.contrastOffset = nan(1,length(ex.match.contrastMults));
 for i =1:length(ex.match.contrastMults)
     ex.match.contrastOffset(i) = ex.stim.contrastOffset-ex.stim.contrastMultiplicator-ex.match.contrastMults(i);
@@ -266,7 +266,7 @@ for t =1:length(ex.stim.cycPerSec)
             ex.stim.orientation,RPhase,ex.stim.contrastOffset(1),ex.stim.contrastMultiplicator,...
             ex.ppd);
         ex.(rectCWave)(f,:,:,t) = makeSineGrating(ex.gaborHeight,ex.gaborWidth*2,ex.stim.spatialFreqDeg,...
-            ex.stim.orientation,CPhase,ex.match.contrastOffset(t),ex.match.contrastMults(t),...
+            ex.stim.orientation,CPhase,ex.match.contrastOffset,ex.match.contrastMults,...
             ex.ppd);
         %                 figure();
         %                imshow(squeeze(ex.(rectRWave)(f,:,:,o))./max(squeeze(ex.(rectRWave)(f,:,:,o)),[],'all'));
