@@ -337,8 +337,8 @@ end
 if ET 
     EyelinkSetup(0);
     eye_used = Eyelink('EyeAvailable');
-    ex.ShowRealTimeGaze = [  ]; % [] or [ something ]
-    ex.nGazetoShow = [ 60 ]; % current~past N fixations
+%     ex.ShowRealTimeGaze = [  ]; % [] or [ something ]
+%     ex.nGazetoShow = [ 60 ]; % current~past N fixations
 end
 %% %%%% initial window - wait for backtick
 DrawFormattedText(w,'Follow the oscillating grating or visual phantom within the gap at the center of the screen \n\n as best as you can using the red dot as a guide, even after the red dot is gone. \n\n Do your best not to blink during a trial. \n\n Press Space to start'... % :  '...
@@ -354,19 +354,7 @@ KbTriggerWait(KbName('Space'), deviceNumber);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %%%%%%% START task TASK/FLIPPING
-
 gray = repmat(mean(squeeze(ex.rectLWave1(1,1,:))), [1,3]);
-
-
-if ET
-    gcnt = 0;
-    EyeData.mx=nan(1,ceil(ex.totalTime*1/ex.flipsPerSec));
-    EyeData.my=nan(1,ceil(ex.totalTime*1/ex.flipsPerSec));
-    EyeData.ma=nan(1,ceil(ex.totalTime*1/ex.flipsPerSec));
-    EyeData.FixDoneT = nan(1,ceil(ex.totalTime*1/ex.flipsPerSec));
-    EyeData.gazeD = nan(1,ceil(ex.totalTime*1/ex.flipsPerSec));
-    EyeData.Fixated = nan(1,ceil(ex.totalTime*1/ex.flipsPerSec));
-end
 n=1;
 blockCnt = 1;
 cnt = 0; %stim onset/ stime offset count
@@ -383,7 +371,6 @@ if n == 1 && blockCnt == 1 %for first block
 end
 %%% Launch the task
 for c =1:length(ex.condShuffle)
-    flipTime = [];
     cnt = cnt+1;
     thisCond = ex.condShuffle(c);
     condName = conditions(thisCond).name{:};
@@ -511,14 +498,13 @@ for c =1:length(ex.condShuffle)
             cnt = 0;
         end
         n = n+1;
-        if n == length(ex.trialFlips)+1
-            n = 1;
-        end
     end
      ex.flipTime(:,c) = flipTimes;
 
+     n = 1;
+ 
 end
-    
+
 %     if n == 1382%360%421%420%359%1382%1561%
 %         break;
 %     end
