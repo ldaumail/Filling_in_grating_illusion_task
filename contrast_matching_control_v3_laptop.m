@@ -3,9 +3,9 @@ function contrast_matching_control_v3_laptop(subject, session, debug)
 %%contrast matching control
 %Loic 01252023
 %In this version, we add multiple velocities
-subject = 'Dave';                                                                                                                                                                                                                                                     
-session = 1;                                                                                                                           
-debug = 0;
+% subject = 'Dave';                                                                                                                                                                                                                                                     
+% session = 1;                                                                                                                           
+% debug = 0;
 
 ex.version = 'v3';
 global EyeData rect w xc yc %eye_used
@@ -23,7 +23,7 @@ else
                                                                                                                          
     ex.screenWidth = 53.1;             % in cm; % 16 in eye tracking room 425%laptop=27.5,office=43, %19=%T3b, miniHelm=39;
     ex.viewingDist = 53.5;             % in cm; %23 in eye tracking                                                                                                                          room 425 3Tb/office=43, miniHelm=57;
-    ex.resolution = SetResolution(max(Screen('Screens')),2880, 1800 ,0); % ET 1600,900,60
+    ex.resolution = SetResolution(max(Screen('Screens')),1600,900,60); % ET 1600,900,60
     ex.gammaCorrection = 1;       % make sure this = 1 when you're at the scanner!
     ex.runNum = input('Run number :');
 end
@@ -114,7 +114,7 @@ ex.fixSizeDeg =  .5;            % in degrees, the size of the biggest white dot 
 
 %%%% screen
 ex.backgroundColor = [127 127 127];%[108.3760 108.3760 108.3760];%;  % color based on minimum gating luminance 
-ex.fontSize = 14; %26;
+ex.fontSize = 40;
 
 %% %%%%%%%%%%%%%%%%%
    % timing model  %
@@ -146,8 +146,8 @@ Screen('BlendFunction', w, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 %gamma correction, file prepared for room 425
 if ex.gammaCorrection 
   %load gamma correction file
-  %load('/Users/tonglab/Desktop/monitor_calibration/425dell_22-12-09/phase2_photometry_22-12-09.mat')
-  load('/Users/tonglab/Desktop/Loic/ET_gamma/phase2_photometry_22-12-09.mat')
+  load('/Users/tonglab/Desktop/monitor_calibration/425dell_22-12-09/phase2_photometry_22-12-09.mat')
+  %load('/Users/tonglab/Desktop/Loic/ET_gamma/phase2_photometry_22-12-09.mat')
   Screen('LoadNormalizedGammaTable', w, inverseCLUT);
 end
 %%%% timing optimization
@@ -322,7 +322,7 @@ yC = rect(4)/2; % stimulus located on screen center
 
 %% %%%% initial window - instructions and wait for space
 
-DrawFormattedText(w,'Match the contrast level of the oscillating visual phantom within the gap \n\n at the center-left side of the screen \n\n with that of the sinewave grating on the right side of the screen. \n\n To increase contrast press 1, to decrease contrast press 2  \n\n Press Space to start'... % :  '...
+DrawFormattedText(w,'Match the contrast level of the oscillating visual phantom within the gap \n\n at the center-left side of the screen \n\n with that of the sinewave grating on the right side of the screen. \n\n To increase contrast press 1, to decrease contrast press 2. Press ENTER when finished. \n\n Press Space to start'... % :  '...
     ,'center', 'center',[0 0 0]);
 Screen(w, 'Flip', 0);
 %  WaitSecs(2);  
@@ -456,7 +456,7 @@ ex.rectLWave2 = [];
 ex.rectRWave2 = [];
 ex.rectCWave2 = [];
 
-savedir = fullfile(ex.root,'data',sprintf('s%s_v3/',subject));
+savedir = fullfile(ex.root,'data',sprintf('contrast_matching/s%s_v3/',subject));
 if ~exist(savedir); mkdir(savedir); end
 savename = fullfile(savedir, strcat(sprintf('/s%s_contrast_matching_v3_date%s',subject,num2str(ex.date)), '.mat'));
 save(savename,'ex','-v7.3')
