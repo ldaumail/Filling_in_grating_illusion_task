@@ -1,9 +1,9 @@
 function LD_phantom_oscill_v15(subject, session, debug)
 
 %In this version, we add multiple velocities
-subject = 'Dave';                                                                                                                                                                                                                                                     
-session = 1;                                                                                                                           
-debug = 1;
+% subject = 'Dave';                                                                                                                                                                                                                                                     
+% session = 1;                                                                                                                           
+% debug = 1;
 
 
 ex.version = 'v15';
@@ -88,12 +88,11 @@ ex.numConds = length(ex.conds);
 % later, to have the conditions randomized within each block
 ex.repsPerRun = 20;              % repetitions of each condition per run
 ex.numBlocks = ex.numConds*ex.repsPerRun;
-condShuffle1 = Shuffle(repmat([1:ex.numConds/2],1,ex.repsPerRun)); % %e.stimsPerBlock make same number of blocks with each condition, randomize order
-condShuffle2 = Shuffle(repmat([ex.numConds/2+1:ex.numConds],1,ex.repsPerRun));
+%condShuffle1 = Shuffle(repmat([1:ex.numConds/2],1,ex.repsPerRun)); % %e.stimsPerBlock make same number of blocks with each condition, randomize order
+%condShuffle2 = Shuffle(repmat([ex.numConds/2+1:ex.numConds],1,ex.repsPerRun));
 %condShuffle3 = Shuffle(repmat([ex.numConds*2/(length(ex.conds)/2)+1:ex.numConds],1,ex.repsPerRun));
-
-ex.condShuffle = [condShuffle1 condShuffle2];
-
+%ex.condShuffle = [condShuffle1 condShuffle2];
+ex.condShuffle = Shuffle(repmat([1:ex.numConds],1,ex.repsPerRun));
 ex.totalTime = [];
 for t =1:length(ex.blockLength) %there is a different block length for every drifting speed
     if t == 1
@@ -113,7 +112,7 @@ ex.fixSizeDeg =  .5;            % in degrees, the size of the biggest white dot 
 
 %%%% screen
 ex.backgroundColor = [127 127 127];%[108.3760 108.3760 108.3760];%;  % color based on minimum gating luminance 
-ex.fontSize = 12; %26;
+ex.fontSize = 26;
 
 %% %%%%%%%%%%%%%%%%%
    % timing model  %
@@ -145,9 +144,9 @@ if debug
     [w, rect]=Screen('OpenWindow',screen,ex.backgroundColor,[100 100 600 400],[],[],[],[],kPsychNeed32BPCFloat); %might need to switch 900 and 600 by 1600 and 1200 for room 425
     
 else
-    [w, rect]=Screen('OpenWindow',screen,ex.backgroundColor,[100 100 600 400],[],[],[],[],kPsychNeed32BPCFloat); %might need to switch 900 and 600 by 1600 and 1200 for room 425
+    %[w, rect]=Screen('OpenWindow',screen,ex.backgroundColor,[100 100 600 400],[],[],[],[],kPsychNeed32BPCFloat); %might need to switch 900 and 600 by 1600 and 1200 for room 425
     
-    %[w, rect]=Screen('OpenWindow',screen,ex.backgroundColor,[],[],[],[],[],kPsychNeed32BPCFloat); %might need to switch 900 and 600 by 1600 and 1200 for room 425
+    [w, rect]=Screen('OpenWindow',screen,ex.backgroundColor,[],[],[],[],[],kPsychNeed32BPCFloat); %might need to switch 900 and 600 by 1600 and 1200 for room 425
 end
 Screen(w, 'TextSize', ex.fontSize);
 Screen('BlendFunction', w, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -319,7 +318,7 @@ if ET
     ex.nGazetoShow = [ 60 ]; % current~past N fixations
 end
 %% %%%% initial window - wait for backtick
-DrawFormattedText(w,'Follow the oscillating visual phantom within the gap at the center of the screen \n\n as best as you can using the red dot as a guide, even after the red dot is gone. \n\n Press Space to start'... % :  '...
+DrawFormattedText(w,'Follow the oscillating visual phantom within the gap at the center of the screen \n\n as best as you can using the red dot as a guide, even after the red dot is gone. \n\n Do your best not to blink during a trial. \n\n Press Space to start'... % :  '...
     ,'center', 'center',[0 0 0]);
 Screen(w, 'Flip', 0);
 %WaitSecs(2);
@@ -445,7 +444,7 @@ for c =1:length(ex.condShuffle)
         if n == 1
             if ET == 1
                 Eyelink('Message', char(sprintf('Cond %s', condName)));
-                Eyelink('Message', 'TRIALID %d', tr);
+                Eyelink('Message', 'TRIALID %d', c);
                 Eyelink('Message', 'STIM_ONSET');
             end
             [VBLT, ex.startTrial, FlipT, missed] = Screen(w, 'Flip', 0);%[VBLTimestamp StimulusOnsetTime FlipTimestamp Missed] = Screen('Flip', windowPtr [, when] [, dontclear]...
@@ -488,9 +487,9 @@ end
 ex.runTime = GetSecs - ex.startRun;
 
 
-savedir = fullfile(ex.root,'data',sprintf('s%s_v13/',subject));
+savedir = fullfile(ex.root,'data',sprintf('s%s_%s/',subject,ex.version));
 if ~exist(savedir); mkdir(savedir); end
-savename = fullfile(savedir, strcat(sprintf('/s%s_smooth_pursuit_v13_date%s_fix',subject,num2str(ex.date)), '.mat'));
+savename = fullfile(savedir, strcat(sprintf('/s%s_smooth_pursuit_%s_date%s_fix',subject,ex.version,num2str(ex.date)), '.mat'));
 save(savename,'ex');
 
 
@@ -522,6 +521,6 @@ if ET
 %     end
     
     Eyelink('Shutdown');
-    savename = fullfile(savedir, strcat(sprintf('/s%s_smooth_pursuit_v13_date%s_fix_eyeDat',subject,num2str(ex.date)), '.mat'));
+    savename = fullfile(savedir, strcat(sprintf('/s%s_smooth_pursuit_%s_date%s_fix_eyeDat',subject,ex.version,num2str(ex.date)), '.mat'));
     save(savename, 'EyeData')
 end 
