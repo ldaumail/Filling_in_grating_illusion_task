@@ -87,19 +87,20 @@ ex.flipWin = 1/ex.flipsPerSec;         % in seconds then actually in 1 sec the s
 %%%% conditions & layout (across blocks scale)
 
 ex.conds = {'MeanbgRedDotVel1','RectMinbgSingleVel1'...
-    'RectMinbgSp8Vel1', 'RectMeanbgSp8Vel1',...   
-    'MeanbgRedDotVel2','RectMinbgSingleVel2','RectMinbgSp8Vel2', 'RectMeanbgSp8Vel2',...
-    }; %...
+    'RectMinbgSp8Vel1', ...   %'RectMeanbgSp8Vel1',
+    'MeanbgRedDotVel2','RectMinbgSingleVel2','RectMinbgSp8Vel2', ...%'RectMeanbgSp8Vel2',
+    }; 
 ex.numConds = length(ex.conds);
 % with line of code below we will have 1 condition per block, randomized. we might need to change that
 % later, to have the conditions randomized within each block
 ex.repsPerRun = 20;              % repetitions of each condition per run
 ex.numBlocks = ex.numConds*ex.repsPerRun;
-%condShuffle1 = Shuffle(repmat([1:ex.numConds/2],1,ex.repsPerRun)); % %e.stimsPerBlock make same number of blocks with each condition, randomize order
-%condShuffle2 = Shuffle(repmat([ex.numConds/2+1:ex.numConds],1,ex.repsPerRun));
-%condShuffle3 = Shuffle(repmat([ex.numConds*2/(length(ex.conds)/2)+1:ex.numConds],1,ex.repsPerRun));
-%ex.condShuffle = [condShuffle1 condShuffle2];
-ex.condShuffle = Shuffle(repmat([1:ex.numConds],1,ex.repsPerRun));
+
+ex.condShuffle = [];
+for i =1:ex.repsPerRun
+    ex.condShuffle = [ex.condShuffle, Shuffle([1:ex.numConds])];
+end
+%ex.condShuffle = Shuffle(repmat([1:ex.numConds],1,ex.repsPerRun));
 ex.totalTime = [];
 for t =1:length(ex.blockLength) %there is a different block length for every drifting speed
     if t == 1

@@ -8,7 +8,7 @@ function mContMs = contrast_matching_control_v3_laptop(subject, session, debug)
 % debug = 0;
 
 ex.version = 'v3';
-global EyeData rect w xc yc %eye_used
+global rect w 
 %%%% resolution 
 if debug == 1
     % eyetracking on (1) or off (0)
@@ -103,9 +103,13 @@ ex.repsPerRun = 10;              % repetitions of each condition per run
 ex.nTrials = ex.numConds*ex.repsPerRun;
 
 ex.condShuffle = [];
+ex.locShuffle = [];
 for i =1:ex.repsPerRun
     ex.condShuffle = [ex.condShuffle, Shuffle([1:ex.numConds])];
+    ex.locShuffle = [ex.locShuffle, Shuffle([1:2])]; %2 locations (left and right)
 end
+
+
 % vel2Idx = find(ex.condShuffle >10);
 % ex.condShuffle(vel2Idx) = ex.condShuffle(vel2Idx)-10;
 
@@ -136,9 +140,11 @@ Priority(9);
 screen=max(Screen('Screens'));
 if debug
      [w, rect]=Screen('OpenWindow',screen,ex.backgroundColor,[100 100 600 400],[],[],[],[],kPsychNeed32BPCFloat); %might need to switch 900 and 600 by 1600 and 1200 for room 425
-      % [w, rect]=Screen('OpenWindow',screen,ex.backgroundColor,[],[],[],[],[],kPsychNeed32BPCFloat); %might need to switch 900 and 600 by 1600 and 1200 for room 425
+
+     % [w, rect]=Screen('OpenWindow',screen,ex.backgroundColor,[],[],[],[],[],kPsychNeed32BPCFloat); %might need to switch 900 and 600 by 1600 and 1200 for room 425
 else   
     [w, rect]=Screen('OpenWindow',screen,ex.backgroundColor,[],[],[],[],[],kPsychNeed32BPCFloat); %might need to switch 900 and 600 by 1600 and 1200 for room 425
+     %[w, rect]= PsychImaging('OpenWindow', screen,ex.backgroundColor,[],[],[],[],[],kPsychNeed32BPCFloat);
 end
 Screen(w, 'TextSize', ex.fontSize);
 Screen('BlendFunction', w, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -214,47 +220,45 @@ ex.rectGaborWidth = round(ex.stim.gaborWDeg*2*ex.ppd);
 DrawFormattedText(w,'Wait while the task is loading'... % :  '...
     ,'center', 'center',[0 0 0]);
 Screen(w, 'Flip', 0);
-% rectLWaveIDO = nan(length(flipTimes),length(ex.stimDur),length(ex.stim.contrast));
-% rectRWaveIDO = nan(length(flipTimes),length(ex.stimDur),length(ex.stim.contrast));
 for s =1:length(ex.stim.cycPerSec)
     flipt =sprintf('flipTimes%d',s);
     flipTimes = ex.(flipt);
     
     %rect
-    rectLWave = sprintf('rectLWave%d',s);
-    rectRWave = sprintf('rectRWave%d',s);
+    rectTWave = sprintf('rectTWave%d',s);
+    rectBWave = sprintf('rectBWave%d',s);
     
-    ex.(rectLWave) = nan(ex.gaborHeight,ex.gaborWidth*2,length(flipTimes),length(ex.stim.contrast));
-    ex.(rectRWave) = nan(ex.gaborHeight,ex.gaborWidth*2,length(flipTimes),length(ex.stim.contrast));
+    ex.(rectTWave) = nan(ex.gaborHeight,ex.gaborWidth*2,length(flipTimes),length(ex.stim.contrast));
+    ex.(rectBWave) = nan(ex.gaborHeight,ex.gaborWidth*2,length(flipTimes),length(ex.stim.contrast));
     for c =1:length(ex.stim.contrast)
         phaseNum = sprintf('phases%d',s);
         phases = ex.stim.(phaseNum) ;
         %       clear tmprectLWaveID tmprectRWaveID
         for f = 1:length(flipTimes)
             
-            LPhase = phases(f);
-            RPhase = phases(f);
+            TPhase = phases(f);
+            BPhase = phases(f);
             %ih in pixels %iw in pixels %spatial freq in cycles per dva
             %tilt/orientation of the grating in degrees %phase in degrees (not degrees of visual angle)
             %contrast offset in percent    %contrast multiplicator  %ppd = 0 if freq already in cycles per stimulus
             %background color (unused if the grating is not an annulus)
             
             % rect
-            ex.(rectLWave)(:,:,f,c) = makeSineGrating(ex.gaborHeight,ex.gaborWidth*2,ex.stim.spatialFreqDeg,...
-                ex.stim.orientation,LPhase,ex.stim.contrastOffset,ex.stim.contrastMultiplicator(c),...
+            ex.(rectTWave)(:,:,f,c) = makeSineGrating(ex.gaborHeight,ex.gaborWidth*2,ex.stim.spatialFreqDeg,...
+                ex.stim.orientation,TPhase,ex.stim.contrastOffset,ex.stim.contrastMultiplicator(c),...
                 ex.ppd);
-            ex.(rectRWave)(:,:,f,c) = makeSineGrating(ex.gaborHeight,ex.gaborWidth*2,ex.stim.spatialFreqDeg,...
-                ex.stim.orientation,RPhase,ex.stim.contrastOffset,ex.stim.contrastMultiplicator(c),...
+            ex.(rectBWave)(:,:,f,c) = makeSineGrating(ex.gaborHeight,ex.gaborWidth*2,ex.stim.spatialFreqDeg,...
+                ex.stim.orientation,BPhase,ex.stim.contrastOffset,ex.stim.contrastMultiplicator(c),...
                 ex.ppd);
             %                 figure();
             %                imshow(squeeze(ex.(rectRWave)(f,:,:,o))./max(squeeze(ex.(rectRWave)(f,:,:,o)),[],'all'));
             %
-            tmprectLWaveID(f) = Screen('MakeTexture', w, squeeze(ex.(rectLWave)(:,:,f,c)));
-            tmprectRWaveID(f) = Screen('MakeTexture', w, squeeze(ex.(rectRWave)(:,:,f,c)));
+            tmprectTWaveID(f) = Screen('MakeTexture', w, squeeze(ex.(rectTWave)(:,:,f,c)));
+            tmprectBWaveID(f) = Screen('MakeTexture', w, squeeze(ex.(rectBWave)(:,:,f,c)));
             
         end        
-        ex.rectLWaveID(1:length(tmprectLWaveID(:)),s,c) = tmprectLWaveID(:);
-        ex.rectRWaveID(1:length(tmprectLWaveID(:)),s,c) =  tmprectLWaveID(:);
+        ex.rectTWaveID(1:length(tmprectTWaveID(:)),s,c) = tmprectTWaveID(:);
+        ex.rectBWaveID(1:length(tmprectBWaveID(:)),s,c) =  tmprectBWaveID(:);
 
     end
 end
@@ -308,21 +312,17 @@ for s =1:length(ex.stim.cycPerSec)
 end
 
 %% Sine wave gratings locations (in the task loop since it changes)
-xc = rect(3)/2; % rect and center, with the flexibility to resize & shift center - change vars to zero if not used.
-yc = rect(4)/2; %+e.vertOffset;
-
 xL = rect(3)/2-rect(3)/4; % % = stimulus center located on the horizontal center of the screen
-xR = rect(3)/2-rect(3)/4; % = stimulus center located on the horizontal center of the screen
-xC = rect(3)/2+rect(3)/4; % = stimulus located on the right side of the screen
+xR = rect(3)/2+rect(3)/4; % = stimulus located on the right side of the screen
 
-yL = rect(4)/2 - ex.stim.gaborHDeg*ex.ppd+0*ex.ppd; % stimulus located 4 degrees above screen center
-yR = rect(4)/2+ ex.stim.gaborHDeg*ex.ppd-0*ex.ppd; % stimulus located 4 degrees below screen center
+yT = rect(4)/2 - ex.stim.gaborHDeg*ex.ppd+0*ex.ppd; % stimulus located 4 degrees above screen center
+yB = rect(4)/2+ ex.stim.gaborHDeg*ex.ppd-0*ex.ppd; % stimulus located 4 degrees below screen center
 yC = rect(4)/2; % stimulus located on screen center
 
 
 %% %%%% initial window - instructions and wait for space
 
-DrawFormattedText(w,'Match the contrast level of the oscillating visual phantom within the gap \n\n at the center-left side of the screen \n\n with that of the sinewave grating on the right side of the screen. \n\n To increase contrast press 1, to decrease contrast press 2. Press ENTER when finished. \n\n Press Space to start'... % :  '...
+DrawFormattedText(w,'Match the contrast level of the oscillating visual phantom within the gap \n\n between vertical grating inducers with that of the \n\n adjustable sinewave grating on the other side of the screen. \n\n To increase contrast press 1, to decrease contrast press 2. Press ENTER when finished. \n\n Press Space to start'... % :  '...
     ,'center', 'center',[0 0 0]);
 Screen(w, 'Flip', 0);
 %  WaitSecs(2);  
@@ -340,59 +340,50 @@ KbQueueCreate(deviceNumber,responseKeys);
 
 %%%%%%% START task TASK/FLIPPING
 
-gray = repmat(mean(squeeze(ex.rectLWave1(1,:,1,1))), [1,3]);
+gray = repmat(mean(squeeze(ex.rectTWave1(1,:,1,1))), [1,3]);
 
 % ex.fixCol1Grad = linspace(255,gray(1),90);% make red dot disapear in 90 flips = 1.5 sec ; logspace(log10(255),log10(gray(1)));
 % ex.fixCol2Grad = linspace(0,gray(1),90);
 
 Screen('FillRect', w, gray);
-    
-% if ET
-%     gcnt = 0; 
-%     EyeData.mx=nan(1,1);
-%     EyeData.my=nan(1,1);
-%     EyeData.ma=nan(1,1);
-%     EyeData.FixDoneT = nan(1,1);
-%     EyeData.gazeD = nan(1,1);
-%     EyeData.Fixated = nan(1,1);
-% end
 
 n=1; %initialize at first flip
 contM = size(ex.match.contrastMults,1)/2; %initial contrast level index for adjustable stimulus
 ex.contM = nan(ex.nTrials,length(ex.stim.contrast));
-ex.finalGrating = nan(length(squeeze(ex.rectLWave1(:,1,1,1))), length(squeeze(ex.rectLWave1(1,:,1,1))), ex.nTrials);
-% tstartcnt = 0;
-% tend = [];
+ex.finalGrating = nan(length(squeeze(ex.rectTWave1(:,1,1,1))), length(squeeze(ex.rectTWave1(1,:,1,1))), ex.nTrials);
 t =1; %trial number
 while(1) %n+1 < length(ex.allFlips)
     KbQueueStart();
-%     if ET
-%         run GetEyeDataLoic; %check eyetracker
-%     end
     %%%% draw sine wave grating stimulus %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     thisCond = ex.condShuffle(t);
     %screen background color
     speed = ex.conds{thisCond};
     speed = speed(end);
     s = str2double(speed);
-    rectLWave = sprintf('rectLWave%s', speed);
+    rectTWave = sprintf('rectTWave%s', speed);
     if thisCond >length(ex.conds)/2 % we need to do this because with n conditions, n/2 are at velocity 1 and n/2 at velocity 2
         condInd = thisCond -length(ex.conds)/2;
     else 
         condInd = thisCond;
     end
-    gray = repmat(min(min(squeeze(ex.(rectLWave)(:,:,1,condInd)),[],1)), [1,3]);
+    gray = repmat(min(min(squeeze(ex.(rectTWave)(:,:,1,condInd)),[],1)), [1,3]);
     Screen('FillRect', w, gray);
     
-    ex.rectLRect =  CenterRectOnPoint([0 0 ex.rectGaborWidth ex.gaborHeight],xL,yL);
-    ex.rectRRect =  CenterRectOnPoint([0 0 ex.rectGaborWidth ex.gaborHeight],xR,yR);
-    ex.rectCRect =  CenterRectOnPoint([0 0 ex.rectGaborWidth ex.gaborHeight],xC,yC);
+    if ex.locShuffle(t) == 1
+        ex.rectTRect =  CenterRectOnPoint([0 0 ex.rectGaborWidth ex.gaborHeight],xL,yT);
+        ex.rectBRect =  CenterRectOnPoint([0 0 ex.rectGaborWidth ex.gaborHeight],xL,yB);
+        ex.rectCRect =  CenterRectOnPoint([0 0 ex.rectGaborWidth ex.gaborHeight],xR,yC);
+    elseif ex.locShuffle(t) == 2
+        ex.rectTRect =  CenterRectOnPoint([0 0 ex.rectGaborWidth ex.gaborHeight],xR,yT);
+        ex.rectBRect =  CenterRectOnPoint([0 0 ex.rectGaborWidth ex.gaborHeight],xR,yB);
+        ex.rectCRect =  CenterRectOnPoint([0 0 ex.rectGaborWidth ex.gaborHeight],xL,yC);
+    end
     
-    if nnz(find(ex.rectLWaveID(n,s,condInd)))
+    if nnz(find(ex.rectTWaveID(n,s,condInd)))
         % top stim
-        Screen('DrawTexture', w, ex.rectLWaveID(n,s,condInd),[],ex.rectLRect);
+        Screen('DrawTexture', w, ex.rectTWaveID(n,s,condInd),[],ex.rectTRect);
         % bottom stim
-        Screen('DrawTexture', w, ex.rectRWaveID(n,s,condInd),[], ex.rectRRect);
+        Screen('DrawTexture', w, ex.rectBWaveID(n,s,condInd),[], ex.rectBRect);
         % side stim
         Screen('DrawTexture', w, ex.rectCWaveID(n,s,contM,condInd), [], ex.rectCRect);
     end
@@ -413,7 +404,7 @@ while(1) %n+1 < length(ex.allFlips)
             contM = contM-1; % decrease contrast
         end
         if contM == 0 || contM == length(ex.match.contrastMults)+1
-            contM = size(ex.match.contrastMults,1)/2;
+            contM = size(ex.match.contrastMults,1)/2+1; 
         end
     elseif (pressed && ismember(find(firstPress,1), [KbName('Return') KbName('ENTER')]))
         ex.contM(t,thisCond) = ex.match.contrastMults(contM,condInd);
@@ -422,17 +413,9 @@ while(1) %n+1 < length(ex.allFlips)
         ex.finalGrating(:,:,t) = squeeze(ex.rectCWave1(:,:,1,contM,1));
         n = 1;
         t = t+1;
-        contM = size(ex.match.contrastMults,1)/2; 
-%         if  ET == 1%isempty(find(mod(tstartcnt,2)))
-%             Eyelink('Message', 'STIM_OFFSET');
-%             Eyelink('Message', 'TRIALID %d', t);
-%             Eyelink('Message', 'STIM_ONSET');
-%         end
+        contM = randi(size(ex.match.contrastMults,1),1); 
     end
-%     if ET == 1 && t == 1
-%         Eyelink('Message', 'TRIALID %d', t);
-%         Eyelink('Message', 'STIM_ONSET');
-%     end
+
     KbQueueFlush();
     n = n+1;
     if (n == length(ex.flipTimes1)+1) % for any other block , reset frame index when previous trial ends 
