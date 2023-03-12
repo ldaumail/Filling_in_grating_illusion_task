@@ -1,4 +1,4 @@
-function LD_phantom_oscill_v16(subject, session, debug, contrastMults)
+function LD_phantom_oscill_v17(subject, session, debug)
 
 %In this version, we add multiple velocities
 % subject = 'Dave';                                                                                                                                                                                                                                                     
@@ -6,8 +6,8 @@ function LD_phantom_oscill_v16(subject, session, debug, contrastMults)
 % debug = 1;
 
 
-ex.version = 'v16';
-global EyeData rect w xc yc eye_used 
+ex.version = 'v17';
+global EyeData rect w xc yc eye_used screenWidth viewingDist
 %%%% resolution 
 if debug == 1
     % eyetracking on (1) or off (0)
@@ -24,14 +24,14 @@ else
     ex.resolution = SetResolution(max(Screen('Screens')),1600,900,60); % scanner 1600,900,60
     ex.gammaCorrection = 1;       % make sure this = 1 when you're at the scanner!
 end
-
+    screenWidth = ex.screenWidth;
+    viewingDist = ex.viewingDist;
 %%%% keyboard
 [keyboardIndices, productNames, ~] = GetKeyboardIndices ;
 deviceNumber = keyboardIndices(1);
 
 Screen('Preference', 'SkipSyncTests', 0);
 
-% ex.scanNum = input('Scan number :');
 ex.runNum = input('Run number :');
 
 %%% basic naming set-up
@@ -63,13 +63,6 @@ ex.stim.contrastOffset = .5; %.5 .5 0];                                  % for p
 ex.stim.cycPerSec = [1.13*1/2,1.13*3/2]; % try multiple speeds
 ex.stim.motionRate = ex.stim.cycPerSec.*360;                                          % 1.13 cycles per second = 360 deg of phase *1.13 per sec
 ex.stim.cycles =[1, 3]; %number of cycles shifted per lap  (modified to half the number of cycles per lap)
-
-%%%%additional properties for single grating
-ex.match.contrastMults = contrastMults; %mean([0.0072 0.0062]);
-ex.match.contrastOffset = nan(1,length(ex.match.contrastMults));
-for i =1:length(ex.match.contrastMults)
-    ex.match.contrastOffset(i) = ex.stim.contrastOffset-ex.stim.contrastMultiplicator-ex.match.contrastMults(i);
-end 
 
 %%%% sine wave grating timing (within block scale)
 
@@ -149,9 +142,7 @@ if debug
     [w, rect]=Screen('OpenWindow',screen,ex.backgroundColor,[],[],[],[],[],kPsychNeed32BPCFloat);
     %[w, rect]=Screen('OpenWindow',screen,ex.backgroundColor,[100 100 600 400],[],[],[],[],kPsychNeed32BPCFloat); %might need to switch 900 and 600 by 1600 and 1200 for room 425
     
-else
-    %[w, rect]=Screen('OpenWindow',screen,ex.backgroundColor,[100 100 600 400],[],[],[],[],kPsychNeed32BPCFloat); %might need to switch 900 and 600 by 1600 and 1200 for room 425
-    
+else 
     [w, rect]=Screen('OpenWindow',screen,ex.backgroundColor,[],[],[],[],[],kPsychNeed32BPCFloat); %might need to switch 900 and 600 by 1600 and 1200 for room 425
 end
 Screen(w, 'TextSize', ex.fontSize);
@@ -160,9 +151,8 @@ Screen('BlendFunction', w, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 %gamma correction, file prepared for room 425
 if ex.gammaCorrection 
   %load gamma correction file
-%   ex.whichCLUT = '/Users/tonglab/Desktop/monitor_calibration/425dell_22-12-09/phase2_photometry_22-12-09.mat';
-%   load(ex.whichCLUT);
-  load('/Users/tonglab/Desktop/monitor_calibration/425dell_22-12-09/phase2_photometry_22-12-09.mat');
+  ex.whichCLUT = '/Users/tonglab/Desktop/monitor_calibration/425dell_22-12-09/phase2_photometry_22-12-09.mat';
+  load(ex.whichCLUT);
   Screen('LoadNormalizedGammaTable', w, inverseCLUT);
 end
 %%%% timing optimization
@@ -224,6 +214,13 @@ ex.gaborWidth = round(ex.stim.gaborWDeg*ex.ppd);                 % in pixels, th
 ex.rectGaborWidth = round(ex.stim.gaborWDeg*2*ex.ppd); 
 %ex.driftSpeedDeg = ex.stim.cycPerSec/ex.stim.spatialFreqDeg;
 %% create sine wave gratings and store all phase transitions in structure
+%%% First: %%%%% Determine perceived contrast of phantoms
+ex.match.contrastMults = contrast_matching_control_v4(subject, session);
+%%%%additional properties for single grating
+ex.match.contrastOffset = nan(1,length(ex.match.contrastMults));
+for i =1:length(ex.match.contrastMults)
+    ex.match.contrastOffset(i) = ex.stim.contrastOffset-ex.stim.contrastMultiplicator-ex.match.contrastMults(i);
+end 
 %%% along with pointers
 %rect
 rectLWaveID = nan(length(ex.longFormBlocks),length(ex.stim.cycPerSec));
@@ -351,7 +348,7 @@ KbTriggerWait(KbName('Space'), deviceNumber);
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%                         experiment                         %
+%                      Main experiment                       %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 

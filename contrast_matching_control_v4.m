@@ -1,32 +1,14 @@
-function mContMs = contrast_matching_control_v3_laptop(subject, session, debug) 
+function mContMs = contrast_matching_control_v4(subject, session) 
 
 %%contrast matching control
-%Loic 01252023
+%Loic 03112023
 %In this version, we add multiple velocities
 % subject = 'Dave';                                                                                                                                                                                                                                                     
 % session = 1;                                                                                                                           
 % debug = 0;
 
-ex.version = 'v3';
-global EyeData rect w xc yc %eye_used
-%%%% resolution 
-if debug == 1
-    % eyetracking on (1) or off (0)
-
-    ex.screenWidth = 53.1;             % in cm; %laptop=27.5,office=43, %19=%T3b, miniHelm=39;
-    ex.viewingDist = 53.5;             % in cm; 3Tb/office=43, miniHelm=57;
-	ex.resolution = SetResolution(max(Screen('Screens')),2880, 1800 ,0); % laptop 1920,1080 or 2880, 1800 ,0
-    ex.gammaCorrection = 0;       % make sure this = 1 when you're at the scanner!
-    ex.runNum = input('Run number :');
-else
-    
-                                                                                                                         
-    ex.screenWidth = 53.1;             % in cm; % 16 in eye tracking room 425%laptop=27.5,office=43, %19=%T3b, miniHelm=39;
-    ex.viewingDist = 53.5;             % in cm; %23 in eye tracking                                                                                                                          room 425 3Tb/office=43, miniHelm=57;
-    ex.resolution = SetResolution(max(Screen('Screens')),1600,900,60); % ET 1600,900,60
-    ex.gammaCorrection = 1;       % make sure this = 1 when you're at the scanner!
-    ex.runNum = input('Run number :');
-end
+ex.version = 'v4';
+global rect w viewingDist screenWidth%eye_used
 
 %%%% keyboard
 [keyboardIndices, productNames, ~] = GetKeyboardIndices ;
@@ -38,8 +20,6 @@ responseKeys(KbName('1!'))=1; % button box 1
 responseKeys(KbName('2@'))=1; % button box 2
 responseKeys(KbName('Return'))=1; % button box 3
 responseKeys(KbName('ENTER'))=1; % button box 3
-
-Screen('Preference', 'SkipSyncTests', 0);
 
 %%% basic naming set-up
 ex.subject = subject;
@@ -125,31 +105,7 @@ ex.longFormBlocks = Expand(ex.onSecs,ex.flipsPerSec,1); %1 when block, 0 when be
 ex.longFormFlicker = repmat(ones(1,1),1,length(ex.longFormBlocks)); %1 all the way to ensure flip at every time selected
 length(ex.longFormBlocks)
 
-%%
-%%%%%%%%%%%%%%%
-% open screen %
-%%%%%%%%%%%%%%%
-HideCursor;
-Priority(9);
-%Priority(0);
-%%%% open screen
-screen=max(Screen('Screens'));
-if debug
-     [w, rect]=Screen('OpenWindow',screen,ex.backgroundColor,[100 100 600 400],[],[],[],[],kPsychNeed32BPCFloat); %might need to switch 900 and 600 by 1600 and 1200 for room 425
-      % [w, rect]=Screen('OpenWindow',screen,ex.backgroundColor,[],[],[],[],[],kPsychNeed32BPCFloat); %might need to switch 900 and 600 by 1600 and 1200 for room 425
-else   
-    [w, rect]=Screen('OpenWindow',screen,ex.backgroundColor,[],[],[],[],[],kPsychNeed32BPCFloat); %might need to switch 900 and 600 by 1600 and 1200 for room 425
-end
-Screen(w, 'TextSize', ex.fontSize);
-Screen('BlendFunction', w, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-%gamma correction, file prepared for room 425
-if ex.gammaCorrection 
-  %load gamma correction file
-  load('/Users/tonglab/Desktop/monitor_calibration/425dell_22-12-09/phase2_photometry_22-12-09.mat')
-  %load('/Users/tonglab/Desktop/Loic/ET_gamma/phase2_photometry_22-12-09.mat')
-  Screen('LoadNormalizedGammaTable', w, inverseCLUT);
-end
 %%%% timing optimization
 frameInt = Screen('GetFlipInterval',w);
 slack = frameInt/2;
@@ -201,8 +157,8 @@ end
 %7) we multiply by the number of cycles desired to drift over one lap
 %(ex.stim.cycles).
 
-%%%% scale the stim params for the screen
-ex.ppd = pi* rect(3) / (atan(ex.screenWidth/ex.viewingDist/2)) / 360;
+%%%% scale the stim params for the screen   
+ex.ppd = pi* rect(3) / (atan(screenWidth/viewingDist/2)) / 360;
 ex.fixSize = round(ex.fixSizeDeg*ex.ppd);
 ex.gaborHeight = round(ex.stim.gaborHDeg*ex.ppd);                 % in pixels, the size of our objects
 ex.gaborWidth = round(ex.stim.gaborWDeg*ex.ppd);                 % in pixels, the size of our objects
@@ -308,8 +264,6 @@ for s =1:length(ex.stim.cycPerSec)
 end
 
 %% Sine wave gratings locations (in the task loop since it changes)
-xc = rect(3)/2; % rect and center, with the flexibility to resize & shift center - change vars to zero if not used.
-yc = rect(4)/2; %+e.vertOffset;
 
 xL = rect(3)/2-rect(3)/4; % % = stimulus center located on the horizontal center of the screen
 xR = rect(3)/2-rect(3)/4; % = stimulus center located on the horizontal center of the screen
@@ -325,7 +279,6 @@ yC = rect(4)/2; % stimulus located on screen center
 DrawFormattedText(w,'Match the contrast level of the oscillating visual phantom within the gap \n\n at the center-left side of the screen \n\n with that of the sinewave grating on the right side of the screen. \n\n To increase contrast press 1, to decrease contrast press 2. Press ENTER when finished. \n\n Press Space to start'... % :  '...
     ,'center', 'center',[0 0 0]);
 Screen(w, 'Flip', 0);
-%  WaitSecs(2);  
 KbTriggerWait(KbName('Space'), deviceNumber);
 
 % %%%% response listening 
@@ -342,33 +295,16 @@ KbQueueCreate(deviceNumber,responseKeys);
 
 gray = repmat(mean(squeeze(ex.rectLWave1(1,:,1,1))), [1,3]);
 
-% ex.fixCol1Grad = linspace(255,gray(1),90);% make red dot disapear in 90 flips = 1.5 sec ; logspace(log10(255),log10(gray(1)));
-% ex.fixCol2Grad = linspace(0,gray(1),90);
 
 Screen('FillRect', w, gray);
     
-% if ET
-%     gcnt = 0; 
-%     EyeData.mx=nan(1,1);
-%     EyeData.my=nan(1,1);
-%     EyeData.ma=nan(1,1);
-%     EyeData.FixDoneT = nan(1,1);
-%     EyeData.gazeD = nan(1,1);
-%     EyeData.Fixated = nan(1,1);
-% end
-
 n=1; %initialize at first flip
 contM = size(ex.match.contrastMults,1)/2; %initial contrast level index for adjustable stimulus
 ex.contM = nan(ex.nTrials,length(ex.stim.contrast));
 ex.finalGrating = nan(length(squeeze(ex.rectLWave1(:,1,1,1))), length(squeeze(ex.rectLWave1(1,:,1,1))), ex.nTrials);
-% tstartcnt = 0;
-% tend = [];
 t =1; %trial number
 while(1) %n+1 < length(ex.allFlips)
     KbQueueStart();
-%     if ET
-%         run GetEyeDataLoic; %check eyetracker
-%     end
     %%%% draw sine wave grating stimulus %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     thisCond = ex.condShuffle(t);
     %screen background color
@@ -423,16 +359,7 @@ while(1) %n+1 < length(ex.allFlips)
         n = 1;
         t = t+1;
         contM = size(ex.match.contrastMults,1)/2; 
-%         if  ET == 1%isempty(find(mod(tstartcnt,2)))
-%             Eyelink('Message', 'STIM_OFFSET');
-%             Eyelink('Message', 'TRIALID %d', t);
-%             Eyelink('Message', 'STIM_ONSET');
-%         end
     end
-%     if ET == 1 && t == 1
-%         Eyelink('Message', 'TRIALID %d', t);
-%         Eyelink('Message', 'STIM_ONSET');
-%     end
     KbQueueFlush();
     n = n+1;
     if (n == length(ex.flipTimes1)+1) % for any other block , reset frame index when previous trial ends 
@@ -441,9 +368,7 @@ while(1) %n+1 < length(ex.allFlips)
     if t > ex.nTrials
         break;
     end
-%             thisCond = ex.longFormConds(n+2);
-%             Eyelink('Message', char(sprintf('Cond %s',
-%             conditions(thisCond).name{:}))) 
+
 end
 
 %%%%%%%%%%%%%%%%%%
@@ -451,22 +376,9 @@ end
 %%%%%%%%%%%%%%%%%%
 
 ex.runTime = GetSecs - ex.startRun;
-ex.rectLWave1 = [];
-ex.rectRWave1 = [];
-ex.rectCWave1 = [];
-ex.rectLWave2 = [];
-ex.rectRWave2 = [];
-ex.rectCWave2 = [];
-mContMs = nanmean(ex.contM);
-% savedir = fullfile(ex.root,'data',sprintf('contrast_matching/s%s_v3/',subject));
-% if ~exist(savedir); mkdir(savedir); end
-% savename = fullfile(savedir, strcat(sprintf('/s%s_contrast_matching_v3_date%s',subject,num2str(ex.date)), '.mat'));
-% save(savename,'ex','-v7.3')
 
 KbQueueRelease();
-ShowCursor;
-Screen('Close');
-Screen('CloseAll');
-fclose all;                                                                                                                           
+
+mContMs = nanmean(ex.contM);
 
 
