@@ -98,7 +98,10 @@ ex.numBlocks = ex.numConds*ex.repsPerRun;
 
 ex.condShuffle = [];
 for i =1:ex.repsPerRun
-    ex.condShuffle = [ex.condShuffle, Shuffle([1:ex.numConds])];
+    ex.condShuffle = [ex.condShuffle, Shuffle([1:ex.numConds/2])];
+end
+for i =1:ex.repsPerRun
+    ex.condShuffle = [ex.condShuffle, Shuffle([ex.numConds/2+1:ex.numConds])];
 end
 %ex.condShuffle = Shuffle(repmat([1:ex.numConds],1,ex.repsPerRun));
 ex.totalTime = [];
