@@ -197,8 +197,8 @@ ex.sum.phases1 = nan(length(flipTimes), ex.repsPerRun);
 ex.sum.phases2 = nan(length(flipTimes), ex.repsPerRun);
 oscillation = 'oscillation1';
 for r = 1:ex.repsPerRun
-    ex.sum.spatialPhase1(r) = randi(180); %this makes the grating phase so that the center of the dark stripe is on the center of the screen
-    ex.sum.spatialPhase2(r) = randi(180);
+    ex.sum.spatialPhase1(r) = randi(360); %this makes the grating phase so that the center of the dark stripe is on the center of the screen
+    ex.sum.spatialPhase2(r) = randi(360);
 
     ex.sum.phases1(:,r) = ex.stim.(oscillation).*180*ex.stim.cycles(1)+ex.sum.spatialPhase1(r); %./ex.stimDur-2*pi*flipTimes./ex.stimDur make it oscillatory
     ex.sum.phases2(:,r) = ex.stim.(oscillation).*180*ex.stim.cycles(2)+ex.sum.spatialPhase2(r);
