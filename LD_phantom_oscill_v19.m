@@ -81,9 +81,9 @@ ex.flipWin = 1/ex.flipsPerSec;         % in seconds then actually in 1 sec the s
 
 %%%% conditions & layout (across blocks scale)
 
-ex.conds = {'MeanbgRedDotVel1',...%'RectMinbgSingleVel1'
-    'RectMinbgSp8Vel1','RectSumSp8Vel1' ...   %,
-    'MeanbgRedDotVel2','RectMinbgSp8Vel2','RectSumSp8Vel2'...%'RectMinbgSingleVel2',
+ex.conds = {'MeanbgRedDotVel1',...%
+    'RectMinbgSp8Vel1','RectSumSp8Vel3', ...   %,
+    'MeanbgRedDotVel2','RectMinbgSp8Vel2','RectSumSp8Vel3'... %,
     }; 
 ex.numConds = length(ex.conds);
 % with line of code below we will have 1 condition per block, randomized. we might need to change that
@@ -197,10 +197,11 @@ ex.sum.phases1 = nan(length(flipTimes), ex.repsPerRun);
 ex.sum.phases2 = nan(length(flipTimes), ex.repsPerRun);
 oscillation = 'oscillation1';
 for r = 1:ex.repsPerRun
-    ex.sum.spatialPhase1 = randi(360); %this makes the grating phase so that the center of the dark stripe is on the center of the screen
-    ex.sum.spatialPhase2 = randi(360);
-    ex.sum.phases1(:,r) = ex.stim.(oscillation).*180*ex.stim.cycles(1)+ex.stim.spatialPhase; %./ex.stimDur-2*pi*flipTimes./ex.stimDur make it oscillatory
-    ex.sum.phases2(:,r) = ex.stim.(oscillation).*180*ex.stim.cycles(2)+ex.stim.spatialPhase;
+    ex.sum.spatialPhase1(r) = randi(180); %this makes the grating phase so that the center of the dark stripe is on the center of the screen
+    ex.sum.spatialPhase2(r) = randi(180);
+
+    ex.sum.phases1(:,r) = ex.stim.(oscillation).*180*ex.stim.cycles(1)+ex.sum.spatialPhase1(r); %./ex.stimDur-2*pi*flipTimes./ex.stimDur make it oscillatory
+    ex.sum.phases2(:,r) = ex.stim.(oscillation).*180*ex.stim.cycles(2)+ex.sum.spatialPhase2(r);
 end
 %reasonning behind the calculation of ex.stim.phases:
 %GOAL: render the back and forth of grating drifts oscillatory in time instead
@@ -322,9 +323,22 @@ ex.rectSWave = nan(ex.repsPerRun,length(flipTimes),ex.gaborHeight,ex.gaborWidth*
             ex.stim.orientation,phase2,ex.stim.contrastOffset(1),ex.stim.contrastMultiplicator,...
             ex.ppd))/2;
 
-        %                 figure();
-        %                imshow(squeeze(ex.(rectRWave)(f,:,:,o))./max(squeeze(ex.(rectRWave)(f,:,:,o)),[],'all'));
-        %
+%         figure();
+%         subplot(3,1,1)
+%         imshow(squeeze(ex.rectSWave(r,f,:,:))./max(squeeze(max(squeeze(ex.rectSWave(r,f,:,:)),[],1)),[],2));
+%         grat1 = makeSineGrating(ex.gaborHeight,ex.gaborWidth*2,ex.stim.spatialFreqDeg,...
+%             ex.stim.orientation,phase1,ex.stim.contrastOffset(1),ex.stim.contrastMultiplicator,...
+%             ex.ppd);
+%         grat2 = makeSineGrating(ex.gaborHeight,ex.gaborWidth*2,ex.stim.spatialFreqDeg,...
+%             ex.stim.orientation,phase2,ex.stim.contrastOffset(1),ex.stim.contrastMultiplicator,...
+%             ex.ppd);
+%         
+%         subplot(3,1,2)
+%         imshow(squeeze(grat1)./max(squeeze(max(grat1,[],1)),[],2));
+%         subplot(3,1,3)
+%         imshow(squeeze(grat2)./max(squeeze(max(grat2,[],1)),[],2));
+        
+        
         tmprectSWaveID(f,1) = Screen('MakeTexture', w, squeeze(ex.rectSWave(r,f,:,:)));
     end
     %% extend stimulus matrix to include the same total number of flips as the whole experiment
@@ -332,7 +346,6 @@ ex.rectSWave = nan(ex.repsPerRun,length(flipTimes),ex.gaborHeight,ex.gaborWidth*
             repmat(tmprectSWaveID(:),floor((ex.blockLength(1)-ex.trialFixation)*ex.flipsPerSec/length(tmprectSWaveID(:))),1);...
             tmprectSWaveID(1:mod((ex.blockLength(1)-ex.trialFixation)*ex.flipsPerSec,length(tmprectSWaveID(:))));...
             zeros(ex.betweenBlocks*ex.flipsPerSec,1)];
- 
 
 end
 ex.rectSWaveID = rectSWaveID;
@@ -418,32 +431,50 @@ for c =1:length(ex.condShuffle)
     cnt = cnt+1;
     thisCond = ex.condShuffle(c);
     condName = conditions(thisCond).name{:};
+    if strfind(condName, 'Sum')
+        cntS = cntS+1;
+    end
     %%for each condition, we specify the parameters values before we flip
     %%over the gratings phases
     %screen background color
-    if strfind(condName, 'Minbg') | strfind(condName, 'Sum') %contains(condName, 'Minbg')
-        gray = repmat(min(min(squeeze(ex.rectLWave1(1,:,:)),[],1)), [1,3]);
-        ex.fixCol1Grad = linspace(255,gray(1),90);% make red dot disapear in 90 flips = 1.5 sec ; logspace(log10(255),log10(gray(1)));
-        ex.fixCol2Grad = linspace(0,gray(1),90);
+    if strfind(condName, 'Minbg') %contains(condName, 'Minbg')
+        gray2 = repmat(min(min(squeeze(ex.rectLWave1(1,:,:)),[],1)), [1,3]);
+        ex.fixCol1Grad = linspace(255,gray2(1),90);% make red dot disapear in 90 flips = 1.5 sec ; logspace(log10(255),log10(gray(1)));
+        ex.fixCol2Grad = linspace(0,gray2(1),90);
+    
+    elseif  strfind(condName, 'Sum') %contains(condName, 'Minbg')
+        gray2 = repmat(min(min(squeeze(ex.rectLWave1(1,:,:)),[],1)), [1,3]);
+        ex.fixCol1Grad = linspace(255,gray2(1),90);% make red dot disapear in 90 flips = 1.5 sec ; logspace(log10(255),log10(gray(1)));
+        ex.fixCol2Grad = linspace(0,gray2(1),90);
         
-    elseif strfind(condName, 'Meanbg')
-        gray = repmat(mean(squeeze(ex.rectLWave1(1,1,:))), [1,3]);
-        ex.fixCol1Grad = linspace(255,gray(1),90);% make red dot disapear in 90 flips = 1.5 sec ; logspace(log10(255),log10(gray(1)));
-        ex.fixCol2Grad = linspace(0,gray(1),90);
+    elseif strfind(condName, 'Meanbg') 
+        gray2 = repmat(mean(squeeze(ex.rectLWave1(1,1,:))), [1,3]);
+        ex.fixCol1Grad = linspace(255,gray2(1),90);% make red dot disapear in 90 flips = 1.5 sec ; logspace(log10(255),log10(gray(1)));
+        ex.fixCol2Grad = linspace(0,gray2(1),90);
+    
     end
     %draw guide red dot
-    if strfind(condName, 'Vel1')
+    if strfind(condName, 'Vel1') 
         stillDotPhase = 'stillDotPhase1';
         driftPos = 'driftPos1';
         longDriftPos = 'longDriftPos1';
         t =1;
+    elseif strfind(condName, 'Sum') 
+        stillDotPhase = 'stillDotPhase1';
+        driftPos = 'driftPos1';
+        longDriftPos = 'longDriftPos1';
     elseif strfind(condName, 'Vel2')
         stillDotPhase = 'stillDotPhase2';
         driftPos = 'driftPos2';
         longDriftPos = 'longDriftPos2';
         t = 2;
     end
-    if strfind(condName, 'Sp8') | strfind(condName, 'Sum')% is there gonna be a grating inducers pair? If yes, indicate the location
+    if strfind(condName, 'RectMinbg') % is there gonna be a grating inducers pair? If yes, indicate the location
+        ex.rectLRect =  CenterRectOnPoint([0 0 ex.rectGaborWidth ex.gaborHeight],xL,yL);
+        ex.rectRRect =  CenterRectOnPoint([0 0 ex.rectGaborWidth ex.gaborHeight],xR,yR);
+        timeOn = length([repmat(ex.(stillDotPhase),1,ex.flipsPerSec*ex.trialFixation) ex.(driftPos) ex.(driftPos)(1:length(ex.(driftPos))/4)]);
+        guideFlipCnt = 1;
+    elseif strfind(condName, 'Sum')% is there gonna be a grating inducers pair? If yes, indicate the location
         ex.rectLRect =  CenterRectOnPoint([0 0 ex.rectGaborWidth ex.gaborHeight],xL,yL);
         ex.rectRRect =  CenterRectOnPoint([0 0 ex.rectGaborWidth ex.gaborHeight],xR,yR);
         timeOn = length([repmat(ex.(stillDotPhase),1,ex.flipsPerSec*ex.trialFixation) ex.(driftPos) ex.(driftPos)(1:length(ex.(driftPos))/4)]);
@@ -458,9 +489,9 @@ for c =1:length(ex.condShuffle)
     while n <= length(ex.trialFlips)
         ex.longFormBlocks(n)
         %%%% draw sine wave grating stimulus %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-        Screen('FillRect', w, gray);
+        Screen('FillRect', w, gray2);
         
-        if strfind(condName, 'Sp8')
+        if strfind(condName, 'RectMinbg') %strfind(condName, 'Sp8')
             if nnz(find(ex.rectLWaveID(n,t)))
                 % top stim
                 Screen('DrawTexture', w, ex.rectLWaveID(n,t),[],ex.rectLRect);
@@ -479,7 +510,6 @@ for c =1:length(ex.condShuffle)
             guideFlipCnt = guideFlipCnt+1;
             
         elseif strfind(condName, 'Sum')
-            cntS = cntS+1;
             if nnz(find(ex.rectSWaveID(n,cntS)))
                 % top stim
                 Screen('DrawTexture', w, ex.rectSWaveID(n,cntS),[],ex.rectLRect);
@@ -502,7 +532,7 @@ for c =1:length(ex.condShuffle)
                 xOffset = ex.(longDriftPosRed)(n);
                 Screen('FillOval', w,[255 0 0], [xc+xOffset-round(ex.fixSize/2) yc-round(ex.fixSize/2) xc+xOffset+round(ex.fixSize/2) yc+round(ex.fixSize/2)]);%black fixation solid circle
             elseif redFlipCnt >= timeOn && redFlipCnt < (bLength)*ex.flipsPerSec
-                Screen('FillOval', w,[gray], [xc+xOffset-round(ex.fixSize/2) yc-round(ex.fixSize/2) xc+xOffset+round(ex.fixSize/2) yc+round(ex.fixSize/2)]);%black fixation solid circle
+                Screen('FillOval', w,[gray2], [xc+xOffset-round(ex.fixSize/2) yc-round(ex.fixSize/2) xc+xOffset+round(ex.fixSize/2) yc+round(ex.fixSize/2)]);%black fixation solid circle
             elseif redFlipCnt == length(ex.trialFlips)%(bLength)*ex.flipsPerSec+1 %make sure to reset the flipCnt once the trial ended, so that the red dot doe not reappear before the end of the trial
                 redFlipCnt =0;
                 %clear timeOn
