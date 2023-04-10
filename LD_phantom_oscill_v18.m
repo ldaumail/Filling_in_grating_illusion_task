@@ -1,4 +1,4 @@
-function LD_phantom_oscill_v13bis(subject, session, debug)
+function LD_phantom_oscill_v18(subject, session, debug, contrastMults)
 
 %In this version, we add multiple velocities
 % subject = 'Dave';                                                                                                                                                                                                                                                     
@@ -6,7 +6,7 @@ function LD_phantom_oscill_v13bis(subject, session, debug)
 % debug = 1;
 
 
-ex.version = 'v13';
+ex.version = 'v18';
 global EyeData rect w xc yc eye_used 
 %%%% resolution 
 if debug == 1
@@ -65,7 +65,7 @@ ex.stim.motionRate = ex.stim.cycPerSec.*360;                                    
 ex.stim.cycles =[1, 3]; %number of cycles shifted per lap  (modified to half the number of cycles per lap)
 
 %%%%additional properties for single grating
-ex.match.contrastMults = [0.0072 0.0062];
+ex.match.contrastMults = contrastMults; %mean([0.0072 0.0062]);
 ex.match.contrastOffset = nan(1,length(ex.match.contrastMults));
 for i =1:length(ex.match.contrastMults)
     ex.match.contrastOffset(i) = ex.stim.contrastOffset-ex.stim.contrastMultiplicator-ex.match.contrastMults(i);
@@ -86,9 +86,9 @@ ex.flipWin = 1/ex.flipsPerSec;         % in seconds then actually in 1 sec the s
 
 %%%% conditions & layout (across blocks scale)
 
-ex.conds = {'MeanbgRedDotVel1',...%'RectMinbgSingleVel1'
-    'RectMinbgSp8Vel1','RectMeanbgSp8Vel1' ...   %,
-    'MeanbgRedDotVel2','RectMinbgSp8Vel2','RectMeanbgSp8Vel2'...%'RectMinbgSingleVel2',
+ex.conds = {'MeanbgRedDotVel1',...
+    'RectMinbgSp8Vel1','RectMinbgMatchVel1' ...   %'RectMeanbgSp8Vel1',
+    'MeanbgRedDotVel2','RectMinbgSp8Vel2', 'RectMinbgMatchVel2'...%'RectMeanbgSp8Vel2',
     }; 
 ex.numConds = length(ex.conds);
 % with line of code below we will have 1 condition per block, randomized. we might need to change that
@@ -98,12 +98,11 @@ ex.numBlocks = ex.numConds*ex.repsPerRun;
 
 ex.condShuffle = [];
 for i =1:ex.repsPerRun
-    ex.condShuffle = [ex.condShuffle, Shuffle([ex.numConds/2+1:ex.numConds])];
-end
-for i =1:ex.repsPerRun
     ex.condShuffle = [ex.condShuffle, Shuffle([1:ex.numConds/2])];
 end
-
+for i =1:ex.repsPerRun
+    ex.condShuffle = [ex.condShuffle, Shuffle([ex.numConds/2+1:ex.numConds])];
+end
 %ex.condShuffle = Shuffle(repmat([1:ex.numConds],1,ex.repsPerRun));
 ex.totalTime = [];
 for t =1:length(ex.blockLength) %there is a different block length for every drifting speed
@@ -348,7 +347,7 @@ if ET
 %     ex.nGazetoShow = [ 60 ]; % current~past N fixations
 end
 %% %%%% initial window - wait for backtick
-DrawFormattedText(w,'Follow the visual phantom within the gap at the center of the screen \n\n as best as you can using the red dot as a guide, even after the red dot is gone. \n\n Do your best not to blink during a trial. \n\n Press Space to start'... % :  '...
+DrawFormattedText(w,'Follow the oscillating grating or visual phantom within the gap at the center of the screen \n\n as best as you can using the red dot as a guide, even after the red dot is gone. \n\n Do your best not to blink during a trial. \n\n Press Space to start'... % :  '...
     ,'center', 'center',[0 0 0]);
 Screen(w, 'Flip', 0);
 %WaitSecs(2);
@@ -411,7 +410,9 @@ for c =1:length(ex.condShuffle)
         ex.rectRRect =  CenterRectOnPoint([0 0 ex.rectGaborWidth ex.gaborHeight],xR,yR);
         timeOn = length([repmat(ex.(stillDotPhase),1,ex.flipsPerSec*ex.trialFixation) ex.(driftPos) ex.(driftPos)(1:length(ex.(driftPos))/4)]);
         guideFlipCnt = 1;
-    elseif contains(condName, 'Single')
+    elseif contains(condName, 'Match')
+        ex.rectLRect =  CenterRectOnPoint([0 0 ex.rectGaborWidth ex.gaborHeight],xL,yL);
+        ex.rectRRect =  CenterRectOnPoint([0 0 ex.rectGaborWidth ex.gaborHeight],xR,yR);
         ex.rectCRect =  CenterRectOnPoint([0 0 ex.rectGaborWidth ex.gaborHeight],xS,yS);
         timeOn = length([repmat(ex.(stillDotPhase),1,ex.flipsPerSec*ex.trialFixation) ex.(driftPos) ex.(driftPos)(1:length(ex.(driftPos))/4)]);
         guideFlipCnt = 1;
@@ -444,10 +445,14 @@ for c =1:length(ex.condShuffle)
                 guideFlipCnt = 0;
             end
             guideFlipCnt = guideFlipCnt+1;
-        elseif contains(condName, 'Single')
+        elseif contains(condName, 'Match')
             if nnz(find(ex.rectCWaveID(n,t)))
                 % center stim
                 Screen('DrawTexture', w, ex.rectCWaveID(n,t),[],ex.rectCRect);
+                % top stim
+                Screen('DrawTexture', w, ex.rectLWaveID(n,t),[],ex.rectLRect);
+                % bottom stim
+                Screen('DrawTexture', w, ex.rectRWaveID(n,t), [], ex.rectRRect);
             end
             if guideFlipCnt <= timeOn - length(ex.fixCol1Grad)
                 xOffset = ex.(longDriftPos)(n);
