@@ -14,14 +14,14 @@ if debug == 1
     ET = 0;
     ex.screenWidth = 53.1;             % in cm; %laptop=27.5,office=43, %19=%T3b, miniHelm=39;
     ex.viewingDist = 53.5;             % in cm; 3Tb/office=43, miniHelm=57;
-	ex.resolution = SetResolution(max(Screen('Screens')),2880, 1800 ,0); % laptop 1920,1080/ 2880, 1800 ,0
+	ex.resolution = SetResolution(max(Screen('Screens')),1600,900,60); % laptop 1920,1080/ 2880, 1800 ,0
     ex.gammaCorrection = 0;       % make sure this = 1 when you're at the scanner!
 else
     
     ET = 1;                                                                                                                             
     ex.screenWidth = 53.1;             % in cm; % 16 in eye tracking room 425%laptop=27.5,office=43, %19=%T3b, miniHelm=39;
     ex.viewingDist = 53.5;             % in cm; %23 in eye tracking                                                                                                                          room 425 3Tb/office=43, miniHelm=57;
-    ex.resolution = SetResolution(max(Screen('Screens')),2880, 1800 ,0); % ET room 1600,900,60
+    ex.resolution = SetResolution(max(Screen('Screens')),1600,900,60); % ET room 1600,900,60
     ex.gammaCorrection = 1;       % make sure this = 1 when you're at the scanner!
 end
 
@@ -88,7 +88,7 @@ ex.conds = {'RectMinbgSp8Vel3','RectMeanbgSp8Vel3','MeanbgRedDotVel3'...%,
 ex.numConds = length(ex.conds);
 % with line of code below we will have 1 condition per block, randomized. we might need to change that
 % later, to have the conditions randomized within each block
-ex.repsPerRun = 10;              % repetitions of each condition per run
+ex.repsPerRun = 20;              % repetitions of each condition per run
 ex.numBlocks = ex.numConds*ex.repsPerRun;
 
 ex.condShuffle = [];
@@ -342,30 +342,25 @@ for c = 1:length(ex.condShuffle)
     %%for each condition, we specify the parameters values before we flip
     %%over the gratings phases
     %screen background color
-    if strfind(condName, 'Minbg') %contains(condName, 'Minbg')
+    if contains(condName, 'Minbg') %contains(condName, 'Minbg')
         cntMin = cntMin+1;
         ex.fixCol1Grad = linspace(255,gray2(1),90);% make red dot disapear in 90 flips = 1.5 sec ; logspace(log10(255),log10(gray(1)));
         ex.fixCol2Grad = linspace(0,gray2(1),90);
-    elseif strfind(condName, 'RectMeanbg') %contains(condName, 'Minbg')
+    elseif contains(condName, 'RectMeanbg') %contains(condName, 'Minbg')
         cntMean = cntMean+1;
         ex.fixCol1Grad = linspace(255,gray1(1),90);% make red dot disapear in 90 flips = 1.5 sec ; logspace(log10(255),log10(gray(1)));
         ex.fixCol2Grad = linspace(0,gray1(1),90);
-    elseif strfind(condName, 'RedDot')  
+    elseif contains(condName, 'RedDot')  
         cntRd = cntRd+1;
     end
-    %draw guide red dot
-%     if strfind(condName, 'Minbg') 
-%         stillDotPhase = 'stillDotPhase1';
-%         driftPos = 'driftPos1';
-%     elseif strfind(condName, 'Meanbg') 
-%         stillDotPhase = 'stillDotPhase1';
-%         driftPos = 'driftPos1';
-%     end
-    if  strfind(condName, 'Minbg')% 
+
+    if  contains(condName, 'Minbg')% 
         timeOn = 325; %325 is the number of frames also used in Expt 1
+        ex.timeOn = timeOn;
         guideFlipCnt = 1;
-    elseif  strfind(condName, 'RectMeanbg')% 
+    elseif  contains(condName, 'RectMeanbg')% 
         timeOn = 325; %325 is the number of frames also used in Expt 1
+        ex.timeOn = timeOn;
         guideFlipCnt = 1;
     end
     
@@ -373,7 +368,7 @@ for c = 1:length(ex.condShuffle)
     while n <= length(ex.trialFlips)
         ex.longFormBlocks(n)
         %%%% draw sine wave grating stimulus %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-        if strfind(condName, 'Minbg')
+        if contains(condName, 'Minbg')
             Screen('FillRect', w, gray2);
             if nnz(find(ex.longFormStimOnSecs(n)))
                 xOffset = ex.stimLongDriftPos(cMin,cntMin,n)-ex.stimLongDriftPos(cMin,cntMin,1); %baseline correct the position since every image already hase a spatial phase shift in the sinewave
@@ -393,7 +388,7 @@ for c = 1:length(ex.condShuffle)
                 guideFlipCnt = 0;
             end
             guideFlipCnt = guideFlipCnt+1; 
-        elseif strfind(condName, 'RectMeanbg')
+        elseif contains(condName, 'RectMeanbg')
             Screen('FillRect', w, gray1);
             if nnz(find(ex.longFormStimOnSecs(n)))
                 xOffset = ex.stimLongDriftPos(cMean,cntMean,n)-ex.stimLongDriftPos(cMean,cntMean,1); %baseline correct the position since every image already hase a spatial phase shift in the sinewave
@@ -413,7 +408,7 @@ for c = 1:length(ex.condShuffle)
                 guideFlipCnt = 0;
             end
             guideFlipCnt = guideFlipCnt+1;
-        elseif  strfind(condName, 'RedDot')
+        elseif  contains(condName, 'RedDot')
             Screen('FillRect', w, gray1);
             if nnz(find(ex.longFormBlocks(n)))
                 xOffset = ex.stimLongDriftPos(cRd,cntRd,n);
@@ -454,9 +449,7 @@ for c = 1:length(ex.condShuffle)
         n = n+1;
     end
      ex.flipTime(:,c) = flipTimes;
-
      n = 1;
- 
 end
 
 %     if n == 1382%360%421%420%359%1382%1561%
