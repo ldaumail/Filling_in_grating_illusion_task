@@ -1,4 +1,4 @@
-function LD_phantom_oscill_percept(subject, session, debug)
+function LD_phantom_oscill_percept_rand(subject, session, debug)
 
 %In this version, we add multiple velocities
 % subject = 'Dave';                                                                                                                                                                                                                                                     
@@ -151,28 +151,23 @@ frameRate =  1/frameInt;%Screen('NominalFrameRate',w);
 
 flipTimes = [0:frameInt*frameRate/ex.flipsPerSec:ex.blockLength(1)]; %multiply frameInt by 60/12 = 5 to flip the image every 5 frames
 ex.stim.flipTimes = flipTimes(1:length(flipTimes)-1);
-% ex.stim.tempPhase1 = nan(ex.numConds,ex.repsPerRun);
-% ex.stim.tempPhase2 = nan(ex.numConds,ex.repsPerRun);
-% ex.stim.oscillation1 = nan(ex.numConds,ex.repsPerRun,length(ex.stim.flipTimes));
-% ex.stim.oscillation2 = nan(ex.numConds,ex.repsPerRun,length(ex.stim.flipTimes));
-% ex.stim.phases = nan(ex.numConds,ex.repsPerRun,length(ex.stim.flipTimes));
-% 
-% clear c r
-% for c =1:ex.numConds
-%     for r = 1:ex.repsPerRun
-%         ex.stim.tempPhase1(c,r) = pi;
-%        % ex.stim.tempPhase2(c,r) = rand(1,1)*2*pi;
-%         ex.stim.oscillation1(c,r,:) = cos(2*pi*(1/ex.stimDur(1))*ex.stim.flipTimes+ex.stim.tempPhase1(c,r));
-%         %ex.stim.oscillation2(c,r,:) = cos(2*pi*(1/ex.stimDur(2))*ex.stim.flipTimes+ex.stim.tempPhase2(c,r));
-%         ex.stim.spatialPhase = 90;
-%        % ex.stim.phases(c,r,:) = (ex.stim.oscillation1(c,r,:).*180*ex.stim.cycles(1)+ ex.stim.oscillation2(c,r,:).*180*ex.stim.cycles(2))/2 + ex.stim.spatialPhase; %./ex.stimDur-2*pi*flipTimes./ex.stimDur make it oscillatory
-%     end
-% end
+ex.stim.tempPhase1 = nan(ex.numConds,ex.repsPerRun);
+ex.stim.tempPhase2 = nan(ex.numConds,ex.repsPerRun);
+ex.stim.oscillation1 = nan(ex.numConds,ex.repsPerRun,length(ex.stim.flipTimes));
+ex.stim.oscillation2 = nan(ex.numConds,ex.repsPerRun,length(ex.stim.flipTimes));
+ex.stim.phases = nan(ex.numConds,ex.repsPerRun,length(ex.stim.flipTimes));
 
-ex.stim.tempPhase1 = pi;
-ex.stim.spatialPhase = 90;
-ex.stim.oscillation1 = cos(2*pi*(1/ex.stimDur(1))*ex.stim.flipTimes+ex.stim.tempPhase1);
-ex.stim.phases = ex.stim.oscillation1.*180*ex.stim.cycles(1) + ex.stim.spatialPhase;
+clear c r
+for c =1:ex.numConds
+    for r = 1:ex.repsPerRun
+        ex.stim.tempPhase1(c,r) = pi;
+        ex.stim.tempPhase2(c,r) = rand(1,1)*2*pi;
+        ex.stim.oscillation1(c,r,:) = cos(2*pi*(1/ex.stimDur(1))*ex.stim.flipTimes+ex.stim.tempPhase1(c,r));
+        ex.stim.oscillation2(c,r,:) = cos(2*pi*(1/ex.stimDur(2))*ex.stim.flipTimes+ex.stim.tempPhase2(c,r));
+        ex.stim.spatialPhase = 90;
+        ex.stim.phases(c,r,:) = (ex.stim.oscillation1(c,r,:).*180*ex.stim.cycles(1)+ ex.stim.oscillation2(c,r,:).*180*ex.stim.cycles(2))/2 + ex.stim.spatialPhase; %./ex.stimDur-2*pi*flipTimes./ex.stimDur make it oscillatory
+    end
+end
 %reasonning behind the calculation of ex.stim.phases:
 %GOAL: render the back and forth of grating drifts oscillatory in time instead
 %of linear to smooth the signal phase shifts at the time of drift direction
@@ -215,7 +210,7 @@ ex.rectSWaveID = nan(ex.numConds, ex.repsPerRun);
 clear c r
 for c =1:ex.numConds 
     for r = 1:ex.repsPerRun %only save the first image of each trial, that we will move during the trial
-        phase = ex.stim.phases(1);
+        phase = ex.stim.phases(c,r,1);
         ex.rectSWave(c,r,:,:) = makeSineGrating(ex.rawGaborHeight,ex.rawGaborWidth,ex.stim.spatialFreqDeg,...
             ex.stim.orientation,phase,ex.stim.contrastOffset(1),ex.stim.contrastMultiplicator,...
             ex.ppd);
@@ -230,14 +225,13 @@ yc = rect(4)/2; %+e.vertOffset;
 clear flipTimes
 flipTimes = [0:frameInt*frameRate/ex.flipsPerSec:ex.blockLength(1)]; %multiply frameInt by 60/12 = 5 to flip the image every 5 frames
 flipTimes = flipTimes(1:length(flipTimes)-1);
-ex.stimDriftPosDeg = nan(ex.numConds,ex.repsPerRun,length(ex.stim.oscillation1(1,:)));
-ex.stimDriftPos = nan(ex.numConds,ex.repsPerRun,length(ex.stim.oscillation1(1,:)));
+ex.stimDriftPosDeg = nan(ex.numConds,ex.repsPerRun,length(ex.stim.oscillation1(1,1,:)));
+ex.stimDriftPos = nan(ex.numConds,ex.repsPerRun,length(ex.stim.oscillation1(1,1,:)));
 ex.stimLongDriftPos = nan(ex.numConds,ex.repsPerRun,length(flipTimes));
 clear c r
 for c = 1:ex.numConds 
     for r = 1:ex.repsPerRun
-%         ex.stimDriftPosDeg(c,r,:) = (ex.stim.oscillation1(c,r,:).*ex.stim.cycles(1).*1/(2*ex.stim.spatialFreqDeg)+ ex.stim.oscillation2(c,r,:).*ex.stim.cycles(2).*1/(2*ex.stim.spatialFreqDeg))/2;
-        ex.stimDriftPosDeg(c,r,:) = ex.stim.oscillation1.*ex.stim.cycles(1).*1/(2*ex.stim.spatialFreqDeg);
+        ex.stimDriftPosDeg(c,r,:) = (ex.stim.oscillation1(c,r,:).*ex.stim.cycles(1).*1/(2*ex.stim.spatialFreqDeg)+ ex.stim.oscillation2(c,r,:).*ex.stim.cycles(2).*1/(2*ex.stim.spatialFreqDeg))/2;
         ex.stimFixSpatialPhase = 0; %-(1/(8*ex.stim.spatialFreqDeg))*ex.ppd;%(1/(4*ex.stim.spatialFreqDeg))*ex.ppd;
         ex.stimDriftPos(c,r,:) = ex.stimDriftPosDeg(c,r,:).*ex.ppd +ex.stimFixSpatialPhase;
 %         ex.stimStillDotPhase = ex.stimDriftPos(c,r,1);
