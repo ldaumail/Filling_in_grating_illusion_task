@@ -1,4 +1,4 @@
-function LD_phantom_oscill_percept(subject, session, debug)
+function LD_phantom_oscill_percept_bis(subject, session, debug)
 
 %In this version, we add multiple velocities
 % subject = 'Dave';                                                                                                                                                                                                                                                     
@@ -78,7 +78,7 @@ ex.flipWin = 1/ex.flipsPerSec;         % in seconds then actually in 1 sec the s
 
 %%%% conditions & layout (across blocks scale)
 
-ex.conds = {'RectMinbgSp8Vel3','RectMeanbgSp8Vel3','RectMinbgRdSp8Vel3','RectMeanbgRdSp8Vel3'...%,
+ex.conds = {'RectMinbgSp8Vel3','RectMeanbgSp8Vel3'...%,
     ... %
     }; 
 ex.numConds = length(ex.conds);
@@ -325,10 +325,6 @@ while(1) % n <= length(ex.trialFlips)
         Screen('DrawTexture', w, ex.rectSWaveID(cMin,1),[],ex.rectLRect);
         
         Screen('DrawTexture',w,phaperture);
-        if contains(condName, 'Rd')
-               xOffset = ex.stimLongDriftPos(cMin,1,n);
-               Screen('FillOval', w,[255 0 0], [xc+xOffset-round(ex.fixSize/2) yc-round(ex.fixSize/2) xc+xOffset+round(ex.fixSize/2) yc+round(ex.fixSize/2)]);%black fixation solid circle
-        end
         
     elseif contains(condName, 'RectMeanbg')
         Screen('FillRect', w, gray1);
@@ -338,10 +334,6 @@ while(1) % n <= length(ex.trialFlips)
         Screen('DrawTexture', w, ex.rectSWaveID(cMean,1),[],ex.rectLRect);
         
         Screen('DrawTexture',w,coaperture);
-        if contains(condName, 'Rd')
-               xOffset = ex.stimLongDriftPos(cMin,1,n);
-               Screen('FillOval', w,[255 0 0], [xc+xOffset-round(ex.fixSize/2) yc-round(ex.fixSize/2) xc+xOffset+round(ex.fixSize/2) yc+round(ex.fixSize/2)]);%black fixation solid circle
-        end
     end
     
     %%%%%%%%%%% FLIP %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
