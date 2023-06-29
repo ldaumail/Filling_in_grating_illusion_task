@@ -232,7 +232,7 @@ ex.rawGaborWidth = ex.gaborWidth*2;
 ex.rectSWave = nan(ex.numConds, ex.repsPerRun,ex.rawGaborHeight,ex.rawGaborWidth);
 ex.rectSWaveID = nan(ex.numConds, ex.repsPerRun);
 clear c r
-for c =1:ex.numConds-1 %-1 because we only need images for the first 2 conditions
+for c =1:ex.numConds %-1 %-1 because we only need images for the first 2 conditions
     for r = 1:ex.repsPerRun %only save the first image of each trial, that we will move during the trial
         phase = ex.stim.phases(c,r,1);
         ex.rectSWave(c,r,:,:) = makeSineGrating(ex.rawGaborHeight,ex.rawGaborWidth,ex.stim.spatialFreqDeg,...
@@ -457,7 +457,7 @@ for c = 1:length(ex.condShuffle)
         elseif contains(condName, 'Meanbg')
             Screen('FillRect', w, gray1);
             if nnz(find(ex.longFormStimOnSecs(n)))
-                
+         
                 if contains(condName, 'Pair')
                     xOffset = ex.stimLongDriftPos(cMeanP,cntMeanP,n)-ex.stimLongDriftPos(cMeanP,cntMeanP,1); %baseline correct the position since every image already hase a spatial phase shift in the sinewave
                     ex.rectLRect =  CenterRectOnPoint([0 0 ex.rawGaborWidth ex.rawGaborHeight],xc+xOffset,yc);
