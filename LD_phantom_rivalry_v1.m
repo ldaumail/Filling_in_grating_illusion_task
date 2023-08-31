@@ -24,6 +24,13 @@ end
 %%%% keyboard
 [keyboardIndices, productNames, ~] = GetKeyboardIndices ;
 deviceNumber = keyboardIndices(1);
+responseKeys = zeros(1,256);
+responseKeys(KbName('1'))=1; % button box 1
+responseKeys(KbName('2'))=1; % button box 2
+responseKeys(KbName('3'))=1; % button box 3
+responseKeys(KbName('1!'))=1; % button box 1
+responseKeys(KbName('2@'))=1; % button box 2
+responseKeys(KbName('3#'))=1; % button box 3
 
 Screen('Preference', 'SkipSyncTests', 0);
 
@@ -46,11 +53,11 @@ ex.date = datestr(now,30);
 
 
 %%%% 2D sine wave grating inducers properties
-ex.stim.spatialFreqDeg = 0.5/2; %0.286;                                          % cycles per degree of visual angle
+ex.stim.spatialFreqDeg = 0.5/2;                                           % cycles per degree of visual angle
 ex.stim.contrast = 0.3 ;                                                 % in %, maybe??
 ex.stim.orientation = [90]; %[90 180];                                                % in degrees
 ex.stim.degFromFix = .6;                                              % in degrees of visual angle
-ex.stim.gaborHDeg = 8;                                                  % in degrees of visual angle
+ex.stim.gaborHDeg = 6;                                                  % in degrees of visual angle
 ex.stim.gaborWDeg = 16;
 %ex.stim.rectGaborWDeg = 8;
 ex.stim.contrast = 0.15;%linspace(0.01,0.20,10);%[0.05, 0.10, 0.15];                                                 % in %, maybe?? %here the number of stimulus contrast levels is the number of different conditions
@@ -78,11 +85,12 @@ ex.flipWin = 1/ex.flipsPerSec;         % in seconds then actually in 1 sec the s
 %%%% Opposite eye low contrast grating
 ex.lcstim.spatialFreqDeg = 2;
 ex.lcstim.contrast = 0.035;%linspace(0.01,0.20,10);%[0.05, 0.10, 0.15];                                                 % in %, maybe?? %here the number of stimulus contrast levels is the number of different conditions
-ex.lcstim.contrastMultiplicator = ex.stim.contrast/2;  % for sine wave 0.5 = 100% contrast, 0.2 = 40%
-ex.lcstim.orientation = 0;
-
+ex.lcstim.contrastMultiplicator = ex.lcstim.contrast/2;  % for sine wave 0.5 = 100% contrast, 0.2 = 40%
+ex.lcstim.orientation = [45 135];
+ex.lcstim.gaborHDeg = 2;                                                  % in degrees of visual angle
+ex.lcstim.gaborWDeg = 2;
 %%%% Fixation
-ex.fixSizeDeg =  .3;            % in degrees, the size of the biggest white dot in the fixation
+ex.fixSizeDeg =  .2;            % in degrees, the size of the biggest white dot in the fixation
 ex.bigFixSizeDeg = 0.5;
 ex.outerFixPixels = 2;          % in pixels, the black ring around fixation
 
@@ -96,7 +104,7 @@ ex.numConds = length(ex.conds);
 % later, to have the conditions randomized within each block
 ex.repsPerRun = 10;              % repetitions of each condition per run
 ex.numBlocks = ex.numConds*ex.repsPerRun;
-
+ex.lcstim.oriVec = repmat([1 2], 1, ex.numBlocks/2);
 ex.condShuffle = [];
 for i =1:ex.repsPerRun
     ex.condShuffle = [ex.condShuffle, Shuffle([1:ex.numConds])];
@@ -119,8 +127,6 @@ ex.allFlips = (0:ex.flipWin:ex.totalTime);
 ex.allFlips = ex.allFlips(1:end-1);
 ex.trialFlips = (0:ex.flipWin:ex.blockLength(1)+ex.betweenBlocks);
 ex.trialFlips = ex.trialFlips(1:end-1);
-%%%% fixation 
-ex.fixSizeDeg =  .25;            % in degrees, the size of the biggest white dot in the fixation
 
 %%%% screen
 ex.backgroundColor = [127 127 127];%[108.3760 108.3760 108.3760];%;  % color based on minimum gating luminance 
@@ -230,9 +236,14 @@ ex.ppd = pi* rect(3) / (atan(ex.screenWidth/ex.viewingDist/2)) / 360;
 ex.fixSize = round(ex.fixSizeDeg*ex.ppd);
 ex.bigFixSize = round(ex.bigFixSizeDeg*ex.ppd);
 ex.gaborHeight = round(ex.stim.gaborHDeg*ex.ppd);                 % in pixels, the size of our objects
-ex.gaborWidth = round(ex.stim.gaborWDeg*ex.ppd);                 % in pixels, the size of our objects 
+ex.gaborWidth = round(ex.stim.gaborWDeg*ex.ppd);                 % in pixels, the size of our objects
 ex.rawGaborHeight = ex.gaborHeight*3;
 ex.rawGaborWidth = ex.gaborWidth*1.5;
+
+ex.probeHeight = round(ex.lcstim.gaborHDeg*ex.ppd);                 % in pixels, the size of our objects
+ex.probeWidth = round(ex.lcstim.gaborWDeg*ex.ppd);                 % in pixels, the size of our objects
+ex.rawProbeHeight = ex.probeHeight*3;
+ex.rawProbeWidth = ex.probeWidth*1.5;
 
 %% Create only one big sinewave grating image saved for each repetition and each condition
 
@@ -252,11 +263,18 @@ end
 %% create 1 low contrast grating image for other eye
 
 phase = ex.stim.phases(c,r,1);
-ex.lcSWave = makeSineGrating(ex.rawGaborHeight,ex.rawGaborWidth,ex.lcstim.spatialFreqDeg,...
-    ex.lcstim.orientation,phase,ex.stim.contrastOffset(1),ex.lcstim.contrastMultiplicator,...
-    ex.ppd);
-ex.lcSWaveID = Screen('MakeTexture', w, squeeze(ex.lcSWave));
+ex.lcSWave = nan(length(ex.lcstim.orientation),ex.rawProbeHeight,ex.rawProbeWidth);
+for i =1:length(ex.lcstim.orientation)
+    ex.lcSWave(i,:,:) = makeSineGrating(ex.rawProbeHeight,ex.rawProbeWidth,ex.lcstim.spatialFreqDeg,...
+        ex.lcstim.orientation(i),phase,ex.stim.contrastOffset(1),ex.lcstim.contrastMultiplicator,...
+        ex.ppd);
+    ex.lcSWaveID(i) = Screen('MakeTexture', w, squeeze(ex.lcSWave(i,:,:)));
+end
 
+% figure();
+% imshow(squeeze(ex.lcSWave(1,:,:))/255)
+% figure();
+% imshow(squeeze(ex.lcSWave(2,:,:))/255)
 %% Sine wave gratings locations (in the task loop since it changes)
 xc = rect(3)/2; % rect and center, with the flexibility to resize & shift center - change vars to zero if not used.
 yc = rect(4)/2; %+e.vertOffset;
@@ -269,13 +287,13 @@ ex.stimDriftPosDeg = nan(ex.numConds,ex.repsPerRun,length(ex.stim.oscillation1(1
 ex.stimDriftPos = nan(ex.numConds,ex.repsPerRun,length(ex.stim.oscillation1(1,1,:)));
 ex.stimLongDriftPos = nan(ex.numConds,ex.repsPerRun,length(flipTimes));
 clear c r
-for c = 1:ex.numConds 
+for c = 1:ex.numConds
     for r = 1:ex.repsPerRun
         ex.stimDriftPosDeg(c,r,:) = (ex.stim.oscillation1(c,r,:).*ex.stim.cycles(1).*1/(2*ex.stim.spatialFreqDeg)+ ex.stim.oscillation2(c,r,:).*ex.stim.cycles(2).*1/(2*ex.stim.spatialFreqDeg))/2;
         ex.stimFixSpatialPhase = 0; %-(1/(8*ex.stim.spatialFreqDeg))*ex.ppd;%(1/(4*ex.stim.spatialFreqDeg))*ex.ppd;
         ex.stimDriftPos(c,r,:) = ex.stimDriftPosDeg(c,r,:).*ex.ppd +ex.stimFixSpatialPhase;
         ex.stimStillDotPhase = ex.stimDriftPos(c,r,1);
-        ex.stimLongDriftPos(c,r,:) = [repmat(ex.stimStillDotPhase,1,ex.flipsPerSec*ex.trialFixation) squeeze(ex.stimDriftPos(c,r,:))' ... 
+        ex.stimLongDriftPos(c,r,:) = [repmat(ex.stimStillDotPhase,1,ex.flipsPerSec*ex.trialFixation) squeeze(ex.stimDriftPos(c,r,:))' ...
             zeros(1,ex.betweenBlocks*ex.flipsPerSec)];
     end
 end
@@ -301,30 +319,30 @@ gray2 = repmat(min(min(squeeze(ex.rectSWave(1,1,:,:)),[],1)), [1,3]);
 coLaperture=Screen('OpenOffscreenwindow', w, gray1);
 Screen('FillRect',coLaperture, [255 255 255 0], [xc-(1/2)*(ex.gaborWidth + xc) yc-(3/2)*ex.gaborHeight xc+(ex.gaborWidth-xc)/2 yc-ex.gaborHeight/2]); %bottom grating window
 Screen('FillRect',coLaperture, [255 255 255 0], [xc-(1/2)*(ex.gaborWidth + xc) yc+ex.gaborHeight/2 xc+(ex.gaborWidth-xc)/2 yc+(3/2)*ex.gaborHeight]); %top grating window
-Screen('FillRect',coLaperture, [255 255 255 0], [xc-(1/2)*(ex.gaborWidth - xc) yc-ex.gaborHeight/2 xc+(ex.gaborWidth+xc)/2 yc+(1/2)*ex.gaborHeight]); %opposite eye grating window
+Screen('FillRect',coLaperture, [255 255 255 0], [xc-(1/2)*(ex.probeWidth - xc) yc-ex.probeHeight/2 xc+(ex.probeWidth+xc)/2 yc+(1/2)*ex.probeHeight]); %opposite eye grating window
 
 
 coRaperture=Screen('OpenOffscreenwindow', w, gray1);
 Screen('FillRect',coRaperture, [255 255 255 0], [xc-(1/2)*(ex.gaborWidth - xc) yc-(3/2)*ex.gaborHeight xc+(ex.gaborWidth+xc)/2 yc-ex.gaborHeight/2]); %bottom grating window
 Screen('FillRect',coRaperture, [255 255 255 0], [xc-(1/2)*(ex.gaborWidth - xc) yc+ex.gaborHeight/2 xc+(ex.gaborWidth+xc)/2 yc+(3/2)*ex.gaborHeight]); %top grating window
-Screen('FillRect',coRaperture, [255 255 255 0], [xc-(1/2)*(ex.gaborWidth + xc) yc-ex.gaborHeight/2 xc+(ex.gaborWidth-xc)/2 yc+(1/2)*ex.gaborHeight]); %opposite eye grating window
+Screen('FillRect',coRaperture, [255 255 255 0], [xc-(1/2)*(ex.probeWidth + xc) yc-ex.probeHeight/2 xc+(ex.probeWidth-xc)/2 yc+(1/2)*ex.probeHeight]); %opposite eye grating window
 
 
 %phantom condition
 phLaperture=Screen('OpenOffscreenwindow', w, gray2);
 Screen('FillRect',phLaperture, [255 255 255 0], [xc-(1/2)*(ex.gaborWidth + xc) yc-(3/2)*ex.gaborHeight xc+(ex.gaborWidth-xc)/2 yc-ex.gaborHeight/2]); %bottom grating window
 Screen('FillRect',phLaperture, [255 255 255 0], [xc-(1/2)*(ex.gaborWidth + xc) yc+ex.gaborHeight/2 xc+(ex.gaborWidth-xc)/2 yc+(3/2)*ex.gaborHeight]); %top grating window
-Screen('FillRect',phLaperture, [255 255 255 0], [xc-(1/2)*(ex.gaborWidth - xc) yc-ex.gaborHeight/2 xc+(ex.gaborWidth+xc)/2 yc+(1/2)*ex.gaborHeight]); %opposite eye grating window
+Screen('FillRect',phLaperture, [255 255 255 0], [xc-(1/2)*(ex.probeWidth - xc) yc-ex.probeHeight/2 xc+(ex.probeWidth+xc)/2 yc+(1/2)*ex.probeHeight]); %opposite eye grating window
 
 
 phRaperture=Screen('OpenOffscreenwindow', w, gray2);
 Screen('FillRect',phRaperture, [255 255 255 0], [xc-(1/2)*(ex.gaborWidth - xc) yc-(3/2)*ex.gaborHeight xc+(ex.gaborWidth+xc)/2 yc-ex.gaborHeight/2]); %bottom grating window
 Screen('FillRect',phRaperture, [255 255 255 0], [xc-(1/2)*(ex.gaborWidth - xc) yc+ex.gaborHeight/2 xc+(ex.gaborWidth+xc)/2 yc+(3/2)*ex.gaborHeight]); %top grating window
-Screen('FillRect',phRaperture, [255 255 255 0], [xc-(1/2)*(ex.gaborWidth + xc) yc-ex.gaborHeight/2 xc+(ex.gaborWidth-xc)/2 yc+(1/2)*ex.gaborHeight]); %opposite eye grating window
+Screen('FillRect',phRaperture, [255 255 255 0], [xc-(1/2)*(ex.probeWidth + xc) yc-ex.probeHeight/2 xc+(ex.probeWidth-xc)/2 yc+(1/2)*ex.probeHeight]); %opposite eye grating window
 
 
 %% %%%% initial window - wait for backtick
-DrawFormattedText(w,'Fixate the fixation dot as best as you can. \n\n Once each trial is over, report using the following digits 1: the phantom dominates \n\n 2: the low contrast grating dominates \n\n 3: perception is mixed \n\n Press Space to start'... % :  '...
+DrawFormattedText(w,'Fixate the fixation dot as best as you can. \n\n after each perceptual change report using the following digits 1: the phantom is visible \n\n 2: the low contrast grating and phantom are both visible \n\n 3: phantom totally disappears \n\n Press Space to start'... % :  '...
     ,'center', 'center',[0 0 0]);
 Screen(w, 'Flip', 0);
 %WaitSecs(2);
@@ -351,21 +369,23 @@ cMinR = 2;
 cMeanL = 3;
 cMeanR = 4;
 
+ex.responses = [];
+ex.responseTimes=[];
+ex.correctResp = [];
+
+
 onOffs = [diff(ex.longFormBlocks) 0];
 bLength = ex.blockLength(1);
 ex.flipTime = nan(length(ex.trialFlips),length(ex.condShuffle));
+
+KbQueueCreate(deviceNumber,responseKeys);
 %%% initial fixation
 if n == 1 && blockCnt == 1 %for first block
     ex.tasktstart = clock;
     ex.startRun = GetSecs();
     Screen('FillRect', w, gray1);
-    Screen('FillOval', w,[0 0 0], [xc/2-round(ex.bigFixSize/2+ex.outerFixPixels ) yc-round(ex.bigFixSize/2+ex.outerFixPixels ) xc/2+round(ex.bigFixSize/2+ex.outerFixPixels ) yc+round(ex.bigFixSize/2+ex.outerFixPixels )]); % black fixation ring
-    Screen('FillOval', w,[255 255 255], [xc/2-round(ex.bigFixSize/2) yc-round(ex.bigFixSize/2) xc/2+round(ex.bigFixSize/2) yc+round(ex.bigFixSize/2)]); % white fixation ring
-    Screen('FillOval', w,[0 0 0], [xc/2-round(ex.fixSize/2) yc-round(ex.fixSize/2) xc/2+round(ex.fixSize/2) yc+round(ex.fixSize/2)]);%green fixation solid circle
-    
-    Screen('FillOval', w,[0 0 0], [xc*3/2-round(ex.bigFixSize/2+ex.outerFixPixels ) yc-round(ex.bigFixSize/2+ex.outerFixPixels ) xc*3/2+round(ex.bigFixSize/2+ex.outerFixPixels ) yc+round(ex.bigFixSize/2+ex.outerFixPixels )]); % black fixation ring
-    Screen('FillOval', w,[255 255 255], [xc*3/2-round(ex.bigFixSize/2) yc-round(ex.bigFixSize/2) xc*3/2+round(ex.bigFixSize/2) yc+round(ex.bigFixSize/2)]); % white fixation ring
-    Screen('FillOval', w,[0 0 0], [xc*3/2-round(ex.fixSize/2) yc-round(ex.fixSize/2) xc*3/2+round(ex.fixSize/2) yc+round(ex.fixSize/2)]);%green fixation solid circle
+    Screen('DrawDots', w, [xc/2 yc], ex.fixSize, [255 255 255], [], 2);
+    Screen('DrawDots', w, [xc*3/2 yc], ex.fixSize, [255 255 255], [], 2);
     Screen(w, 'Flip', 0);
     WaitSecs(ex.initialFixation);
 end
@@ -374,6 +394,7 @@ for c = 1:length(ex.condShuffle)
     cnt = cnt+1;
     thisCond = ex.condShuffle(c);
     condName = conditions(thisCond).name{:};
+    oriNum = ex.lcstim.oriVec(c);
     %%for each condition, we specify the parameters values before we flip
     %%over the gratings phases
     %screen background color
@@ -394,6 +415,7 @@ for c = 1:length(ex.condShuffle)
     
     %flip through the block and following between block time
     while n <= length(ex.trialFlips)
+        KbQueueStart(); % response time
         ex.longFormBlocks(n)
         %%%% draw sine wave grating stimulus %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         if contains(condName, 'Minbg')
@@ -402,36 +424,26 @@ for c = 1:length(ex.condShuffle)
                 if contains(condName, 'Left')
                     xOffset = ex.stimLongDriftPos(cMinL,cntMinL,n)-ex.stimLongDriftPos(cMinL,cntMinL,1); %baseline correct the position since every image already hase a spatial phase shift in the sinewave
                     ex.rectLRect =  CenterRectOnPoint([0 0 ex.rawGaborWidth ex.rawGaborHeight],xc-xc/2+xOffset,yc);
-                    ex.lcLRect =  CenterRectOnPoint([0 0 ex.rawGaborWidth ex.rawGaborHeight],xc+xc/2+xOffset,yc);
+                    ex.lcLRect =  CenterRectOnPoint([0 0 ex.rawProbeWidth ex.rawProbeHeight],xc+xc/2,yc);
                     % stim
-                    Screen('DrawTexture', w, ex.lcSWaveID,[],ex.lcLRect);
+                    
                     Screen('DrawTexture', w, ex.rectSWaveID(cMinL,cntMinL),[],ex.rectLRect);
+                    Screen('DrawTexture', w, ex.lcSWaveID(oriNum),[],ex.lcLRect);
                     Screen('DrawTexture',w,phLaperture);
                     
-                    Screen('FillOval', w,[0 0 0], [xc/2-round(ex.bigFixSize/2+ex.outerFixPixels ) yc-round(ex.bigFixSize/2+ex.outerFixPixels ) xc/2+round(ex.bigFixSize/2+ex.outerFixPixels ) yc+round(ex.bigFixSize/2+ex.outerFixPixels )]); % black fixation ring
-                    Screen('FillOval', w,[255 255 255], [xc/2-round(ex.bigFixSize/2) yc-round(ex.bigFixSize/2) xc/2+round(ex.bigFixSize/2) yc+round(ex.bigFixSize/2)]); % white fixation ring
-                    Screen('FillOval', w,[0 0 0], [xc/2-round(ex.fixSize/2) yc-round(ex.fixSize/2) xc/2+round(ex.fixSize/2) yc+round(ex.fixSize/2)]);%green fixation solid circle
-                    
-                    Screen('FillOval', w,[0 0 0], [xc*3/2-round(ex.bigFixSize/2+ex.outerFixPixels ) yc-round(ex.bigFixSize/2+ex.outerFixPixels ) xc*3/2+round(ex.bigFixSize/2+ex.outerFixPixels ) yc+round(ex.bigFixSize/2+ex.outerFixPixels )]); % black fixation ring
-                    Screen('FillOval', w,[255 255 255], [xc*3/2-round(ex.bigFixSize/2) yc-round(ex.bigFixSize/2) xc*3/2+round(ex.bigFixSize/2) yc+round(ex.bigFixSize/2)]); % white fixation ring
-                    Screen('FillOval', w,[0 0 0], [xc*3/2-round(ex.fixSize/2) yc-round(ex.fixSize/2) xc*3/2+round(ex.fixSize/2) yc+round(ex.fixSize/2)]);%green fixation solid circle
-                    
+                    Screen('DrawDots', w, [xc/2 yc], ex.fixSize, [255 255 255], [], 2);
+                    Screen('DrawDots', w, [xc*3/2 yc], ex.fixSize, [255 255 255], [], 2);
                 elseif contains(condName, 'Right')
                     xOffset = ex.stimLongDriftPos(cMinR,cntMinR,n)-ex.stimLongDriftPos(cMinR,cntMinR,1); %baseline correct the position since every image already hase a spatial phase shift in the sinewave
                     ex.rectLRect =  CenterRectOnPoint([0 0 ex.rawGaborWidth ex.rawGaborHeight],xc+xc/2+xOffset,yc);
-                    ex.lcRRect =  CenterRectOnPoint([0 0 ex.rawGaborWidth ex.rawGaborHeight],xc-xc/2+xOffset,yc);
+                    ex.lcRRect =  CenterRectOnPoint([0 0 ex.rawProbeWidth ex.rawProbeHeight],xc-xc/2,yc);
                     % stim
-                    Screen('DrawTexture', w, ex.lcSWaveID,[],ex.lcRRect);
                     Screen('DrawTexture', w, ex.rectSWaveID(cMinR,cntMinR),[],ex.rectLRect);
+                    Screen('DrawTexture', w, ex.lcSWaveID(oriNum),[],ex.lcRRect);
                     Screen('DrawTexture',w,phRaperture);
-                    Screen('FillOval', w,[0 0 0], [xc/2-round(ex.bigFixSize/2+ex.outerFixPixels ) yc-round(ex.bigFixSize/2+ex.outerFixPixels ) xc/2+round(ex.bigFixSize/2+ex.outerFixPixels ) yc+round(ex.bigFixSize/2+ex.outerFixPixels )]); % black fixation ring
-                    Screen('FillOval', w,[255 255 255], [xc/2-round(ex.bigFixSize/2) yc-round(ex.bigFixSize/2) xc/2+round(ex.bigFixSize/2) yc+round(ex.bigFixSize/2)]); % white fixation ring
-                    Screen('FillOval', w,[0 0 0], [xc/2-round(ex.fixSize/2) yc-round(ex.fixSize/2) xc/2+round(ex.fixSize/2) yc+round(ex.fixSize/2)]);%green fixation solid circle
                     
-                    Screen('FillOval', w,[0 0 0], [xc*3/2-round(ex.bigFixSize/2+ex.outerFixPixels ) yc-round(ex.bigFixSize/2+ex.outerFixPixels ) xc*3/2+round(ex.bigFixSize/2+ex.outerFixPixels ) yc+round(ex.bigFixSize/2+ex.outerFixPixels )]); % black fixation ring
-                    Screen('FillOval', w,[255 255 255], [xc*3/2-round(ex.bigFixSize/2) yc-round(ex.bigFixSize/2) xc*3/2+round(ex.bigFixSize/2) yc+round(ex.bigFixSize/2)]); % white fixation ring
-                    Screen('FillOval', w,[0 0 0], [xc*3/2-round(ex.fixSize/2) yc-round(ex.fixSize/2) xc*3/2+round(ex.fixSize/2) yc+round(ex.fixSize/2)]);%green fixation solid circle
-                    
+                    Screen('DrawDots', w, [xc/2 yc], ex.fixSize, [255 255 255], [], 2);
+                    Screen('DrawDots', w, [xc*3/2 yc], ex.fixSize, [255 255 255], [], 2);
                 end
             end
             
@@ -442,38 +454,26 @@ for c = 1:length(ex.condShuffle)
                 if contains(condName, 'Left')
                     xOffset = ex.stimLongDriftPos(cMeanL,cntMeanL,n)-ex.stimLongDriftPos(cMeanL,cntMeanL,1); %baseline correct the position since every image already hase a spatial phase shift in the sinewave
                     ex.rectLRect =  CenterRectOnPoint([0 0 ex.rawGaborWidth ex.rawGaborHeight],xc-xc/2+xOffset,yc);
-                    ex.lcLRect =  CenterRectOnPoint([0 0 ex.rawGaborWidth ex.rawGaborHeight],xc+xc/2+xOffset,yc);
+                    ex.lcLRect =  CenterRectOnPoint([0 0 ex.rawProbeWidth ex.rawProbeHeight],xc+xc/2,yc);
                     
                     % stim
-                    Screen('DrawTexture', w, ex.lcSWaveID,[],ex.lcLRect);
+                    Screen('DrawTexture', w, ex.lcSWaveID(oriNum),[],ex.lcLRect);
                     Screen('DrawTexture', w, ex.rectSWaveID(cMeanL,cntMeanL),[],ex.rectLRect);
                     Screen('DrawTexture',w,coLaperture);
-                    Screen('FillOval', w,[0 0 0], [xc/2-round(ex.bigFixSize/2+ex.outerFixPixels ) yc-round(ex.bigFixSize/2+ex.outerFixPixels ) xc/2+round(ex.bigFixSize/2+ex.outerFixPixels ) yc+round(ex.bigFixSize/2+ex.outerFixPixels )]); % black fixation ring
-                    Screen('FillOval', w,[255 255 255], [xc/2-round(ex.bigFixSize/2) yc-round(ex.bigFixSize/2) xc/2+round(ex.bigFixSize/2) yc+round(ex.bigFixSize/2)]); % white fixation ring
-                    Screen('FillOval', w,[0 0 0], [xc/2-round(ex.fixSize/2) yc-round(ex.fixSize/2) xc/2+round(ex.fixSize/2) yc+round(ex.fixSize/2)]);%green fixation solid circle
-                    
-                    Screen('FillOval', w,[0 0 0], [xc*3/2-round(ex.bigFixSize/2+ex.outerFixPixels ) yc-round(ex.bigFixSize/2+ex.outerFixPixels ) xc*3/2+round(ex.bigFixSize/2+ex.outerFixPixels ) yc+round(ex.bigFixSize/2+ex.outerFixPixels )]); % black fixation ring
-                    Screen('FillOval', w,[255 255 255], [xc*3/2-round(ex.bigFixSize/2) yc-round(ex.bigFixSize/2) xc*3/2+round(ex.bigFixSize/2) yc+round(ex.bigFixSize/2)]); % white fixation ring
-                    Screen('FillOval', w,[0 0 0], [xc*3/2-round(ex.fixSize/2) yc-round(ex.fixSize/2) xc*3/2+round(ex.fixSize/2) yc+round(ex.fixSize/2)]);%green fixation solid circle
-                    
+                    Screen('DrawDots', w, [xc/2 yc], ex.fixSize, [255 255 255], [], 2);
+                    Screen('DrawDots', w, [xc*3/2 yc], ex.fixSize, [255 255 255], [], 2);
                 elseif contains(condName, 'Right')
                     xOffset = ex.stimLongDriftPos(cMeanR,cntMeanR,n)-ex.stimLongDriftPos(cMeanR,cntMeanR,1); %baseline correct the position since every image already hase a spatial phase shift in the sinewave
                     ex.rectLRect =  CenterRectOnPoint([0 0 ex.rawGaborWidth ex.rawGaborHeight],xc+xc/2+xOffset,yc);
-                    ex.lcRRect =  CenterRectOnPoint([0 0 ex.rawGaborWidth ex.rawGaborHeight],xc-xc/2+xOffset,yc);
+                    ex.lcRRect =  CenterRectOnPoint([0 0 ex.rawProbeWidth ex.rawProbeHeight],xc-xc/2,yc);
                     
                     % stim
-                    Screen('DrawTexture', w, ex.lcSWaveID,[],ex.lcRRect);
+                    Screen('DrawTexture', w, ex.lcSWaveID(oriNum),[],ex.lcRRect);
                     Screen('DrawTexture', w, ex.rectSWaveID(cMeanR,cntMeanR),[],ex.rectLRect);
                     Screen('DrawTexture',w,coRaperture);
                     
-                    Screen('FillOval', w,[0 0 0], [xc/2-round(ex.bigFixSize/2+ex.outerFixPixels ) yc-round(ex.bigFixSize/2+ex.outerFixPixels ) xc/2+round(ex.bigFixSize/2+ex.outerFixPixels ) yc+round(ex.bigFixSize/2+ex.outerFixPixels )]); % black fixation ring
-                    Screen('FillOval', w,[255 255 255], [xc/2-round(ex.bigFixSize/2) yc-round(ex.bigFixSize/2) xc/2+round(ex.bigFixSize/2) yc+round(ex.bigFixSize/2)]); % white fixation ring
-                    Screen('FillOval', w,[0 0 0], [xc/2-round(ex.fixSize/2) yc-round(ex.fixSize/2) xc/2+round(ex.fixSize/2) yc+round(ex.fixSize/2)]);%green fixation solid circle
-                    
-                    Screen('FillOval', w,[0 0 0], [xc*3/2-round(ex.bigFixSize/2+ex.outerFixPixels ) yc-round(ex.bigFixSize/2+ex.outerFixPixels ) xc*3/2+round(ex.bigFixSize/2+ex.outerFixPixels ) yc+round(ex.bigFixSize/2+ex.outerFixPixels )]); % black fixation ring
-                    Screen('FillOval', w,[255 255 255], [xc*3/2-round(ex.bigFixSize/2) yc-round(ex.bigFixSize/2) xc*3/2+round(ex.bigFixSize/2) yc+round(ex.bigFixSize/2)]); % white fixation ring
-                    Screen('FillOval', w,[0 0 0], [xc*3/2-round(ex.fixSize/2) yc-round(ex.fixSize/2) xc*3/2+round(ex.fixSize/2) yc+round(ex.fixSize/2)]);%green fixation solid circle
-                    
+                    Screen('DrawDots', w, [xc/2 yc], ex.fixSize, [255 255 255], [], 2);
+                    Screen('DrawDots', w, [xc*3/2 yc], ex.fixSize, [255 255 255], [], 2);
                     
                 end
             end
@@ -490,19 +490,44 @@ for c = 1:length(ex.condShuffle)
             
         end
         
+        %             DrawFormattedText(w,'Press 1: the phantom is visible \n\n 2: the low contrast grating and phantom are both visible \n\n 3: phantom totally disappears'... % : press 1 as soon as letter J appears on the screen,\n\n and press 2 as soon as letter K appears on the screen. \n\n Press Space to start'...
+        %                 ,'center', 'center',[0 0 0]);
+        
+        KbQueueStop();
+        [pressed, firstPress]= KbQueueCheck();
+        %KbTriggerWait(KbName('1!'), deviceNumber);
+        if  (pressed == 1) && ((firstPress(KbName('1!')) > 0 ||(firstPress(KbName('1')) > 0)) || (firstPress(KbName('2@')) > 0 || firstPress(KbName('2')) > 0) || (firstPress(KbName('3#')) > 0 || firstPress(KbName('3')) > 0))
+            ex.responses = [ex.responses, 1];
+            if (firstPress(KbName('1')) > 0)
+                ex.correctResp = [ex.correctResp, 1];
+                ex.responseTimes = [ex.responseTimes, firstPress(KbName('1')) - ex.startTrial];
+            elseif (firstPress(KbName('2')) > 0)
+                ex.correctResp = [ex.correctResp, 2];
+                ex.responseTimes = [ex.responseTimes, firstPress(KbName('2')) - ex.startTrial];
+            elseif (firstPress(KbName('3')) > 0)
+                ex.correctResp = [ex.correctResp, 3];
+                ex.responseTimes = [ex.responseTimes, firstPress(KbName('3')) - ex.startTrial];
+            end
+        end
+        %%%% refresh queue for next character
+        KbQueueFlush();
         if nnz(onOffs(n)) == 1
             time = GetSecs;
             cnt = cnt+1;
         end
         if (cnt/2 == 1 && GetSecs-time >= 1) && c ~= length(ex.condShuffle)
+            
+            %             [ex.respT(cnt),~,~] =KbWait(deviceNumber,2);
             DrawFormattedText(w,'Press Space whenever you feel ready'... % : press 1 as soon as letter J appears on the screen,\n\n and press 2 as soon as letter K appears on the screen. \n\n Press Space to start'...
                 ,'center', 'center',[0 0 0]);
             Screen(w, 'Flip', 0);
-            KbTriggerWait(KbName('Space'), deviceNumber);
+            [~,~,~] =KbWait(deviceNumber,2);
+            %             KbTriggerWait(KbName('Space'), deviceNumber);
             cnt = 0;
         end
         n = n+1;
     end
+    
     ex.flipTime(:,c) = flipTimes;
     n = 1;
 end
