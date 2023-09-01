@@ -62,7 +62,7 @@ ex.stim.gaborWDeg = 16;
 %ex.stim.rectGaborWDeg = 8;
 ex.stim.contrast = 0.15;%linspace(0.01,0.20,10);%[0.05, 0.10, 0.15];                                                 % in %, maybe?? %here the number of stimulus contrast levels is the number of different conditions
 ex.stim.contrastMultiplicator = ex.stim.contrast/2;  % for sine wave 0.5 = 100% contrast, 0.2 = 40%
-ex.stim.contrastOffset = .5; %.5 .5 0];                                  % for procedural gabor
+ex.stim.contrastOffset = [.5 0.425]; %.5 .5 0];                                  % for procedural gabor
 %ex.stim.cycPerSec = [1.13*1/2,1.13*3/2]; % try multiple speeds
 %ex.stim.motionRate = ex.stim.cycPerSec.*360;                                          % 1.13 cycles per second = 360 deg of phase *1.13 per sec
 %ex.stim.cycles =[1, 3]; %number of cycles shifted per lap  (modified to half the number of cycles per lap)
@@ -76,7 +76,7 @@ ex.initialFixation = 6;        % in seconds
 ex.finalFixation = 2;          % in seconds
 ex.trialFixation = 1;          % in seconds
 %ex.stimsPerBlock = 4.5;      % number of back-and-forth laps of the stimulus drift
-ex.blockLength = ex.trialFixation + 16; %ex.trialFixation+ ceil(ex.stimDur*ex.stimsPerBlock);           % in seconds
+ex.blockLength = ex.trialFixation + 16*8; %ex.trialFixation+ ceil(ex.stimDur*ex.stimsPerBlock);           % in seconds
 ex.betweenBlocks = 2;          % in seconds
 ex.flipsPerSec = 60;  % 60;         % number of phase changes we want from the visual stimulus, and thus the number of times we want to change visual stimulation on the screen
 ex.flipWin = 1/ex.flipsPerSec;         % in seconds then actually in 1 sec the stimuli will change 12 times 
@@ -102,7 +102,7 @@ ex.conds = {'MinbgLeftVel3','MinbgRightVel3','MeanbgLeftVel3', 'MeanbgRightVel3'
 ex.numConds = length(ex.conds);
 % with line of code below we will have 1 condition per block, randomized. we might need to change that
 % later, to have the conditions randomized within each block
-ex.repsPerRun = 10;              % repetitions of each condition per run
+ex.repsPerRun = 1;              % repetitions of each condition per run
 ex.numBlocks = ex.numConds*ex.repsPerRun;
 ex.lcstim.oriVec = repmat([1 2], 1, ex.numBlocks/2);
 ex.condShuffle = [];
@@ -129,7 +129,7 @@ ex.trialFlips = (0:ex.flipWin:ex.blockLength(1)+ex.betweenBlocks);
 ex.trialFlips = ex.trialFlips(1:end-1);
 
 %%%% screen
-ex.backgroundColor = [127 127 127];%[108.3760 108.3760 108.3760];%;  % color based on minimum gating luminance 
+ex.backgroundColor = [127.4933  127.4933  127.4933];%[108.3760 108.3760 108.3760];%;  % color based on minimum gating luminance 
 ex.fontSize = 26;
 
 %% %%%%%%%%%%%%%%%%%
@@ -187,21 +187,23 @@ ex.stillDotPhase = zeros(1,ex.flipsPerSec*ex.trialFixation);
 
 flipTimes = [0:frameInt*frameRate/ex.flipsPerSec:ex.blockLength(1)-ex.trialFixation]; %multiply frameInt by 60/12 = 5 to flip the image every 5 frames
 ex.stim.flipTimes = flipTimes(1:length(flipTimes)-1);
-ex.stim.tempPhase1 = nan(ex.numConds,ex.repsPerRun);
-ex.stim.tempPhase2 = nan(ex.numConds,ex.repsPerRun);
-ex.stim.oscillation1 = nan(ex.numConds,ex.repsPerRun,length(ex.stim.flipTimes));
-ex.stim.oscillation2 = nan(ex.numConds,ex.repsPerRun,length(ex.stim.flipTimes));
-ex.stim.phases = nan(ex.numConds,ex.repsPerRun,length(ex.stim.flipTimes));
+ex.stim.tempPhase1 = nan(ex.numConds/2,length(ex.stim.contrastOffset), ex.repsPerRun);
+ex.stim.tempPhase2 = nan(ex.numConds/2,length(ex.stim.contrastOffset), ex.repsPerRun);
+ex.stim.oscillation1 = nan(ex.numConds/2,length(ex.stim.contrastOffset), ex.repsPerRun,length(ex.stim.flipTimes));
+ex.stim.oscillation2 = nan(ex.numConds/2,length(ex.stim.contrastOffset), ex.repsPerRun,length(ex.stim.flipTimes));
+ex.stim.phases = nan(ex.numConds/2,length(ex.stim.contrastOffset), ex.repsPerRun,length(ex.stim.flipTimes));
 
-clear c r
-for c =1:ex.numConds
-    for r = 1:ex.repsPerRun
-        ex.stim.tempPhase1(c,r) = rand(1,1)*2*pi;
-        ex.stim.tempPhase2(c,r) = rand(1,1)*2*pi;
-        ex.stim.oscillation1(c,r,:) = cos(2*pi*(1/ex.stimDur(1))*ex.stim.flipTimes+ex.stim.tempPhase1(c,r));
-        ex.stim.oscillation2(c,r,:) = cos(2*pi*(1/ex.stimDur(2))*ex.stim.flipTimes+ex.stim.tempPhase2(c,r));
-        ex.stim.spatialPhase = 90;
-        ex.stim.phases(c,r,:) = (ex.stim.oscillation1(c,r,:).*180*ex.stim.cycles(1)+ ex.stim.oscillation2(c,r,:).*180*ex.stim.cycles(2))/2 + ex.stim.spatialPhase; %./ex.stimDur-2*pi*flipTimes./ex.stimDur make it oscillatory
+clear c r l
+for c =1:ex.numConds/2
+    for l =1:length(ex.stim.contrastOffset)
+        for r = 1:ex.repsPerRun
+            ex.stim.tempPhase1(c,l,r) = rand(1,1)*2*pi;
+            ex.stim.tempPhase2(c,l,r) = rand(1,1)*2*pi;
+            ex.stim.oscillation1(c,l,r,:) = cos(2*pi*(1/ex.stimDur(1))*ex.stim.flipTimes+ex.stim.tempPhase1(c,l,r));
+            ex.stim.oscillation2(c,l,r,:) = cos(2*pi*(1/ex.stimDur(2))*ex.stim.flipTimes+ex.stim.tempPhase2(c,l,r));
+            ex.stim.spatialPhase = 90;
+            ex.stim.phases(c,l,r,:) = (ex.stim.oscillation1(c,l,r,:).*180*ex.stim.cycles(1)+ ex.stim.oscillation2(c,l,r,:).*180*ex.stim.cycles(2))/2 + ex.stim.spatialPhase; %./ex.stimDur-2*pi*flipTimes./ex.stimDur make it oscillatory
+        end
     end
 end
 %reasonning behind the calculation of ex.stim.phases:
@@ -247,26 +249,28 @@ ex.rawProbeWidth = ex.probeWidth*1.5;
 
 %% Create only one big sinewave grating image saved for each repetition and each condition
 
-ex.rectSWave = nan(ex.numConds, ex.repsPerRun,ex.rawGaborHeight,ex.rawGaborWidth);
-ex.rectSWaveID = nan(ex.numConds, ex.repsPerRun);
+ex.rectSWave = nan(ex.numConds/2, length(ex.stim.contrastOffset), ex.repsPerRun,ex.rawGaborHeight,ex.rawGaborWidth);
+ex.rectSWaveID = nan(ex.numConds/2, length(ex.stim.contrastOffset), ex.repsPerRun);
 clear c r
-for c =1:ex.numConds %-1 %-1 because we only need images for the first 2 conditions
-    for r = 1:ex.repsPerRun %only save the first image of each trial, that we will move during the trial
-        phase = ex.stim.phases(c,r,1);
-        ex.rectSWave(c,r,:,:) = makeSineGrating(ex.rawGaborHeight,ex.rawGaborWidth,ex.stim.spatialFreqDeg,...
-            ex.stim.orientation,phase,ex.stim.contrastOffset(1),ex.stim.contrastMultiplicator,...
-            ex.ppd);
-        ex.rectSWaveID(c,r) = Screen('MakeTexture', w, squeeze(ex.rectSWave(c,r,:,:)));
+for c =1:ex.numConds/2
+    for l = 1:length(ex.stim.contrastOffset)
+        for r = 1:ex.repsPerRun %only save the first image of each trial, that we will move during the trial
+            phase = ex.stim.phases(c,l,r,1);
+            ex.rectSWave(c,l,r,:,:) = makeSineGrating(ex.rawGaborHeight,ex.rawGaborWidth,ex.stim.spatialFreqDeg,...
+                ex.stim.orientation,phase,ex.stim.contrastOffset(l),ex.stim.contrastMultiplicator,...
+                ex.ppd);
+            ex.rectSWaveID(c,l,r) = Screen('MakeTexture', w, squeeze(ex.rectSWave(c,l,r,:,:)));
+        end
     end
 end
 
 %% create 1 low contrast grating image for other eye
 
-phase = ex.stim.phases(c,r,1);
+phase = ex.stim.phases(c,l,r,1);
 ex.lcSWave = nan(length(ex.lcstim.orientation),ex.rawProbeHeight,ex.rawProbeWidth);
 for i =1:length(ex.lcstim.orientation)
     ex.lcSWave(i,:,:) = makeSineGrating(ex.rawProbeHeight,ex.rawProbeWidth,ex.lcstim.spatialFreqDeg,...
-        ex.lcstim.orientation(i),phase,ex.stim.contrastOffset(1),ex.lcstim.contrastMultiplicator,...
+        ex.lcstim.orientation(i),phase,ex.stim.contrastOffset(2),ex.lcstim.contrastMultiplicator,...
         ex.ppd);
     ex.lcSWaveID(i) = Screen('MakeTexture', w, squeeze(ex.lcSWave(i,:,:)));
 end
@@ -283,18 +287,20 @@ yc = rect(4)/2; %+e.vertOffset;
 clear flipTimes
 flipTimes = [0:frameInt*frameRate/ex.flipsPerSec:ex.blockLength(1)+ex.betweenBlocks]; %multiply frameInt by 60/12 = 5 to flip the image every 5 frames
 flipTimes = flipTimes(1:length(flipTimes)-1);
-ex.stimDriftPosDeg = nan(ex.numConds,ex.repsPerRun,length(ex.stim.oscillation1(1,1,:)));
-ex.stimDriftPos = nan(ex.numConds,ex.repsPerRun,length(ex.stim.oscillation1(1,1,:)));
-ex.stimLongDriftPos = nan(ex.numConds,ex.repsPerRun,length(flipTimes));
+ex.stimDriftPosDeg = nan(ex.numConds/2,length(ex.stim.contrastOffset), ex.repsPerRun,length(ex.stim.oscillation1(1,1,1,:)));
+ex.stimDriftPos = nan(ex.numConds/2,length(ex.stim.contrastOffset),ex.repsPerRun,length(ex.stim.oscillation1(1,1,1,:)));
+ex.stimLongDriftPos = nan(ex.numConds/2,length(ex.stim.contrastOffset), ex.repsPerRun,length(flipTimes));
 clear c r
-for c = 1:ex.numConds
-    for r = 1:ex.repsPerRun
-        ex.stimDriftPosDeg(c,r,:) = (ex.stim.oscillation1(c,r,:).*ex.stim.cycles(1).*1/(2*ex.stim.spatialFreqDeg)+ ex.stim.oscillation2(c,r,:).*ex.stim.cycles(2).*1/(2*ex.stim.spatialFreqDeg))/2;
-        ex.stimFixSpatialPhase = 0; %-(1/(8*ex.stim.spatialFreqDeg))*ex.ppd;%(1/(4*ex.stim.spatialFreqDeg))*ex.ppd;
-        ex.stimDriftPos(c,r,:) = ex.stimDriftPosDeg(c,r,:).*ex.ppd +ex.stimFixSpatialPhase;
-        ex.stimStillDotPhase = ex.stimDriftPos(c,r,1);
-        ex.stimLongDriftPos(c,r,:) = [repmat(ex.stimStillDotPhase,1,ex.flipsPerSec*ex.trialFixation) squeeze(ex.stimDriftPos(c,r,:))' ...
-            zeros(1,ex.betweenBlocks*ex.flipsPerSec)];
+for c = 1:ex.numConds/2
+    for l =1:length(ex.stim.contrastOffset)
+        for r = 1:ex.repsPerRun
+            ex.stimDriftPosDeg(c,l,r,:) = (ex.stim.oscillation1(c,l,r,:).*ex.stim.cycles(1).*1/(2*ex.stim.spatialFreqDeg)+ ex.stim.oscillation2(c,l,r,:).*ex.stim.cycles(2).*1/(2*ex.stim.spatialFreqDeg))/2;
+            ex.stimFixSpatialPhase = 0; %-(1/(8*ex.stim.spatialFreqDeg))*ex.ppd;%(1/(4*ex.stim.spatialFreqDeg))*ex.ppd;
+            ex.stimDriftPos(c,l,r,:) = ex.stimDriftPosDeg(c,l,r,:).*ex.ppd +ex.stimFixSpatialPhase;
+            ex.stimStillDotPhase = ex.stimDriftPos(c,l,r,1);
+            ex.stimLongDriftPos(c,l,r,:) = [repmat(ex.stimStillDotPhase,1,ex.flipsPerSec*ex.trialFixation) squeeze(ex.stimDriftPos(c,l,r,:))' ...
+                zeros(1,ex.betweenBlocks*ex.flipsPerSec)];
+        end
     end
 end
 
@@ -312,17 +318,17 @@ end
 
 
 %% Create rectangular masks for the gratings
-gray1 = repmat(mean(squeeze(ex.rectSWave(1,1,1,:))), [1,3]);
-gray2 = repmat(min(min(squeeze(ex.rectSWave(1,1,:,:)),[],1)), [1,3]);
+% gray1 = [127.4933  127.4933  127.4933]; %repmat(mean(squeeze(ex.rectSWave(1,1,1,:))), [1,3]);
+gray2 = [108.3750  108.3750  108.3750]; %repmat(min(min(squeeze(ex.rectSWave(1,1,:,:)),[],1)), [1,3]);
 
 %phantom control condition
-coLaperture=Screen('OpenOffscreenwindow', w, gray1);
+coLaperture=Screen('OpenOffscreenwindow', w, gray2);
 Screen('FillRect',coLaperture, [255 255 255 0], [xc-(1/2)*(ex.gaborWidth + xc) yc-(3/2)*ex.gaborHeight xc+(ex.gaborWidth-xc)/2 yc-ex.gaborHeight/2]); %bottom grating window
 Screen('FillRect',coLaperture, [255 255 255 0], [xc-(1/2)*(ex.gaborWidth + xc) yc+ex.gaborHeight/2 xc+(ex.gaborWidth-xc)/2 yc+(3/2)*ex.gaborHeight]); %top grating window
 Screen('FillRect',coLaperture, [255 255 255 0], [xc-(1/2)*(ex.probeWidth - xc) yc-ex.probeHeight/2 xc+(ex.probeWidth+xc)/2 yc+(1/2)*ex.probeHeight]); %opposite eye grating window
 
 
-coRaperture=Screen('OpenOffscreenwindow', w, gray1);
+coRaperture=Screen('OpenOffscreenwindow', w, gray2);
 Screen('FillRect',coRaperture, [255 255 255 0], [xc-(1/2)*(ex.gaborWidth - xc) yc-(3/2)*ex.gaborHeight xc+(ex.gaborWidth+xc)/2 yc-ex.gaborHeight/2]); %bottom grating window
 Screen('FillRect',coRaperture, [255 255 255 0], [xc-(1/2)*(ex.gaborWidth - xc) yc+ex.gaborHeight/2 xc+(ex.gaborWidth+xc)/2 yc+(3/2)*ex.gaborHeight]); %top grating window
 Screen('FillRect',coRaperture, [255 255 255 0], [xc-(1/2)*(ex.probeWidth + xc) yc-ex.probeHeight/2 xc+(ex.probeWidth-xc)/2 yc+(1/2)*ex.probeHeight]); %opposite eye grating window
@@ -355,7 +361,7 @@ KbTriggerWait(KbName('Space'), deviceNumber);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %%%%%%% START task TASK/FLIPPING
-
+clear l
 n = 1;
 blockCnt = 1;
 cnt = 0; %stim onset/ stime offset count
@@ -366,8 +372,8 @@ cntMeanR = 0;
 
 cMinL = 1;
 cMinR = 2;
-cMeanL = 3;
-cMeanR = 4;
+cMeanL = 1;
+cMeanR = 2;
 
 ex.responses = [];
 ex.responseTimes=[];
@@ -383,7 +389,7 @@ KbQueueCreate(deviceNumber,responseKeys);
 if n == 1 && blockCnt == 1 %for first block
     ex.tasktstart = clock;
     ex.startRun = GetSecs();
-    Screen('FillRect', w, gray1);
+    Screen('FillRect', w, ex.backgroundColor);
     Screen('DrawDots', w, [xc/2 yc], ex.fixSize, [255 255 255], [], 2);
     Screen('DrawDots', w, [xc*3/2 yc], ex.fixSize, [255 255 255], [], 2);
     Screen(w, 'Flip', 0);
@@ -399,12 +405,14 @@ for c = 1:length(ex.condShuffle)
     %%over the gratings phases
     %screen background color
     if contains(condName, 'Minbg') %contains(condName, 'Minbg')
+        l =1;
         if contains(condName, 'Left')
             cntMinL = cntMinL+1;
         elseif contains(condName, 'Right')
             cntMinR = cntMinR+1;
         end
     elseif contains(condName, 'Meanbg') %contains(condName, 'Minbg')
+        l = 2;
         if contains(condName, 'Left')
             cntMeanL = cntMeanL+1;
         elseif contains(condName, 'Right')
@@ -422,23 +430,23 @@ for c = 1:length(ex.condShuffle)
             Screen('FillRect', w, gray2);
             if nnz(find(ex.longFormStimOnSecs(n)))
                 if contains(condName, 'Left')
-                    xOffset = ex.stimLongDriftPos(cMinL,cntMinL,n)-ex.stimLongDriftPos(cMinL,cntMinL,1); %baseline correct the position since every image already hase a spatial phase shift in the sinewave
+                    xOffset = ex.stimLongDriftPos(cMinL,l,cntMinL,n)-ex.stimLongDriftPos(cMinL,l,cntMinL,1); %baseline correct the position since every image already hase a spatial phase shift in the sinewave
                     ex.rectLRect =  CenterRectOnPoint([0 0 ex.rawGaborWidth ex.rawGaborHeight],xc-xc/2+xOffset,yc);
                     ex.lcLRect =  CenterRectOnPoint([0 0 ex.rawProbeWidth ex.rawProbeHeight],xc+xc/2,yc);
                     % stim
                     
-                    Screen('DrawTexture', w, ex.rectSWaveID(cMinL,cntMinL),[],ex.rectLRect);
+                    Screen('DrawTexture', w, ex.rectSWaveID(cMinL,l,cntMinL),[],ex.rectLRect);
                     Screen('DrawTexture', w, ex.lcSWaveID(oriNum),[],ex.lcLRect);
                     Screen('DrawTexture',w,phLaperture);
                     
                     Screen('DrawDots', w, [xc/2 yc], ex.fixSize, [255 255 255], [], 2);
                     Screen('DrawDots', w, [xc*3/2 yc], ex.fixSize, [255 255 255], [], 2);
                 elseif contains(condName, 'Right')
-                    xOffset = ex.stimLongDriftPos(cMinR,cntMinR,n)-ex.stimLongDriftPos(cMinR,cntMinR,1); %baseline correct the position since every image already hase a spatial phase shift in the sinewave
+                    xOffset = ex.stimLongDriftPos(cMinR,l,cntMinR,n)-ex.stimLongDriftPos(cMinR,l,cntMinR,1); %baseline correct the position since every image already hase a spatial phase shift in the sinewave
                     ex.rectLRect =  CenterRectOnPoint([0 0 ex.rawGaborWidth ex.rawGaborHeight],xc+xc/2+xOffset,yc);
                     ex.lcRRect =  CenterRectOnPoint([0 0 ex.rawProbeWidth ex.rawProbeHeight],xc-xc/2,yc);
                     % stim
-                    Screen('DrawTexture', w, ex.rectSWaveID(cMinR,cntMinR),[],ex.rectLRect);
+                    Screen('DrawTexture', w, ex.rectSWaveID(cMinR,l,cntMinR),[],ex.rectLRect);
                     Screen('DrawTexture', w, ex.lcSWaveID(oriNum),[],ex.lcRRect);
                     Screen('DrawTexture',w,phRaperture);
                     
@@ -448,28 +456,28 @@ for c = 1:length(ex.condShuffle)
             end
             
         elseif contains(condName, 'Meanbg')
-            Screen('FillRect', w, gray1);
+            Screen('FillRect', w, gray2);
             if nnz(find(ex.longFormStimOnSecs(n)))
                 
                 if contains(condName, 'Left')
-                    xOffset = ex.stimLongDriftPos(cMeanL,cntMeanL,n)-ex.stimLongDriftPos(cMeanL,cntMeanL,1); %baseline correct the position since every image already hase a spatial phase shift in the sinewave
+                    xOffset = ex.stimLongDriftPos(cMeanL,l,cntMeanL,n)-ex.stimLongDriftPos(cMeanL,l,cntMeanL,1); %baseline correct the position since every image already hase a spatial phase shift in the sinewave
                     ex.rectLRect =  CenterRectOnPoint([0 0 ex.rawGaborWidth ex.rawGaborHeight],xc-xc/2+xOffset,yc);
                     ex.lcLRect =  CenterRectOnPoint([0 0 ex.rawProbeWidth ex.rawProbeHeight],xc+xc/2,yc);
                     
                     % stim
                     Screen('DrawTexture', w, ex.lcSWaveID(oriNum),[],ex.lcLRect);
-                    Screen('DrawTexture', w, ex.rectSWaveID(cMeanL,cntMeanL),[],ex.rectLRect);
+                    Screen('DrawTexture', w, ex.rectSWaveID(cMeanL,l,cntMeanL),[],ex.rectLRect);
                     Screen('DrawTexture',w,coLaperture);
                     Screen('DrawDots', w, [xc/2 yc], ex.fixSize, [255 255 255], [], 2);
                     Screen('DrawDots', w, [xc*3/2 yc], ex.fixSize, [255 255 255], [], 2);
                 elseif contains(condName, 'Right')
-                    xOffset = ex.stimLongDriftPos(cMeanR,cntMeanR,n)-ex.stimLongDriftPos(cMeanR,cntMeanR,1); %baseline correct the position since every image already hase a spatial phase shift in the sinewave
+                    xOffset = ex.stimLongDriftPos(cMeanR,l,cntMeanR,n)-ex.stimLongDriftPos(cMeanR,l,cntMeanR,1); %baseline correct the position since every image already hase a spatial phase shift in the sinewave
                     ex.rectLRect =  CenterRectOnPoint([0 0 ex.rawGaborWidth ex.rawGaborHeight],xc+xc/2+xOffset,yc);
                     ex.lcRRect =  CenterRectOnPoint([0 0 ex.rawProbeWidth ex.rawProbeHeight],xc-xc/2,yc);
                     
                     % stim
                     Screen('DrawTexture', w, ex.lcSWaveID(oriNum),[],ex.lcRRect);
-                    Screen('DrawTexture', w, ex.rectSWaveID(cMeanR,cntMeanR),[],ex.rectLRect);
+                    Screen('DrawTexture', w, ex.rectSWaveID(cMeanR,l,cntMeanR),[],ex.rectLRect);
                     Screen('DrawTexture',w,coRaperture);
                     
                     Screen('DrawDots', w, [xc/2 yc], ex.fixSize, [255 255 255], [], 2);
