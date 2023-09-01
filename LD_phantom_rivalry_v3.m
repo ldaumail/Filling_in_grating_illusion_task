@@ -530,17 +530,17 @@ for c = 1:length(ex.condShuffle)
             ex.responses = [ex.responses, 1];
             if (firstPress(KbName('1')) > 0)
                 ex.correctResp = [ex.correctResp, 1];
-                ex.responseTimes = [ex.responseTimes, firstPress(KbName('1')) - ex.tasktstart];
+                ex.responseTimes = [ex.responseTimes, firstPress(KbName('1')) - ex.startRun];
             elseif (firstPress(KbName('2')) > 0)
                 ex.correctResp = [ex.correctResp, 2];
-                ex.responseTimes = [ex.responseTimes, firstPress(KbName('2')) - ex.tasktstart];
+                ex.responseTimes = [ex.responseTimes, firstPress(KbName('2')) - ex.startRun];
             elseif (firstPress(KbName('3')) > 0)
                 ex.correctResp = [ex.correctResp, 3];
-                ex.responseTimes = [ex.responseTimes, firstPress(KbName('3')) - ex.tasktstart];
+                ex.responseTimes = [ex.responseTimes, firstPress(KbName('3')) - ex.startRun];
             end
+            pressed = 0;
         end
-        %%%% refresh queue for next character
-        KbQueueFlush();
+
         if nnz(onOffs(n)) == 1
             time = GetSecs;
             cnt = cnt+1;
@@ -555,6 +555,8 @@ for c = 1:length(ex.condShuffle)
             %             KbTriggerWait(KbName('Space'), deviceNumber);
             cnt = 0;
         end
+        %%%% refresh queue for next character
+        KbQueueFlush();
         n = n+1;
     end
     
