@@ -394,7 +394,7 @@ Screen('FillRect',ph2Raperture, [255 255 255 0], [xc-(1/2)*(ex.gaborWidth - xc) 
 Screen('FillRect',ph2Raperture, [255 255 255 0], [xc-(1/2)*(ex.probeWidth + xc)-ex.lcstim.distFromFix yc-ex.probeHeight/2 xc+(ex.probeWidth+ xc)/2-ex.lcstim.distFromFix yc+(1/2)*ex.probeHeight]); %opposite eye grating window
 
 %% %%%% initial window - wait for backtick
-DrawFormattedText(w,'Fixate the fixation dot as best as you can. \n\n after each perceptual change report using the following digits 1: the low contrast grating (probe) is fully faded \n\n 2: The probe is partially visible \n\n 3: The probe is fully visible \n\n Press Space to start'... % :  '...
+DrawFormattedText(w,'Fixate the fixation dot as best as you can. \n\n After each perceptual change, report using the following digits \n\n 1: The low contrast grating (probe) is fully faded \n\n 2: The probe is partially visible \n\n 3: The probe is fully visible \n\n Press Space to start'... % :  '...
     ,'center', 'center',[0 0 0]);
 Screen(w, 'Flip', 0);
 %WaitSecs(2);
@@ -718,9 +718,9 @@ end
 
 ex.runTime = GetSecs - ex.startRun;
 
-savedir = fullfile(ex.root,'data',sprintf('s%s_%s/',subject,ex.version));
+savedir = fullfile(ex.root,'data',sprintf('%s_%s/',subject,ex.version));
 if ~exist(savedir); mkdir(savedir); end
-savename = fullfile(savedir, strcat(sprintf('/s%s_binocular_rivalry_%s_date%s_fix',subject,ex.version,num2str(ex.date)), '.mat'));
+savename = fullfile(savedir, strcat(sprintf('/%s_binocular_rivalry_%s_date%s_fix',subject,ex.version,num2str(ex.date)), '.mat'));
 %save(savename,'ex');
 save(savename,'ex','-v7.3')
 
