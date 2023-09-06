@@ -6,7 +6,7 @@ function LD_phantom_rivalry_v5(subject, session, debug)
 % debug = 1;
 
 
-ex.version = 'v4';
+ex.version = 'v5';
 %%%% resolution 
 if debug == 1
 
@@ -64,7 +64,7 @@ ex.stim.gaborWDeg = 16;
 %ex.stim.rectGaborWDeg = 8;
 ex.stim.contrast = 0.15;%linspace(0.01,0.20,10);%[0.05, 0.10, 0.15];                                                 % in %, maybe?? %here the number of stimulus contrast levels is the number of different conditions
 ex.stim.contrastMultiplicator = ex.stim.contrast/2;  % for sine wave 0.5 = 100% contrast, 0.2 = 40%
-ex.stim.contrastOffset = [0.425 .5 0.35]; %.5 .5 0];                                  % for procedural gabor
+ex.stim.contrastOffset = [.5 0.425 0.35]; %.5 .5 0];                                  % for procedural gabor
 %ex.stim.cycPerSec = [1.13*1/2,1.13*3/2]; % try multiple speeds
 %ex.stim.motionRate = ex.stim.cycPerSec.*360;                                          % 1.13 cycles per second = 360 deg of phase *1.13 per sec
 %ex.stim.cycles =[1, 3]; %number of cycles shifted per lap  (modified to half the number of cycles per lap)
@@ -175,12 +175,12 @@ Screen(w, 'TextSize', ex.fontSize);
 Screen('BlendFunction', w, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 %gamma correction, file prepared for room 425
-if ex.gammaCorrection 
-% Gamma correction (run phase2_photometry.mat in 417C computer, get gamma
-% table)
-load("phase2_photometry.mat");
-% Screen('LoadNormalizedGammaTable', screenNumber, linearizedCLUT);
-Screen('LoadNormalizedGammaTable', screenNumber, inverseCLUT);
+if ex.gammaCorrection
+    % Gamma correction (run phase2_photometry.mat in 417C computer, get gamma
+    % table)
+    load("phase2_photometry.mat");
+    % Screen('LoadNormalizedGammaTable', screenNumber, linearizedCLUT);
+    Screen('LoadNormalizedGammaTable', screen, inverseCLUT);
 end
 %%%% timing optimization
 frameInt = Screen('GetFlipInterval',w);
@@ -270,6 +270,9 @@ for c =1:nconds
         end
     end
 end
+%check luminances ranges
+% repmat(min(min(squeeze(ex.rectSWave(1,3,1,:,:)),[],1)),1)
+% repmat(max(max(squeeze(ex.rectSWave(1,3,1,:,:)),[],1)),1)
 
 %% create 1 low contrast grating image as a probe for other eye
 
@@ -277,10 +280,13 @@ phase = ex.stim.phases(c,l,r,1);
 ex.lcSWave = nan(length(ex.lcstim.orientation),ex.rawProbeHeight,ex.rawProbeWidth);
 for i =1:length(ex.lcstim.orientation)
     ex.lcSWave(i,:,:) = makeGabor(ex.rawProbeHeight,ex.rawProbeWidth,ex.lcstim.spatialFreqDeg,...
-        ex.lcstim.orientation(i),phase,ex.stim.contrastOffset(1),ex.lcstim.contrastMultiplicator,...
+        ex.lcstim.orientation(i),phase,ex.stim.contrastOffset(2),ex.lcstim.contrastMultiplicator,...
         ex.ppd);
     ex.lcSWaveID(i) = Screen('MakeTexture', w, squeeze(ex.lcSWave(i,:,:)));
 end
+%check luminances ranges
+% repmat(min(min(squeeze(ex.lcSWave(1,:,:)),[],1)),1)
+% repmat(max(max(squeeze(ex.lcSWave(1,:,:)),[],1)),1)
 
 % figure();
 % imshow(squeeze(ex.lcSWave(1,:,:))/255)
@@ -388,7 +394,7 @@ Screen('FillRect',ph2Raperture, [255 255 255 0], [xc-(1/2)*(ex.gaborWidth - xc) 
 Screen('FillRect',ph2Raperture, [255 255 255 0], [xc-(1/2)*(ex.probeWidth + xc)-ex.lcstim.distFromFix yc-ex.probeHeight/2 xc+(ex.probeWidth+ xc)/2-ex.lcstim.distFromFix yc+(1/2)*ex.probeHeight]); %opposite eye grating window
 
 %% %%%% initial window - wait for backtick
-DrawFormattedText(w,'Fixate the fixation dot as best as you can. \n\n after each perceptual change report using the following digits 1: the phantom or blank gap is visible \n\n 2: the low contrast grating (probe) and phantom/blank gap are both visible \n\n 3: phantom/blabk gap totally disappears at probe location, probe is visible \n\n 4: Probe is not visible \n\n Press Space to start'... % :  '...
+DrawFormattedText(w,'Fixate the fixation dot as best as you can. \n\n after each perceptual change report using the following digits 1: the low contrast grating (probe) is fully faded \n\n 2: The probe is partially visible \n\n 3: The probe is fully visible \n\n Press Space to start'... % :  '...
     ,'center', 'center',[0 0 0]);
 Screen(w, 'Flip', 0);
 %WaitSecs(2);
