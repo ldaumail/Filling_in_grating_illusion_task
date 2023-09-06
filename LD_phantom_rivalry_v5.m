@@ -78,7 +78,7 @@ ex.initialFixation = 6;        % in seconds
 ex.finalFixation = 2;          % in seconds
 ex.trialFixation = 1;          % in seconds
 %ex.stimsPerBlock = 4.5;      % number of back-and-forth laps of the stimulus drift
-ex.blockLength = ex.trialFixation + 5; %119;%119; %ex.trialFixation+ ceil(ex.stimDur*ex.stimsPerBlock);           % in seconds
+ex.blockLength = ex.trialFixation + 119;%119; %ex.trialFixation+ ceil(ex.stimDur*ex.stimsPerBlock);           % in seconds
 ex.betweenBlocks = 2;          % in seconds
 ex.flipsPerSec = 60;  % 60;         % number of phase changes we want from the visual stimulus, and thus the number of times we want to change visual stimulation on the screen
 ex.flipWin = 1/ex.flipsPerSec;         % in seconds then actually in 1 sec the stimuli will change 12 times 
@@ -252,7 +252,7 @@ ex.probeHeight = round(ex.lcstim.gaborHDeg*ex.ppd);                 % in pixels,
 ex.probeWidth = round(ex.lcstim.gaborWDeg*ex.ppd);                 % in pixels, the size of our objects
 ex.rawProbeHeight = ex.probeHeight*1;
 ex.rawProbeWidth = ex.probeWidth*1;
-ex.lcstim.distFromFix = ex.lcstim.distFromFixDeg*ex.ppd;
+ex.lcstim.distFromFix = round(ex.lcstim.distFromFixDeg*ex.ppd);
 
 %% Create only one big sinewave grating image saved for each repetition and each condition
 
@@ -332,60 +332,60 @@ gray2 = [108.3750  108.3750  108.3750]; %repmat(min(min(squeeze(ex.rectSWave(1,1
 coLPaperture=Screen('OpenOffscreenwindow', w, gray2);
 Screen('FillRect',coLPaperture, [255 255 255 0], [xc-(1/2)*(ex.gaborWidth + xc) yc-(3/2)*ex.gaborHeight xc+(ex.gaborWidth-xc)/2 yc-ex.gaborHeight/2]); %top grating window
 Screen('FillRect',coLPaperture, [255 255 255 0], [xc-(1/2)*(ex.gaborWidth + xc) yc+ex.gaborHeight/2 xc+(ex.gaborWidth-xc)/2 yc+(3/2)*ex.gaborHeight]); %bottom grating window
-Screen('FillRect',coLPaperture, [255 255 255 0], [xc-(1/2)*(ex.probeWidth)+ex.lcstim.distFromFix yc-ex.probeHeight/2 xc+(ex.probeWidth)/2+ex.lcstim.distFromFix yc+(1/2)*ex.probeHeight]); %opposite eye grating window
+Screen('FillRect',coLPaperture, [255 255 255 0], [xc-(1/2)*(ex.probeWidth - xc)+ex.lcstim.distFromFix yc-ex.probeHeight/2 xc+(ex.probeWidth+xc)/2+ex.lcstim.distFromFix yc+(1/2)*ex.probeHeight]); %opposite eye grating window
 
 coLTaperture=Screen('OpenOffscreenwindow', w, gray2);
 Screen('FillRect',coLTaperture, [255 255 255 0], [xc-(1/2)*(ex.gaborWidth + xc) yc-(3/2)*ex.gaborHeight xc+(ex.gaborWidth-xc)/2 yc-ex.gaborHeight/2]); %top grating window
-Screen('FillRect',coLTaperture, [255 255 255 0], [xc-(1/2)*(ex.probeWidth)+ex.lcstim.distFromFix yc-ex.probeHeight/2 xc+(ex.probeWidth)/2+ex.lcstim.distFromFix yc+(1/2)*ex.probeHeight]); %opposite eye grating window
+Screen('FillRect',coLTaperture, [255 255 255 0], [xc-(1/2)*(ex.probeWidth - xc)+ex.lcstim.distFromFix yc-ex.probeHeight/2 xc+(ex.probeWidth+xc)/2+ex.lcstim.distFromFix yc+(1/2)*ex.probeHeight]); %opposite eye grating window
 
 coLBaperture=Screen('OpenOffscreenwindow', w, gray2);
 Screen('FillRect',coLBaperture, [255 255 255 0], [xc-(1/2)*(ex.gaborWidth + xc) yc+ex.gaborHeight/2 xc+(ex.gaborWidth-xc)/2 yc+(3/2)*ex.gaborHeight]); %bottom grating window
-Screen('FillRect',coLBaperture, [255 255 255 0], [xc-(1/2)*(ex.probeWidth)+ex.lcstim.distFromFix yc-ex.probeHeight/2 xc+(ex.probeWidth)/2+ex.lcstim.distFromFix yc+(1/2)*ex.probeHeight]); %opposite eye grating window
+Screen('FillRect',coLBaperture, [255 255 255 0], [xc-(1/2)*(ex.probeWidth - xc)+ex.lcstim.distFromFix yc-ex.probeHeight/2 xc+(ex.probeWidth+xc)/2+ex.lcstim.distFromFix yc+(1/2)*ex.probeHeight]); %opposite eye grating window
 
 
 coRaperture=Screen('OpenOffscreenwindow', w, gray2);
 Screen('FillRect',coRaperture, [255 255 255 0], [xc-(1/2)*(ex.gaborWidth - xc) yc-(3/2)*ex.gaborHeight xc+(ex.gaborWidth+xc)/2 yc-ex.gaborHeight/2]); %top grating window
 Screen('FillRect',coRaperture, [255 255 255 0], [xc-(1/2)*(ex.gaborWidth - xc) yc+ex.gaborHeight/2 xc+(ex.gaborWidth+xc)/2 yc+(3/2)*ex.gaborHeight]); %bottom grating window
-Screen('FillRect',coRaperture, [255 255 255 0], [xc-(1/2)*(ex.probeWidth)-ex.lcstim.distFromFix yc-ex.probeHeight/2 xc+(ex.probeWidth)/2-ex.lcstim.distFromFix yc+(1/2)*ex.probeHeight]); %opposite eye grating window
+Screen('FillRect',coRaperture, [255 255 255 0], [xc-(1/2)*(ex.probeWidth+xc)-ex.lcstim.distFromFix yc-ex.probeHeight/2 xc+(ex.probeWidth-xc)/2-ex.lcstim.distFromFix yc+(1/2)*ex.probeHeight]); %opposite eye grating window
 
 
 %phantom condition 1
 ph1LPaperture=Screen('OpenOffscreenwindow', w, gray2);
 Screen('FillRect',ph1LPaperture, [255 255 255 0], [xc-(1/2)*(ex.gaborWidth + xc) yc-(3/2)*ex.gaborHeight xc+(ex.gaborWidth-xc)/2 yc-ex.gaborHeight/2]); %top grating window
 Screen('FillRect',ph1LPaperture, [255 255 255 0], [xc-(1/2)*(ex.gaborWidth + xc) yc+ex.gaborHeight/2 xc+(ex.gaborWidth-xc)/2 yc+(3/2)*ex.gaborHeight]); %bottom grating window
-Screen('FillRect',ph1LPaperture, [255 255 255 0], [xc-(1/2)*(ex.probeWidth)+ex.lcstim.distFromFix yc-ex.probeHeight/2 xc+(ex.probeWidth)/2+ex.lcstim.distFromFix yc+(1/2)*ex.probeHeight]); %opposite eye grating window
+Screen('FillRect',ph1LPaperture, [255 255 255 0], [xc-(1/2)*(ex.probeWidth - xc)+ex.lcstim.distFromFix yc-ex.probeHeight/2 xc+(ex.probeWidth+ xc)/2+ex.lcstim.distFromFix yc+(1/2)*ex.probeHeight]); %opposite eye grating window
 
 ph1LTaperture=Screen('OpenOffscreenwindow', w, gray2);
 Screen('FillRect',ph1LTaperture, [255 255 255 0], [xc-(1/2)*(ex.gaborWidth + xc) yc-(3/2)*ex.gaborHeight xc+(ex.gaborWidth-xc)/2 yc-ex.gaborHeight/2]); %top grating window
-Screen('FillRect',ph1LTaperture, [255 255 255 0], [xc-(1/2)*(ex.probeWidth)+ex.lcstim.distFromFix yc-ex.probeHeight/2 xc+(ex.probeWidth)/2+ex.lcstim.distFromFix yc+(1/2)*ex.probeHeight]); %opposite eye grating window
+Screen('FillRect',ph1LTaperture, [255 255 255 0], [xc-(1/2)*(ex.probeWidth - xc)+ex.lcstim.distFromFix yc-ex.probeHeight/2 xc+(ex.probeWidth+ xc)/2+ex.lcstim.distFromFix yc+(1/2)*ex.probeHeight]); %opposite eye grating window
 
 ph1LBaperture=Screen('OpenOffscreenwindow', w, gray2);
 Screen('FillRect',ph1LBaperture, [255 255 255 0], [xc-(1/2)*(ex.gaborWidth + xc) yc+ex.gaborHeight/2 xc+(ex.gaborWidth-xc)/2 yc+(3/2)*ex.gaborHeight]); %bottom grating window
-Screen('FillRect',ph1LBaperture, [255 255 255 0], [xc-(1/2)*(ex.probeWidth)+ex.lcstim.distFromFix yc-ex.probeHeight/2 xc+(ex.probeWidth)/2+ex.lcstim.distFromFix yc+(1/2)*ex.probeHeight]); %opposite eye grating window
+Screen('FillRect',ph1LBaperture, [255 255 255 0], [xc-(1/2)*(ex.probeWidth - xc)+ex.lcstim.distFromFix yc-ex.probeHeight/2 xc+(ex.probeWidth+ xc)/2+ex.lcstim.distFromFix yc+(1/2)*ex.probeHeight]); %opposite eye grating window
 
 ph1Raperture=Screen('OpenOffscreenwindow', w, gray2);
 Screen('FillRect',ph1Raperture, [255 255 255 0], [xc-(1/2)*(ex.gaborWidth - xc) yc-(3/2)*ex.gaborHeight xc+(ex.gaborWidth+xc)/2 yc-ex.gaborHeight/2]); %top grating window
 Screen('FillRect',ph1Raperture, [255 255 255 0], [xc-(1/2)*(ex.gaborWidth - xc) yc+ex.gaborHeight/2 xc+(ex.gaborWidth+xc)/2 yc+(3/2)*ex.gaborHeight]); %bottom grating window
-Screen('FillRect',ph1Raperture, [255 255 255 0], [xc-(1/2)*(ex.probeWidth)-ex.lcstim.distFromFix yc-ex.probeHeight/2 xc+(ex.probeWidth)/2-ex.lcstim.distFromFix yc+(1/2)*ex.probeHeight]); %opposite eye grating window
+Screen('FillRect',ph1Raperture, [255 255 255 0], [xc-(1/2)*(ex.probeWidth + xc)-ex.lcstim.distFromFix yc-ex.probeHeight/2 xc+(ex.probeWidth+ xc)/2-ex.lcstim.distFromFix yc+(1/2)*ex.probeHeight]); %opposite eye grating window
 
 ph2LPaperture=Screen('OpenOffscreenwindow', w, gray2);
 Screen('FillRect',ph2LPaperture, [255 255 255 0], [xc-(1/2)*(ex.gaborWidth + xc) yc-(3/2)*ex.gaborHeight xc+(ex.gaborWidth-xc)/2 yc-ex.gaborHeight/2]); %top grating window
 Screen('FillRect',ph2LPaperture, [255 255 255 0], [xc-(1/2)*(ex.gaborWidth + xc) yc+ex.gaborHeight/2 xc+(ex.gaborWidth-xc)/2 yc+(3/2)*ex.gaborHeight]); %bottom grating window
-Screen('FillRect',ph2LPaperture, [255 255 255 0], [xc-(1/2)*(ex.probeWidth)+ex.lcstim.distFromFix yc-ex.probeHeight/2 xc+(ex.probeWidth)/2+ex.lcstim.distFromFix yc+(1/2)*ex.probeHeight]); %opposite eye grating window
+Screen('FillRect',ph2LPaperture, [255 255 255 0], [xc-(1/2)*(ex.probeWidth - xc)+ex.lcstim.distFromFix yc-ex.probeHeight/2 xc+(ex.probeWidth+ xc)/2+ex.lcstim.distFromFix yc+(1/2)*ex.probeHeight]); %opposite eye grating window
 
 ph2LTaperture=Screen('OpenOffscreenwindow', w, gray2);
 Screen('FillRect',ph2LTaperture, [255 255 255 0], [xc-(1/2)*(ex.gaborWidth + xc) yc-(3/2)*ex.gaborHeight xc+(ex.gaborWidth-xc)/2 yc-ex.gaborHeight/2]); %top grating window
-Screen('FillRect',ph2LTaperture, [255 255 255 0], [xc-(1/2)*(ex.probeWidth)+ex.lcstim.distFromFix yc-ex.probeHeight/2 xc+(ex.probeWidth)/2+ex.lcstim.distFromFix yc+(1/2)*ex.probeHeight]); %opposite eye grating window
+Screen('FillRect',ph2LTaperture, [255 255 255 0], [xc-(1/2)*(ex.probeWidth - xc)+ex.lcstim.distFromFix yc-ex.probeHeight/2 xc+(ex.probeWidth+ xc)/2+ex.lcstim.distFromFix yc+(1/2)*ex.probeHeight]); %opposite eye grating window
 
 ph2LBaperture=Screen('OpenOffscreenwindow', w, gray2);
 Screen('FillRect',ph2LBaperture, [255 255 255 0], [xc-(1/2)*(ex.gaborWidth + xc) yc+ex.gaborHeight/2 xc+(ex.gaborWidth-xc)/2 yc+(3/2)*ex.gaborHeight]); %bottom grating window
-Screen('FillRect',ph2LBaperture, [255 255 255 0], [xc-(1/2)*(ex.probeWidth)+ex.lcstim.distFromFix yc-ex.probeHeight/2 xc+(ex.probeWidth)/2+ex.lcstim.distFromFix yc+(1/2)*ex.probeHeight]); %opposite eye grating window
+Screen('FillRect',ph2LBaperture, [255 255 255 0], [xc-(1/2)*(ex.probeWidth - xc)+ex.lcstim.distFromFix yc-ex.probeHeight/2 xc+(ex.probeWidth+ xc)/2+ex.lcstim.distFromFix yc+(1/2)*ex.probeHeight]); %opposite eye grating window
 
 
 ph2Raperture=Screen('OpenOffscreenwindow', w, gray2);
 Screen('FillRect',ph2Raperture, [255 255 255 0], [xc-(1/2)*(ex.gaborWidth - xc) yc-(3/2)*ex.gaborHeight xc+(ex.gaborWidth+xc)/2 yc-ex.gaborHeight/2]); %top grating window
 Screen('FillRect',ph2Raperture, [255 255 255 0], [xc-(1/2)*(ex.gaborWidth - xc) yc+ex.gaborHeight/2 xc+(ex.gaborWidth+xc)/2 yc+(3/2)*ex.gaborHeight]); %bottom grating window
-Screen('FillRect',ph2Raperture, [255 255 255 0], [xc-(1/2)*(ex.probeWidth)-ex.lcstim.distFromFix yc-ex.probeHeight/2 xc+(ex.probeWidth)/2-ex.lcstim.distFromFix yc+(1/2)*ex.probeHeight]); %opposite eye grating window
+Screen('FillRect',ph2Raperture, [255 255 255 0], [xc-(1/2)*(ex.probeWidth + xc)-ex.lcstim.distFromFix yc-ex.probeHeight/2 xc+(ex.probeWidth+ xc)/2-ex.lcstim.distFromFix yc+(1/2)*ex.probeHeight]); %opposite eye grating window
 
 %% %%%% initial window - wait for backtick
 DrawFormattedText(w,'Fixate the fixation dot as best as you can. \n\n after each perceptual change report using the following digits 1: the phantom or blank gap is visible \n\n 2: the low contrast grating (probe) and phantom/blank gap are both visible \n\n 3: phantom/blabk gap totally disappears at probe location, probe is visible \n\n 4: Probe is not visible \n\n Press Space to start'... % :  '...
@@ -580,7 +580,7 @@ for c = 1:length(ex.condShuffle)
             if nnz(find(ex.longFormStimOnSecs(n)))
                 
                 if contains(condName, 'Left')
-                    if contains('Pair')
+                    if contains(condName,'Pair')
                         xOffset = ex.stimLongDriftPos(condNum,l, cntConds(condNum),n)-ex.stimLongDriftPos(condNum,l, cntConds(condNum),1); %baseline correct the position since every image already hase a spatial phase shift in the sinewave
                         ex.rectLRect =  CenterRectOnPoint([0 0 ex.rawGaborWidth ex.rawGaborHeight],xc-xc/2+xOffset,yc);
                         ex.lcLRect =  CenterRectOnPoint([0 0 ex.rawProbeWidth ex.rawProbeHeight],xc+xc/2+ex.lcstim.distFromFix,yc);
@@ -590,8 +590,8 @@ for c = 1:length(ex.condShuffle)
                         Screen('DrawTexture', w, ex.rectSWaveID(condNum,l, cntConds(condNum)),[],ex.rectLRect);
                         Screen('DrawTexture',w,ph2LPaperture);
 
-                    elseif contains('Top')
-                        xOffset = ex.stimLongDriftPos(condNum,l, cntConds(condNum),n)-ex.stimLongDriftPos(condNumL,l, cntConds(condNum),1); %baseline correct the position since every image already hase a spatial phase shift in the sinewave
+                    elseif contains(condName,'Top')
+                        xOffset = ex.stimLongDriftPos(condNum,l, cntConds(condNum),n)-ex.stimLongDriftPos(condNum,l, cntConds(condNum),1); %baseline correct the position since every image already hase a spatial phase shift in the sinewave
                         ex.rectLRect =  CenterRectOnPoint([0 0 ex.rawGaborWidth ex.rawGaborHeight],xc-xc/2+xOffset,yc);
                         ex.lcLRect =  CenterRectOnPoint([0 0 ex.rawProbeWidth ex.rawProbeHeight],xc+xc/2+ex.lcstim.distFromFix,yc);
                         
@@ -599,7 +599,7 @@ for c = 1:length(ex.condShuffle)
                         Screen('DrawTexture', w, ex.lcSWaveID(oriNum),[],ex.lcLRect);
                         Screen('DrawTexture', w, ex.rectSWaveID(condNum,l, cntConds(condNum)),[],ex.rectLRect);
                         Screen('DrawTexture',w,ph2LTaperture);
-                    elseif contains('Bot')
+                    elseif contains(condName,'Bot')
                         xOffset = ex.stimLongDriftPos(condNum,l, cntConds(condNum),n)-ex.stimLongDriftPos(condNum,l, cntConds(condNum),1); %baseline correct the position since every image already hase a spatial phase shift in the sinewave
                         ex.rectLRect =  CenterRectOnPoint([0 0 ex.rawGaborWidth ex.rawGaborHeight],xc-xc/2+xOffset,yc);
                         ex.lcLRect =  CenterRectOnPoint([0 0 ex.rawProbeWidth ex.rawProbeHeight],xc+xc/2+ex.lcstim.distFromFix,yc);
