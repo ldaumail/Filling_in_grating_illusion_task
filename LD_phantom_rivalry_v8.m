@@ -91,7 +91,7 @@ ex.lcstim.contrastMultiplicator = ex.lcstim.contrast/2;  % for sine wave 0.5 = 1
 ex.lcstim.orientation = [45 135];
 ex.lcstim.gaborHDeg = 2;                                                  % in degrees of visual angle
 ex.lcstim.gaborWDeg = 2;
-ex.lcstim.distFromFixDeg = 2; % in degrees of visual angle, grating center 2 deg away (edge 1 deg away)
+ex.lcstim.distFromFixDeg = 0; % in degrees of visual angle, grating center 2 deg away (edge 1 deg away)
 
 %%%% Fixation
 ex.fixSizeDeg =  .2;            % in degrees, the size of the biggest white dot in the fixation
@@ -243,8 +243,8 @@ ex.fixSize = round(ex.fixSizeDeg*ex.ppd);
 ex.bigFixSize = round(ex.bigFixSizeDeg*ex.ppd);
 ex.gaborHeight = round(ex.stim.gaborHDeg*ex.ppd);                 % in pixels, the size of our objects
 ex.gaborWidth = round(ex.stim.gaborWDeg*ex.ppd);                 % in pixels, the size of our objects
-ex.rawGaborHeight = ex.gaborHeight*3;
-ex.rawGaborWidth = ex.gaborWidth*1.5;
+ex.rawGaborHeight = ex.gaborHeight*1.5;
+ex.rawGaborWidth = ex.gaborWidth*3;
 ex.stim.distFromFix = round(ex.stim.distFromFixDeg*ex.ppd);
 
 %%%% scale the prob params for the screen
@@ -337,8 +337,8 @@ xLl = (1/2)*xc-(1/2)*ex.gaborWidth-ex.stim.distFromFix;
 xLr = (1/2)*xc+(1/2)*ex.gaborWidth-ex.stim.distFromFix;
 
 %right grating
-xRr = (1/2)*xc-(1/2)*ex.gaborWidth+ex.stim.distFromFix;
-xRl = (1/2)*xc+(1/2)*ex.gaborWidth+ex.stim.distFromFix;
+xRl = (1/2)*xc-(1/2)*ex.gaborWidth+ex.stim.distFromFix;
+xRr = (1/2)*xc+(1/2)*ex.gaborWidth+ex.stim.distFromFix;
 
 % grating y locations
 yt = yc-(1/2)*ex.gaborHeight;
@@ -351,7 +351,7 @@ yb = yc+(1/2)*ex.gaborHeight;
 %phantom control condition
 coLPaperture=Screen('OpenOffscreenwindow', w, gray2);
 Screen('FillRect',coLPaperture, [255 255 255 0], [xLl yt xLr yb]); %Left grating window
-Screen('FillRect',coLPaperture, [255 255 255 0], [xRr yt xRl yb]); %Right grating window
+Screen('FillRect',coLPaperture, [255 255 255 0], [xRl yt xRr yb]); %Right grating window
 Screen('FillRect',coLPaperture, [255 255 255 0], [xc-(1/2)*(ex.probeWidth - xc)+ex.lcstim.distFromFix yc-ex.probeHeight/2 xc+(ex.probeWidth+xc)/2+ex.lcstim.distFromFix yc+(1/2)*ex.probeHeight]); %opposite eye grating window
 
 coLTaperture=Screen('OpenOffscreenwindow', w, gray2);
@@ -359,20 +359,20 @@ Screen('FillRect',coLTaperture, [255 255 255 0], [xLl yt xLr yb]); %Left grating
 Screen('FillRect',coLTaperture, [255 255 255 0], [xc-(1/2)*(ex.probeWidth - xc)+ex.lcstim.distFromFix yc-ex.probeHeight/2 xc+(ex.probeWidth+xc)/2+ex.lcstim.distFromFix yc+(1/2)*ex.probeHeight]); %opposite eye grating window
 
 coLBaperture=Screen('OpenOffscreenwindow', w, gray2);
-Screen('FillRect',coLBaperture, [255 255 255 0], [xRr yt xRl yb]); %Right grating window
+Screen('FillRect',coLBaperture, [255 255 255 0], [xRl yt xRr yb]); %Right grating window
 Screen('FillRect',coLBaperture, [255 255 255 0], [xc-(1/2)*(ex.probeWidth - xc)+ex.lcstim.distFromFix yc-ex.probeHeight/2 xc+(ex.probeWidth+xc)/2+ex.lcstim.distFromFix yc+(1/2)*ex.probeHeight]); %opposite eye grating window
 
 
 coRaperture=Screen('OpenOffscreenwindow', w, gray2);
 Screen('FillRect',coRaperture, [255 255 255 0], [xLl yt xLr yb]); %Left grating window
-Screen('FillRect',coRaperture, [255 255 255 0], [xRr yt xRl yb]); %Right grating window
+Screen('FillRect',coRaperture, [255 255 255 0], [xRl yt xRr yb]); %Right grating window
 Screen('FillRect',coRaperture, [255 255 255 0], [xc-(1/2)*(ex.probeWidth+xc)-ex.lcstim.distFromFix yc-ex.probeHeight/2 xc+(ex.probeWidth-xc)/2-ex.lcstim.distFromFix yc+(1/2)*ex.probeHeight]); %opposite eye grating window
 
 
 %phantom condition 1
 ph1LPaperture=Screen('OpenOffscreenwindow', w, gray2);
 Screen('FillRect',ph1LPaperture, [255 255 255 0], [xLl yt xLr yb]); %Left grating window
-Screen('FillRect',ph1LPaperture, [255 255 255 0], [xRr yt xRl yb]); %Right grating window
+Screen('FillRect',ph1LPaperture, [255 255 255 0], [xRl yt xRr yb]); %Right grating window
 Screen('FillRect',ph1LPaperture, [255 255 255 0], [xc-(1/2)*(ex.probeWidth - xc)+ex.lcstim.distFromFix yc-ex.probeHeight/2 xc+(ex.probeWidth+ xc)/2+ex.lcstim.distFromFix yc+(1/2)*ex.probeHeight]); %opposite eye grating window
 
 ph1LTaperture=Screen('OpenOffscreenwindow', w, gray2);
@@ -380,17 +380,17 @@ Screen('FillRect',ph1LTaperture, [255 255 255 0], [xLl yt xLr yb]); %Left gratin
 Screen('FillRect',ph1LTaperture, [255 255 255 0], [xc-(1/2)*(ex.probeWidth - xc)+ex.lcstim.distFromFix yc-ex.probeHeight/2 xc+(ex.probeWidth+ xc)/2+ex.lcstim.distFromFix yc+(1/2)*ex.probeHeight]); %opposite eye grating window
 
 ph1LBaperture=Screen('OpenOffscreenwindow', w, gray2);
-Screen('FillRect',ph1LBaperture, [255 255 255 0], [xRr yt xRl yb]); %Right grating window
+Screen('FillRect',ph1LBaperture, [255 255 255 0], [xRl yt xRr yb]); %Right grating window
 Screen('FillRect',ph1LBaperture, [255 255 255 0], [xc-(1/2)*(ex.probeWidth - xc)+ex.lcstim.distFromFix yc-ex.probeHeight/2 xc+(ex.probeWidth+ xc)/2+ex.lcstim.distFromFix yc+(1/2)*ex.probeHeight]); %opposite eye grating window
 
 ph1Raperture=Screen('OpenOffscreenwindow', w, gray2);
 Screen('FillRect',ph1Raperture, [255 255 255 0], [xLl yt xLr yb]); %Left grating window
-Screen('FillRect',ph1Raperture, [255 255 255 0], [xRr yt xRl yb]); %Right grating window
+Screen('FillRect',ph1Raperture, [255 255 255 0], [xRl yt xRr yb]); %Right grating window
 Screen('FillRect',ph1Raperture, [255 255 255 0], [xc-(1/2)*(ex.probeWidth + xc)-ex.lcstim.distFromFix yc-ex.probeHeight/2 xc+(ex.probeWidth+ xc)/2-ex.lcstim.distFromFix yc+(1/2)*ex.probeHeight]); %opposite eye grating window
 
 ph2LPaperture=Screen('OpenOffscreenwindow', w, gray2);
 Screen('FillRect',ph2LPaperture, [255 255 255 0], [xLl yt xLr yb]); %Left grating window
-Screen('FillRect',ph2LPaperture, [255 255 255 0], [xRr yt xRl yb]); %Right grating window
+Screen('FillRect',ph2LPaperture, [255 255 255 0], [xRl yt xRr yb]); %Right grating window
 Screen('FillRect',ph2LPaperture, [255 255 255 0], [xc-(1/2)*(ex.probeWidth - xc)+ex.lcstim.distFromFix yc-ex.probeHeight/2 xc+(ex.probeWidth+ xc)/2+ex.lcstim.distFromFix yc+(1/2)*ex.probeHeight]); %opposite eye grating window
 
 ph2LTaperture=Screen('OpenOffscreenwindow', w, gray2);
@@ -398,13 +398,13 @@ Screen('FillRect',ph2LTaperture, [255 255 255 0], [xLl yt xLr yb]); %Left gratin
 Screen('FillRect',ph2LTaperture, [255 255 255 0], [xc-(1/2)*(ex.probeWidth - xc)+ex.lcstim.distFromFix yc-ex.probeHeight/2 xc+(ex.probeWidth+ xc)/2+ex.lcstim.distFromFix yc+(1/2)*ex.probeHeight]); %opposite eye grating window
 
 ph2LBaperture=Screen('OpenOffscreenwindow', w, gray2);
-Screen('FillRect',ph2LBaperture, [255 255 255 0], [xRr yt xRl yb]); %Right grating window
+Screen('FillRect',ph2LBaperture, [255 255 255 0], [xRl yt xRr yb]); %Right grating window
 Screen('FillRect',ph2LBaperture, [255 255 255 0], [xc-(1/2)*(ex.probeWidth - xc)+ex.lcstim.distFromFix yc-ex.probeHeight/2 xc+(ex.probeWidth+ xc)/2+ex.lcstim.distFromFix yc+(1/2)*ex.probeHeight]); %opposite eye grating window
 
 
 ph2Raperture=Screen('OpenOffscreenwindow', w, gray2);
 Screen('FillRect',ph2Raperture, [255 255 255 0], [xLl yt xLr yb]); %Left grating window
-Screen('FillRect',ph2Raperture, [255 255 255 0], [xRr yt xRl yb]); %Right grating window
+Screen('FillRect',ph2Raperture, [255 255 255 0], [xRl yt xRr yb]); %Right grating window
 Screen('FillRect',ph2Raperture, [255 255 255 0], [xc-(1/2)*(ex.probeWidth + xc)-ex.lcstim.distFromFix yc-ex.probeHeight/2 xc+(ex.probeWidth+ xc)/2-ex.lcstim.distFromFix yc+(1/2)*ex.probeHeight]); %opposite eye grating window
 
 %% %%%% initial window - wait for backtick
@@ -481,8 +481,8 @@ for c = 1:length(ex.condShuffle)
             if nnz(find(ex.longFormStimOnSecs(n)))
                 if contains(condName, 'Left')
                     if contains(condName, 'Pair')
-                        xOffset = ex.stimLongDriftPos(condNum,l, cntConds(condNum),n)-ex.stimLongDriftPos(condNum,l, cntConds(condNum),1); %baseline correct the position since every image already hase a spatial phase shift in the sinewave
-                        ex.rectLRect =  CenterRectOnPoint([0 0 ex.rawGaborWidth ex.rawGaborHeight],xc-xc/2+xOffset,yc);
+                        offset = ex.stimLongDriftPos(condNum,l, cntConds(condNum),n)-ex.stimLongDriftPos(condNum,l, cntConds(condNum),1); %baseline correct the position since every image already hase a spatial phase shift in the sinewave
+                        ex.rectLRect =  CenterRectOnPoint([0 0 ex.rawGaborWidth ex.rawGaborHeight],xc-xc/2,yc+offset);
                         ex.lcLRect =  CenterRectOnPoint([0 0 ex.rawProbeWidth ex.rawProbeHeight],xc+xc/2+ex.lcstim.distFromFix,yc);
                         % stim
                         
@@ -491,8 +491,8 @@ for c = 1:length(ex.condShuffle)
                         Screen('DrawTexture',w,ph1LPaperture);
 
                     elseif contains(condName, 'Top')
-                        xOffset = ex.stimLongDriftPos(condNum,l, cntConds(condNum),n)-ex.stimLongDriftPos(condNum,l, cntConds(condNum),1); %baseline correct the position since every image already hase a spatial phase shift in the sinewave
-                        ex.rectLRect =  CenterRectOnPoint([0 0 ex.rawGaborWidth ex.rawGaborHeight],xc-xc/2+xOffset,yc);
+                        offset = ex.stimLongDriftPos(condNum,l, cntConds(condNum),n)-ex.stimLongDriftPos(condNum,l, cntConds(condNum),1); %baseline correct the position since every image already hase a spatial phase shift in the sinewave
+                        ex.rectLRect =  CenterRectOnPoint([0 0 ex.rawGaborWidth ex.rawGaborHeight],xc-xc/2,yc+offset);
                         ex.lcLRect =  CenterRectOnPoint([0 0 ex.rawProbeWidth ex.rawProbeHeight],xc+xc/2+ex.lcstim.distFromFix,yc);
                         % stim
                         
@@ -501,8 +501,8 @@ for c = 1:length(ex.condShuffle)
                         Screen('DrawTexture',w,ph1LTaperture);
 
                     elseif contains(condName, 'Bot')
-                        xOffset = ex.stimLongDriftPos(condNum,l,cntConds(condNum),n)-ex.stimLongDriftPos(condNum,l,cntConds(condNum),1); %baseline correct the position since every image already hase a spatial phase shift in the sinewave
-                        ex.rectLRect =  CenterRectOnPoint([0 0 ex.rawGaborWidth ex.rawGaborHeight],xc-xc/2+xOffset,yc);
+                        offset = ex.stimLongDriftPos(condNum,l,cntConds(condNum),n)-ex.stimLongDriftPos(condNum,l,cntConds(condNum),1); %baseline correct the position since every image already hase a spatial phase shift in the sinewave
+                        ex.rectLRect =  CenterRectOnPoint([0 0 ex.rawGaborWidth ex.rawGaborHeight],xc-xc/2,yc+offset);
                         ex.lcLRect =  CenterRectOnPoint([0 0 ex.rawProbeWidth ex.rawProbeHeight],xc+xc/2+ex.lcstim.distFromFix,yc);
                         % stim
                         
@@ -512,8 +512,8 @@ for c = 1:length(ex.condShuffle)
                     end
 
                 elseif contains(condName, 'Right')
-                    xOffset = ex.stimLongDriftPos(condNum,l,cntConds(condNum),n)-ex.stimLongDriftPos(condNum,l,cntConds(condNum),1); %baseline correct the position since every image already hase a spatial phase shift in the sinewave
-                    ex.rectLRect =  CenterRectOnPoint([0 0 ex.rawGaborWidth ex.rawGaborHeight],xc+xc/2+xOffset,yc);
+                    offset = ex.stimLongDriftPos(condNum,l,cntConds(condNum),n)-ex.stimLongDriftPos(condNum,l,cntConds(condNum),1); %baseline correct the position since every image already hase a spatial phase shift in the sinewave
+                    ex.rectLRect =  CenterRectOnPoint([0 0 ex.rawGaborWidth ex.rawGaborHeight],xc+xc/2,yc+offset);
                     ex.lcRRect =  CenterRectOnPoint([0 0 ex.rawProbeWidth ex.rawProbeHeight],xc-xc/2-ex.lcstim.distFromFix,yc);
                     % stim
                     Screen('DrawTexture', w, ex.rectSWaveID(condNum,l, cntConds(condNum)),[],ex.rectLRect);
@@ -531,8 +531,8 @@ for c = 1:length(ex.condShuffle)
                 
                 if contains(condName, 'Left')
                     if contains(condName, 'Pair')
-                        xOffset = ex.stimLongDriftPos(condNum,l,cntConds(condNum),n)-ex.stimLongDriftPos(condNum,l,cntConds(condNum),1); %baseline correct the position since every image already hase a spatial phase shift in the sinewave
-                        ex.rectLRect =  CenterRectOnPoint([0 0 ex.rawGaborWidth ex.rawGaborHeight],xc-xc/2+xOffset,yc);
+                        offset = ex.stimLongDriftPos(condNum,l,cntConds(condNum),n)-ex.stimLongDriftPos(condNum,l,cntConds(condNum),1); %baseline correct the position since every image already hase a spatial phase shift in the sinewave
+                        ex.rectLRect =  CenterRectOnPoint([0 0 ex.rawGaborWidth ex.rawGaborHeight],xc-xc/2,yc+offset);
                         ex.lcLRect =  CenterRectOnPoint([0 0 ex.rawProbeWidth ex.rawProbeHeight],xc+xc/2+ex.lcstim.distFromFix,yc);
                         
                         % stim
@@ -541,8 +541,8 @@ for c = 1:length(ex.condShuffle)
                         Screen('DrawTexture',w,coLPaperture);
 
                      elseif contains(condName, 'Top')
-                         xOffset = ex.stimLongDriftPos(condNum,l, cntConds(condNum),n)-ex.stimLongDriftPos(condNum,l, cntConds(condNum),1); %baseline correct the position since every image already hase a spatial phase shift in the sinewave
-                         ex.rectLRect =  CenterRectOnPoint([0 0 ex.rawGaborWidth ex.rawGaborHeight],xc-xc/2+xOffset,yc);
+                         offset = ex.stimLongDriftPos(condNum,l, cntConds(condNum),n)-ex.stimLongDriftPos(condNum,l, cntConds(condNum),1); %baseline correct the position since every image already hase a spatial phase shift in the sinewave
+                         ex.rectLRect =  CenterRectOnPoint([0 0 ex.rawGaborWidth ex.rawGaborHeight],xc-xc/2,yc+offset);
                          ex.lcLRect =  CenterRectOnPoint([0 0 ex.rawProbeWidth ex.rawProbeHeight],xc+xc/2+ex.lcstim.distFromFix,yc);
                          
                          % stim
@@ -551,8 +551,8 @@ for c = 1:length(ex.condShuffle)
                          Screen('DrawTexture',w,coLTaperture);
 
                      elseif contains(condName, 'Bot')
-                         xOffset = ex.stimLongDriftPos(condNum,l, cntConds(condNum),n)-ex.stimLongDriftPos(condNum,l, cntConds(condNum),1); %baseline correct the position since every image already hase a spatial phase shift in the sinewave
-                         ex.rectLRect =  CenterRectOnPoint([0 0 ex.rawGaborWidth ex.rawGaborHeight],xc-xc/2+xOffset,yc);
+                         offset = ex.stimLongDriftPos(condNum,l, cntConds(condNum),n)-ex.stimLongDriftPos(condNum,l, cntConds(condNum),1); %baseline correct the position since every image already hase a spatial phase shift in the sinewave
+                         ex.rectLRect =  CenterRectOnPoint([0 0 ex.rawGaborWidth ex.rawGaborHeight],xc-xc/2,yc+offset);
                          ex.lcLRect =  CenterRectOnPoint([0 0 ex.rawProbeWidth ex.rawProbeHeight],xc+xc/2+ex.lcstim.distFromFix,yc);
                          
                          % stim
@@ -563,8 +563,8 @@ for c = 1:length(ex.condShuffle)
                     end
                          
                 elseif contains(condName, 'Right')
-                    xOffset = ex.stimLongDriftPos(condNum,l, cntConds(condNum),n)-ex.stimLongDriftPos(condNum,l, cntConds(condNum),1); %baseline correct the position since every image already hase a spatial phase shift in the sinewave
-                    ex.rectLRect =  CenterRectOnPoint([0 0 ex.rawGaborWidth ex.rawGaborHeight],xc+xc/2+xOffset,yc);
+                    offset = ex.stimLongDriftPos(condNum,l, cntConds(condNum),n)-ex.stimLongDriftPos(condNum,l, cntConds(condNum),1); %baseline correct the position since every image already hase a spatial phase shift in the sinewave
+                    ex.rectLRect =  CenterRectOnPoint([0 0 ex.rawGaborWidth ex.rawGaborHeight],xc+xc/2,yc+offset);
                     ex.lcRRect =  CenterRectOnPoint([0 0 ex.rawProbeWidth ex.rawProbeHeight],xc-xc/2-ex.lcstim.distFromFix,yc);
                     
                     % stim
@@ -582,8 +582,8 @@ for c = 1:length(ex.condShuffle)
                 
                 if contains(condName, 'Left')
                     if contains(condName,'Pair')
-                        xOffset = ex.stimLongDriftPos(condNum,l, cntConds(condNum),n)-ex.stimLongDriftPos(condNum,l, cntConds(condNum),1); %baseline correct the position since every image already hase a spatial phase shift in the sinewave
-                        ex.rectLRect =  CenterRectOnPoint([0 0 ex.rawGaborWidth ex.rawGaborHeight],xc-xc/2+xOffset,yc);
+                        offset = ex.stimLongDriftPos(condNum,l, cntConds(condNum),n)-ex.stimLongDriftPos(condNum,l, cntConds(condNum),1); %baseline correct the position since every image already hase a spatial phase shift in the sinewave
+                        ex.rectLRect =  CenterRectOnPoint([0 0 ex.rawGaborWidth ex.rawGaborHeight],xc-xc/2,yc+offset);
                         ex.lcLRect =  CenterRectOnPoint([0 0 ex.rawProbeWidth ex.rawProbeHeight],xc+xc/2+ex.lcstim.distFromFix,yc);
                         
                         % stim
@@ -592,8 +592,8 @@ for c = 1:length(ex.condShuffle)
                         Screen('DrawTexture',w,ph2LPaperture);
 
                     elseif contains(condName,'Top')
-                        xOffset = ex.stimLongDriftPos(condNum,l, cntConds(condNum),n)-ex.stimLongDriftPos(condNum,l, cntConds(condNum),1); %baseline correct the position since every image already hase a spatial phase shift in the sinewave
-                        ex.rectLRect =  CenterRectOnPoint([0 0 ex.rawGaborWidth ex.rawGaborHeight],xc-xc/2+xOffset,yc);
+                        offset = ex.stimLongDriftPos(condNum,l, cntConds(condNum),n)-ex.stimLongDriftPos(condNum,l, cntConds(condNum),1); %baseline correct the position since every image already hase a spatial phase shift in the sinewave
+                        ex.rectLRect =  CenterRectOnPoint([0 0 ex.rawGaborWidth ex.rawGaborHeight],xc-xc/2,yc+offset);
                         ex.lcLRect =  CenterRectOnPoint([0 0 ex.rawProbeWidth ex.rawProbeHeight],xc+xc/2+ex.lcstim.distFromFix,yc);
                         
                         % stim
@@ -601,8 +601,8 @@ for c = 1:length(ex.condShuffle)
                         Screen('DrawTexture', w, ex.rectSWaveID(condNum,l, cntConds(condNum)),[],ex.rectLRect);
                         Screen('DrawTexture',w,ph2LTaperture);
                     elseif contains(condName,'Bot')
-                        xOffset = ex.stimLongDriftPos(condNum,l, cntConds(condNum),n)-ex.stimLongDriftPos(condNum,l, cntConds(condNum),1); %baseline correct the position since every image already hase a spatial phase shift in the sinewave
-                        ex.rectLRect =  CenterRectOnPoint([0 0 ex.rawGaborWidth ex.rawGaborHeight],xc-xc/2+xOffset,yc);
+                        offset = ex.stimLongDriftPos(condNum,l, cntConds(condNum),n)-ex.stimLongDriftPos(condNum,l, cntConds(condNum),1); %baseline correct the position since every image already hase a spatial phase shift in the sinewave
+                        ex.rectLRect =  CenterRectOnPoint([0 0 ex.rawGaborWidth ex.rawGaborHeight],xc-xc/2,yc+offset);
                         ex.lcLRect =  CenterRectOnPoint([0 0 ex.rawProbeWidth ex.rawProbeHeight],xc+xc/2+ex.lcstim.distFromFix,yc);
                         
                         % stim
@@ -611,8 +611,8 @@ for c = 1:length(ex.condShuffle)
                         Screen('DrawTexture',w,ph2LBaperture);
                     end
                 elseif contains(condName, 'Right')
-                    xOffset = ex.stimLongDriftPos(condNum,l, cntConds(condNum),n)-ex.stimLongDriftPos(condNum,l, cntConds(condNum),1); %baseline correct the position since every image already hase a spatial phase shift in the sinewave
-                    ex.rectLRect =  CenterRectOnPoint([0 0 ex.rawGaborWidth ex.rawGaborHeight],xc+xc/2+xOffset,yc);
+                    offset = ex.stimLongDriftPos(condNum,l, cntConds(condNum),n)-ex.stimLongDriftPos(condNum,l, cntConds(condNum),1); %baseline correct the position since every image already hase a spatial phase shift in the sinewave
+                    ex.rectLRect =  CenterRectOnPoint([0 0 ex.rawGaborWidth ex.rawGaborHeight],xc+xc/2,yc+offset);
                     ex.lcRRect =  CenterRectOnPoint([0 0 ex.rawProbeWidth ex.rawProbeHeight],xc-xc/2-ex.lcstim.distFromFix,yc);
                     
                     % stim
