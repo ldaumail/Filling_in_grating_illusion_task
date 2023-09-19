@@ -62,7 +62,7 @@ ex.stim.spatialFreqDeg = 0.5/2;                                           % cycl
 ex.stim.orientation = [180]; %[90 180];                                                % in degrees
 ex.stim.gaborHDeg = 16; %6;                                                  % in degrees of visual angle
 ex.stim.gaborWDeg = 6; %16;
-ex.stim.distFromFixDeg = 2; %each grating edge 2 deg horizontal away from fixation (grating center 6 deg away)
+ex.stim.distFromFixDeg = 1.5; %each grating edge 2 deg horizontal away from fixation (grating center 6 deg away)
 ex.stim.luminanceRange = 0.15;%0.15;%                                               % in %, maybe?? %here the number of stimulus contrast levels is the number of different conditions
 ex.stim.contrastMultiplicator = ex.stim.luminanceRange/2;  % for sine wave
 ex.stim.contrastOffset = [.5 0.425 0.35]; %.5 corresponds to 255/2 = 127.5 , 0.425*255 = 108.375, 0.35*255 = 89.25;                                  % for procedural gabor
@@ -86,7 +86,7 @@ ex.flipWin = 1/ex.flipsPerSec;         % in seconds then actually in 1 sec the s
 
 
 %%%% Opposite eye low contrast grating (probe)
-ex.lcstim.spatialFreqDeg = 1;
+ex.lcstim.spatialFreqDeg = 2;
 ex.lcstim.luminanceRange = lumRange; %0.2; %0.03;%linspace(0.01,0.20,10);%[0.05, 0.10, 0.15];                                                 % in %, maybe?? %here the number of stimulus contrast levels is the number of different conditions
 ex.lcstim.contrastMultiplicator = ex.lcstim.luminanceRange/2;  % for sine wave 0.5 = 100% contrast, 0.2 = 40%
 ex.lcstim.contrastOffset = 0.425;
@@ -96,7 +96,7 @@ ex.lcstim.contrast = (ex.lcstim.maxLum-ex.lcstim.minLum)./(ex.lcstim.maxLum+ex.l
 ex.lcstim.orientation = [45 135];
 ex.lcstim.gaborHDeg = 2;                                                  % in degrees of visual angle
 ex.lcstim.gaborWDeg = 2;
-ex.lcstim.distFromFixDeg = 0; % in degrees of visual angle, grating center 2 deg away (edge 1 deg away)
+ex.lcstim.distFromFixDeg = 2; % in degrees of visual angle, grating center 2 deg away (edge 1 deg away)
 
 %%%% Fixation
 ex.fixSizeDeg =  .2;            % in degrees, the size of the biggest white dot in the fixation
@@ -109,7 +109,7 @@ ex.conds = {'MinbgPairLeftVel3','MinbgTopLeftVel3', 'MinbgBotLeftVel3','MeanbgPa
     ... %, Here, the Left/Right indicator in the condition name corresponds to the phantom grating pair location on the screen 
     }; 
 ex.repsPerRun = [4 2 2 8 2 2 4 2 2 8];              % repetitions of each condition per run
-condIdx = [1,4,7]; %[1:length(ex.conds)]; %[1,4,7]; %conditions we are interested to keep
+condIdx = [1,7]; %[1:length(ex.conds)]; %[1,4,7]; %conditions we are interested to keep
 ex.conds = ex.conds(condIdx);
 ex.repsPerRun = ex.repsPerRun(condIdx);
 ex.numConds = length(ex.conds);
