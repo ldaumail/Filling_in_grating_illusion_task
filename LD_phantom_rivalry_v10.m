@@ -1,9 +1,10 @@
-function LD_phantom_rivalry_v9_FT(subject, session, debug, contrast)
+function LD_phantom_rivalry_v9_FT(subject, session, debug, lumRange)
 
 %In this version, we add multiple velocities
-% subject = 'Dave';                                                                                                                                                                                                                                                     
+% subject = 'sub-01'; 
+% lumRange = 0.04;
 % session = 1;                                                                                                                           
-% debug = 1;
+% debug = 0;
 
 
 ex.version = 'v10';
@@ -54,20 +55,20 @@ ex.root = pwd;
 ex.date = datestr(now,30);
 
 
+ex.stim.backgroundLum = [108.3750  108.3750  108.3750]; %repmat(min(min(squeeze(ex.rectSWave(1,1,:,:)),[],1)), [1,3]);
+
 %%%% 2D sine wave grating inducers properties
 ex.stim.spatialFreqDeg = 0.5/2;                                           % cycles per degree of visual angle
-ex.stim.contrast = 0.3 ;                                                 % in %, maybe??
 ex.stim.orientation = [180]; %[90 180];                                                % in degrees
-ex.stim.degFromFix = .6;                                              % in degrees of visual angle
 ex.stim.gaborHDeg = 16; %6;                                                  % in degrees of visual angle
 ex.stim.gaborWDeg = 6; %16;
 ex.stim.distFromFixDeg = 2; %each grating edge 2 deg horizontal away from fixation (grating center 6 deg away)
-ex.stim.contrast = 0.15;%linspace(0.01,0.20,10);%[0.05, 0.10, 0.15];                                                 % in %, maybe?? %here the number of stimulus contrast levels is the number of different conditions
-ex.stim.contrastMultiplicator = ex.stim.contrast/2;  % for sine wave 0.5 = 100% contrast, 0.2 = 40%
-ex.stim.contrastOffset = [.5 0.425 0.35]; %.5 .5 0];                                  % for procedural gabor
-%ex.stim.cycPerSec = [1.13*1/2,1.13*3/2]; % try multiple speeds
-%ex.stim.motionRate = ex.stim.cycPerSec.*360;                                          % 1.13 cycles per second = 360 deg of phase *1.13 per sec
-%ex.stim.cycles =[1, 3]; %number of cycles shifted per lap  (modified to half the number of cycles per lap)
+ex.stim.luminanceRange = 0.15;%0.15;%                                               % in %, maybe?? %here the number of stimulus contrast levels is the number of different conditions
+ex.stim.contrastMultiplicator = ex.stim.luminanceRange/2;  % for sine wave
+ex.stim.contrastOffset = [.5 0.425 0.35]; %.5 corresponds to 255/2 = 127.5 , 0.425*255 = 108.375, 0.35*255 = 89.25;                                  % for procedural gabor
+ex.stim.maxLum = 255*(ex.stim.contrastOffset+ex.stim.contrastMultiplicator);
+ex.stim.minLum = 255*(ex.stim.contrastOffset-ex.stim.contrastMultiplicator);
+ex.stim.contrast = (ex.stim.maxLum-ex.stim.minLum)./(ex.stim.maxLum+ex.stim.minLum);
 ex.stim.cycPerSec = [1,1.4]; %drifting speed in cycles of grating per sec
 ex.stim.cycles = [1 1]; %number of cycles per lap
 
@@ -78,16 +79,20 @@ ex.initialFixation = 6;        % in seconds
 ex.finalFixation = 2;          % in seconds
 ex.trialFixation = 1;          % in seconds
 %ex.stimsPerBlock = 4.5;      % number of back-and-forth laps of the stimulus drift
-ex.blockLength = 30;%90;%120; %ex.trialFixation+ ceil(ex.stimDur*ex.stimsPerBlock);           % in seconds
+ex.blockLength = 5;%90;%120; %ex.trialFixation+ ceil(ex.stimDur*ex.stimsPerBlock);           % in seconds
 ex.betweenBlocks = 2;          % in seconds
 ex.flipsPerSec = 60;  % 60;         % number of phase changes we want from the visual stimulus, and thus the number of times we want to change visual stimulation on the screen
 ex.flipWin = 1/ex.flipsPerSec;         % in seconds then actually in 1 sec the stimuli will change 12 times 
 
 
 %%%% Opposite eye low contrast grating (probe)
-ex.lcstim.spatialFreqDeg = 2;
-ex.lcstim.contrast = contrast; %0.2; %0.03;%linspace(0.01,0.20,10);%[0.05, 0.10, 0.15];                                                 % in %, maybe?? %here the number of stimulus contrast levels is the number of different conditions
-ex.lcstim.contrastMultiplicator = ex.lcstim.contrast/2;  % for sine wave 0.5 = 100% contrast, 0.2 = 40%
+ex.lcstim.spatialFreqDeg = 1;
+ex.lcstim.luminanceRange = lumRange; %0.2; %0.03;%linspace(0.01,0.20,10);%[0.05, 0.10, 0.15];                                                 % in %, maybe?? %here the number of stimulus contrast levels is the number of different conditions
+ex.lcstim.contrastMultiplicator = ex.lcstim.luminanceRange/2;  % for sine wave 0.5 = 100% contrast, 0.2 = 40%
+ex.lcstim.contrastOffset = 0.425;
+ex.lcstim.maxLum = 255*(ex.lcstim.contrastOffset+ex.lcstim.contrastMultiplicator);
+ex.lcstim.minLum = 255*(ex.lcstim.contrastOffset-ex.lcstim.contrastMultiplicator);
+ex.lcstim.contrast = (ex.lcstim.maxLum-ex.lcstim.minLum)./(ex.lcstim.maxLum+ex.lcstim.minLum);
 ex.lcstim.orientation = [45 135];
 ex.lcstim.gaborHDeg = 2;                                                  % in degrees of visual angle
 ex.lcstim.gaborWDeg = 2;
@@ -104,7 +109,7 @@ ex.conds = {'MinbgPairLeftVel3','MinbgTopLeftVel3', 'MinbgBotLeftVel3','MeanbgPa
     ... %, Here, the Left/Right indicator in the condition name corresponds to the phantom grating pair location on the screen 
     }; 
 ex.repsPerRun = [4 2 2 8 2 2 4 2 2 8];              % repetitions of each condition per run
-condIdx = [1,4,7]; %conditions we are interested to keep
+condIdx = [1,4,7]; %[1:length(ex.conds)]; %[1,4,7]; %conditions we are interested to keep
 ex.conds = ex.conds(condIdx);
 ex.repsPerRun = ex.repsPerRun(condIdx);
 ex.numConds = length(ex.conds);
@@ -278,18 +283,17 @@ for c =1:nconds
     end
 end
 %check luminances ranges
-% repmat(min(min(squeeze(ex.rectSWave(1,3,1,:,:)),[],1)),1)
-% repmat(max(max(squeeze(ex.rectSWave(1,3,1,:,:)),[],1)),1)
+minval = min(squeeze(ex.rectSWave(1,1,1,:,:)),[],'all');
+maxval = max(squeeze(ex.rectSWave(1,1,1,:,:)),[],'all');
 
 %% create 1 low contrast grating image as a probe for other eye
-gray2 = [108.3750  108.3750  108.3750]; %repmat(min(min(squeeze(ex.rectSWave(1,1,:,:)),[],1)), [1,3]);
 
 phase = ex.stim.phases(c,l,r,1);
 ex.lcSWave = nan(length(ex.lcstim.orientation),ex.rawProbeHeight,ex.rawProbeWidth);
 for i =1:length(ex.lcstim.orientation)
     ex.lcSWave(i,:,:) = makeSineGrating(ex.rawProbeHeight,ex.rawProbeWidth,ex.lcstim.spatialFreqDeg,...
-        ex.lcstim.orientation(i),phase,ex.stim.contrastOffset(2),ex.lcstim.contrastMultiplicator,...
-        ex.ppd, 0, round(1*ex.ppd), gray2(1));
+        ex.lcstim.orientation(i),phase,ex.lcstim.contrastOffset,ex.lcstim.contrastMultiplicator,...
+        ex.ppd, 0, round(1*ex.ppd), ex.stim.backgroundLum(1));
     ex.lcSWaveID(i) = Screen('MakeTexture', w, squeeze(ex.lcSWave(i,:,:)));
 end
 %check luminances ranges
@@ -356,60 +360,60 @@ yb = yc+(1/2)*ex.gaborHeight;
 % gray1 = [127.4933  127.4933  127.4933]; %repmat(mean(squeeze(ex.rectSWave(1,1,1,:))), [1,3]);
 
 %phantom control condition
-coLPaperture=Screen('OpenOffscreenwindow', w, gray2);
+coLPaperture=Screen('OpenOffscreenwindow', w, ex.stim.backgroundLum);
 Screen('FillRect',coLPaperture, [255 255 255 0], [xLl yt xLr yb]); %Left grating window
 Screen('FillRect',coLPaperture, [255 255 255 0], [xRl yt xRr yb]); %Right grating window
 Screen('FillRect',coLPaperture, [255 255 255 0], [xc-(1/2)*(ex.probeWidth - xc) yc-ex.probeHeight/2+ex.lcstim.distFromFix xc+(ex.probeWidth+xc)/2 yc+(1/2)*ex.probeHeight+ex.lcstim.distFromFix]); %opposite eye grating window
 
-coLTaperture=Screen('OpenOffscreenwindow', w, gray2);
+coLTaperture=Screen('OpenOffscreenwindow', w, ex.stim.backgroundLum);
 Screen('FillRect',coLTaperture, [255 255 255 0], [xLl yt xLr yb]); %Left grating window
 Screen('FillRect',coLTaperture, [255 255 255 0], [xc-(1/2)*(ex.probeWidth - xc) yc-ex.probeHeight/2+ex.lcstim.distFromFix xc+(ex.probeWidth+xc)/2 yc+(1/2)*ex.probeHeight+ex.lcstim.distFromFix]); %opposite eye grating window
 
-coLBaperture=Screen('OpenOffscreenwindow', w, gray2);
+coLBaperture=Screen('OpenOffscreenwindow', w, ex.stim.backgroundLum);
 Screen('FillRect',coLBaperture, [255 255 255 0], [xRl yt xRr yb]); %Right grating window
 Screen('FillRect',coLBaperture, [255 255 255 0], [xc-(1/2)*(ex.probeWidth - xc) yc-ex.probeHeight/2+ex.lcstim.distFromFix xc+(ex.probeWidth+xc)/2 yc+(1/2)*ex.probeHeight+ex.lcstim.distFromFix]); %opposite eye grating window
 
 
-coRaperture=Screen('OpenOffscreenwindow', w, gray2);
+coRaperture=Screen('OpenOffscreenwindow', w, ex.stim.backgroundLum);
 Screen('FillRect',coRaperture, [255 255 255 0], [xLl yt xLr yb]); %Left grating window
 Screen('FillRect',coRaperture, [255 255 255 0], [xRl yt xRr yb]); %Right grating window
 Screen('FillRect',coRaperture, [255 255 255 0], [xc-(1/2)*(ex.probeWidth - xc) yc-ex.probeHeight/2+ex.lcstim.distFromFix xc+(ex.probeWidth+xc)/2 yc+(1/2)*ex.probeHeight+ex.lcstim.distFromFix]); %opposite eye grating window
 
 
 %phantom condition 1
-ph1LPaperture=Screen('OpenOffscreenwindow', w, gray2);
+ph1LPaperture=Screen('OpenOffscreenwindow', w, ex.stim.backgroundLum);
 Screen('FillRect',ph1LPaperture, [255 255 255 0], [xLl yt xLr yb]); %Left grating window
 Screen('FillRect',ph1LPaperture, [255 255 255 0], [xRl yt xRr yb]); %Right grating window
 Screen('FillRect',ph1LPaperture, [255 255 255 0], [xc-(1/2)*(ex.probeWidth - xc) yc-ex.probeHeight/2+ex.lcstim.distFromFix xc+(ex.probeWidth+xc)/2 yc+(1/2)*ex.probeHeight+ex.lcstim.distFromFix]); %opposite eye grating window
 
-ph1LTaperture=Screen('OpenOffscreenwindow', w, gray2);
+ph1LTaperture=Screen('OpenOffscreenwindow', w, ex.stim.backgroundLum);
 Screen('FillRect',ph1LTaperture, [255 255 255 0], [xLl yt xLr yb]); %Left grating window
 Screen('FillRect',ph1LTaperture, [255 255 255 0], [xc-(1/2)*(ex.probeWidth - xc) yc-ex.probeHeight/2+ex.lcstim.distFromFix xc+(ex.probeWidth+xc)/2 yc+(1/2)*ex.probeHeight+ex.lcstim.distFromFix]); %opposite eye grating window
 
-ph1LBaperture=Screen('OpenOffscreenwindow', w, gray2);
+ph1LBaperture=Screen('OpenOffscreenwindow', w, ex.stim.backgroundLum);
 Screen('FillRect',ph1LBaperture, [255 255 255 0], [xRl yt xRr yb]); %Right grating window
 Screen('FillRect',ph1LBaperture, [255 255 255 0], [xc-(1/2)*(ex.probeWidth - xc) yc-ex.probeHeight/2+ex.lcstim.distFromFix xc+(ex.probeWidth+xc)/2 yc+(1/2)*ex.probeHeight+ex.lcstim.distFromFix]); %opposite eye grating window
 
-ph1Raperture=Screen('OpenOffscreenwindow', w, gray2);
+ph1Raperture=Screen('OpenOffscreenwindow', w, ex.stim.backgroundLum);
 Screen('FillRect',ph1Raperture, [255 255 255 0], [xLl yt xLr yb]); %Left grating window
 Screen('FillRect',ph1Raperture, [255 255 255 0], [xRl yt xRr yb]); %Right grating window
 Screen('FillRect',ph1Raperture, [255 255 255 0], [xc-(1/2)*(ex.probeWidth - xc) yc-ex.probeHeight/2+ex.lcstim.distFromFix xc+(ex.probeWidth+xc)/2 yc+(1/2)*ex.probeHeight+ex.lcstim.distFromFix]); %opposite eye grating window
 
-ph2LPaperture=Screen('OpenOffscreenwindow', w, gray2);
+ph2LPaperture=Screen('OpenOffscreenwindow', w, ex.stim.backgroundLum);
 Screen('FillRect',ph2LPaperture, [255 255 255 0], [xLl yt xLr yb]); %Left grating window
 Screen('FillRect',ph2LPaperture, [255 255 255 0], [xRl yt xRr yb]); %Right grating window
 Screen('FillRect',ph2LPaperture, [255 255 255 0], [xc-(1/2)*(ex.probeWidth - xc) yc-ex.probeHeight/2+ex.lcstim.distFromFix xc+(ex.probeWidth+xc)/2 yc+(1/2)*ex.probeHeight+ex.lcstim.distFromFix]); %opposite eye grating window
 
-ph2LTaperture=Screen('OpenOffscreenwindow', w, gray2);
+ph2LTaperture=Screen('OpenOffscreenwindow', w, ex.stim.backgroundLum);
 Screen('FillRect',ph2LTaperture, [255 255 255 0], [xLl yt xLr yb]); %Left grating window
 Screen('FillRect',ph2LTaperture, [255 255 255 0], [xc-(1/2)*(ex.probeWidth - xc) yc-ex.probeHeight/2+ex.lcstim.distFromFix xc+(ex.probeWidth+xc)/2 yc+(1/2)*ex.probeHeight+ex.lcstim.distFromFix]); %opposite eye grating window
 
-ph2LBaperture=Screen('OpenOffscreenwindow', w, gray2);
+ph2LBaperture=Screen('OpenOffscreenwindow', w, ex.stim.backgroundLum);
 Screen('FillRect',ph2LBaperture, [255 255 255 0], [xRl yt xRr yb]); %Right grating window
 Screen('FillRect',ph2LBaperture, [255 255 255 0], [xc-(1/2)*(ex.probeWidth - xc) yc-ex.probeHeight/2+ex.lcstim.distFromFix xc+(ex.probeWidth+xc)/2 yc+(1/2)*ex.probeHeight+ex.lcstim.distFromFix]); %opposite eye grating window
 
 
-ph2Raperture=Screen('OpenOffscreenwindow', w, gray2);
+ph2Raperture=Screen('OpenOffscreenwindow', w, ex.stim.backgroundLum);
 Screen('FillRect',ph2Raperture, [255 255 255 0], [xLl yt xLr yb]); %Left grating window
 Screen('FillRect',ph2Raperture, [255 255 255 0], [xRl yt xRr yb]); %Right grating window
 Screen('FillRect',ph2Raperture, [255 255 255 0], [xc-(1/2)*(ex.probeWidth - xc) yc-ex.probeHeight/2+ex.lcstim.distFromFix xc+(ex.probeWidth+xc)/2 yc+(1/2)*ex.probeHeight+ex.lcstim.distFromFix]); %opposite eye grating window
@@ -484,7 +488,7 @@ for c = 1:length(ex.condShuffle)
         ex.longFormBlocks(n)
         %%%% draw sine wave grating stimulus %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         if contains(condName, 'Minbg')
-            Screen('FillRect', w, gray2);
+            Screen('FillRect', w, ex.stim.backgroundLum);
             if nnz(find(ex.longFormStimOnSecs(n)))
                 if contains(condName, 'Left')
                     if contains(condName, 'Pair')
@@ -533,7 +537,7 @@ for c = 1:length(ex.condShuffle)
             end
             
         elseif contains(condName, 'Meanbg')
-            Screen('FillRect', w, gray2);
+            Screen('FillRect', w, ex.stim.backgroundLum);
             if nnz(find(ex.longFormStimOnSecs(n)))
                 
                 if contains(condName, 'Left')
@@ -584,7 +588,7 @@ for c = 1:length(ex.condShuffle)
                 Screen('DrawDots', w, [xc*3/2 yc], ex.fixSize, [255 255 255], [], 2);
             end
         elseif contains(condName, 'Lightbg')
-            Screen('FillRect', w, gray2);
+            Screen('FillRect', w, ex.stim.backgroundLum);
             if nnz(find(ex.longFormStimOnSecs(n)))
                 
                 if contains(condName, 'Left')
@@ -631,7 +635,7 @@ for c = 1:length(ex.condShuffle)
                 Screen('DrawDots', w, [xc*3/2 yc], ex.fixSize, [255 255 255], [], 2);
             end
         elseif contains(condName, 'Noph') %
-            Screen('FillRect', w, gray2);
+            Screen('FillRect', w, ex.stim.backgroundLum);
             if nnz(find(ex.longFormStimOnSecs(n)))
                 
                 if contains(condName, 'Left')
