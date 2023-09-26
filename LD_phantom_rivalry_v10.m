@@ -96,7 +96,7 @@ ex.lcstim.contrast = (ex.lcstim.maxLum-ex.lcstim.minLum)./(ex.lcstim.maxLum+ex.l
 ex.lcstim.orientation = [45 135];
 ex.lcstim.gaborHDeg = 2;                                                  % in degrees of visual angle
 ex.lcstim.gaborWDeg = 2;
-ex.lcstim.distFromFixDeg = 2; % in degrees of visual angle, grating center 2 deg away (edge 1 deg away)
+ex.lcstim.distFromFixDeg = 0; % in degrees of visual angle, grating center 2 deg away (edge 1 deg away)
 
 %%%% Fixation
 ex.fixSizeDeg =  .2;            % in degrees, the size of the biggest white dot in the fixation
