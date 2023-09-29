@@ -1,10 +1,10 @@
 function LD_phantom_rivalry_v9_FT(subject, session, debug, lumRange)
 
 %In this version, we add multiple velocities
-% subject = 'sub-01'; 
-% lumRange = 0.04;
-% session = 1;                                                                                                                           
-% debug = 0;
+subject = 'sub-01'; 
+lumRange = 0.02;
+session = 1;                                                                                                                           
+debug = 0;
 
 
 ex.version = 'v10';
@@ -62,7 +62,7 @@ ex.stim.spatialFreqDeg = 0.5/2;                                           % cycl
 ex.stim.orientation = [180]; %[90 180];                                                % in degrees
 ex.stim.gaborHDeg = 16; %6;                                                  % in degrees of visual angle
 ex.stim.gaborWDeg = 6; %16;
-ex.stim.distFromFixDeg = 1.5; %each grating edge 2 deg horizontal away from fixation (grating center 6 deg away)
+ex.stim.distFromFixDeg = 1.5; %each grating edge 1.5 deg horizontal away from fixation (grating center 6 deg away)
 ex.stim.luminanceRange = 0.15;%0.15;%                                               % in %, maybe?? %here the number of stimulus contrast levels is the number of different conditions
 ex.stim.contrastMultiplicator = ex.stim.luminanceRange/2;  % for sine wave
 ex.stim.contrastOffset = [.5 0.425 0.35]; %.5 corresponds to 255/2 = 127.5 , 0.425*255 = 108.375, 0.35*255 = 89.25;                                  % for procedural gabor
@@ -79,7 +79,7 @@ ex.initialFixation = 6;        % in seconds
 ex.finalFixation = 2;          % in seconds
 ex.trialFixation = 1;          % in seconds
 %ex.stimsPerBlock = 4.5;      % number of back-and-forth laps of the stimulus drift
-ex.blockLength = 5;%90;%120; %ex.trialFixation+ ceil(ex.stimDur*ex.stimsPerBlock);           % in seconds
+ex.blockLength = 30; %ex.trialFixation+ ceil(ex.stimDur*ex.stimsPerBlock);           % in seconds
 ex.betweenBlocks = 2;          % in seconds
 ex.flipsPerSec = 60;  % 60;         % number of phase changes we want from the visual stimulus, and thus the number of times we want to change visual stimulation on the screen
 ex.flipWin = 1/ex.flipsPerSec;         % in seconds then actually in 1 sec the stimuli will change 12 times 
@@ -96,12 +96,19 @@ ex.lcstim.contrast = (ex.lcstim.maxLum-ex.lcstim.minLum)./(ex.lcstim.maxLum+ex.l
 ex.lcstim.orientation = [45 135];
 ex.lcstim.gaborHDeg = 2;                                                  % in degrees of visual angle
 ex.lcstim.gaborWDeg = 2;
-ex.lcstim.distFromFixDeg = 0; % in degrees of visual angle, grating center 2 deg away (edge 1 deg away)
+ex.lcstim.distFromFixDeg = 2; % in degrees of visual angle, grating center 2 deg away (edge 1 deg away)
 
 %%%% Fixation
 ex.fixSizeDeg =  .2;            % in degrees, the size of the biggest white dot in the fixation
 ex.bigFixSizeDeg = 0.5;
 ex.outerFixPixels = 2;          % in pixels, the black ring around fixation
+
+%%%% Nonius lines 
+ex.lineHdeg = 0.4;
+ex.lineWdeg = 0.06;
+
+%%% horizontal line 
+ex.horiLineWdeg = 0.7;
 
 %%%% conditions & layout (across blocks scale)
 
@@ -109,7 +116,7 @@ ex.conds = {'MinbgPairLeftVel3','MinbgTopLeftVel3', 'MinbgBotLeftVel3','MeanbgPa
     ... %, Here, the Left/Right indicator in the condition name corresponds to the phantom grating pair location on the screen 
     }; 
 ex.repsPerRun = [4 2 2 8 2 2 4 2 2 8];              % repetitions of each condition per run
-condIdx = [1,7]; %[1:length(ex.conds)]; %[1,4,7]; %conditions we are interested to keep
+condIdx = [1:length(ex.conds)]; %[1,4,7]; %conditions we are interested to keep
 ex.conds = ex.conds(condIdx);
 ex.repsPerRun = ex.repsPerRun(condIdx);
 ex.numConds = length(ex.conds);
@@ -183,7 +190,7 @@ else
     [w, rect]=Screen('OpenWindow',screen,ex.backgroundColor,[],[],[],[],[],kPsychNeed32BPCFloat); %might need to switch 900 and 600 by 1600 and 1200 for room 425
 end
 Screen(w, 'TextSize', ex.fontSize);
-Screen('BlendFunction', w, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+Screen('BlendFunction', w, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA); % Set up alpha-blending for smooth (anti-aliased) lines
 
 %gamma correction, file prepared for room 425
 if ex.gammaCorrection
@@ -251,8 +258,7 @@ end
 
 %%%% scale the stim params for the screen
 ex.ppd = pi* rect(3) / (atan(ex.screenWidth/ex.viewingDist/2)) / 360;
-ex.fixSize = round(ex.fixSizeDeg*ex.ppd);
-ex.bigFixSize = round(ex.bigFixSizeDeg*ex.ppd);
+
 ex.gaborHeight = round(ex.stim.gaborHDeg*ex.ppd);                 % in pixels, the size of our objects
 ex.gaborWidth = round(ex.stim.gaborWDeg*ex.ppd);                 % in pixels, the size of our objects
 ex.rawGaborHeight = ex.gaborHeight*1.5;
@@ -266,6 +272,12 @@ ex.rawProbeHeight = ex.probeHeight*1;
 ex.rawProbeWidth = ex.probeWidth*1;
 ex.lcstim.distFromFix = round(ex.lcstim.distFromFixDeg*ex.ppd);
 
+%%%scale the fixation params for the screen
+ex.fixSize = round(ex.fixSizeDeg*ex.ppd);
+ex.bigFixSize = round(ex.bigFixSizeDeg*ex.ppd);
+ex.lineW = round(ex.lineWdeg*ex.ppd);
+ex.lineH = round(ex.lineHdeg*ex.ppd);
+ex.horiLineW = round(ex.horiLineWdeg*ex.ppd);
 %% Create only one big sinewave grating image saved for each repetition and each condition
 
 ex.rectSWave = nan(nconds, length(ex.stim.contrastOffset), max(ex.repsPerRun),ex.rawGaborHeight,ex.rawGaborWidth);
@@ -417,10 +429,33 @@ ph2Raperture=Screen('OpenOffscreenwindow', w, ex.stim.backgroundLum);
 Screen('FillRect',ph2Raperture, [255 255 255 0], [xLl yt xLr yb]); %Left grating window
 Screen('FillRect',ph2Raperture, [255 255 255 0], [xRl yt xRr yb]); %Right grating window
 Screen('FillRect',ph2Raperture, [255 255 255 0], [xc-(1/2)*(ex.probeWidth - xc) yc-ex.probeHeight/2+ex.lcstim.distFromFix xc+(ex.probeWidth+xc)/2 yc+(1/2)*ex.probeHeight+ex.lcstim.distFromFix]); %opposite eye grating window
-
+%% Nonius lines locations 
+% Left nonius line coordinates
+    xlineLl = xc / 2;
+    xlineLr = xc / 2;
+    ylineLBot = yc + ex.lineH*2;
+    ylineLTop = yc + ex.lineH;
+    
+% Right nonius line coordinates
+    xlineRl = 3 * xc / 2;
+    xlineRr = 3 * xc / 2;
+    ylineRTop = yc - ex.lineH*2;
+    ylineRBot = yc - ex.lineH;
+    
+% horizontal line
+    xhorilineLl = xc / 2 - ex.horiLineW/2;
+    xhorilineLr = xc / 2 + ex.horiLineW/2;
+    
+    xhorilineRl = 3 * xc / 2 - ex.horiLineW/2;
+    xhorilineRr = 3 * xc / 2 + ex.horiLineW/2;
+    
+    yhoriline = yc;
+    
 %% %%%% initial window - wait for backtick
-DrawFormattedText(w,'Fixate the fixation dot as best as you can. \n\n After each perceptual change, report using the following digits \n\n 1: The central grating (probe) is fully visible \n\n 2: The probe is partially visible \n\n 3: The probe is fully faded/invisible \n\n Press Space to start'... % :  '...
-    ,'center', 'center',[0 0 0]);
+DrawFormattedText(w,'Fixate the fixation dot as best as you can. \n\n After each perceptual change, \n\n report using the following digits \n\n 1: The central grating (probe) is fully visible \n\n 2: The probe is partially visible \n\n 3: The probe is fully faded/invisible \n\n Press Space to start'... % :  '...
+    ,xc/5, yc/2,[0 0 0]);
+DrawFormattedText(w,'Fixate the fixation dot as best as you can. \n\n After each perceptual change, \n\n report using the following digits \n\n 1: The central grating (probe) is fully visible \n\n 2: The probe is partially visible \n\n 3: The probe is fully faded/invisible \n\n Press Space to start'... % :  '...
+    ,xc+xc/5, yc/2,[0 0 0]);
 Screen(w, 'Flip', 0);
 %WaitSecs(2);
 KbTriggerWait(KbName('Space'), deviceNumber);
@@ -443,11 +478,10 @@ ex.responses = [];
 ex.responseTimes=[];
 ex.correctResp = [];
 
-
 onOffs = [diff(ex.longFormBlocks) 0];
 bLength = ex.blockLength(1);
 ex.flipTime = nan(length(ex.trialFlips),length(ex.condShuffle));
-
+    
 KbQueueCreate(deviceNumber,responseKeys);
 %%% initial fixation
 if n == 1 && blockCnt == 1 %for first block
@@ -456,6 +490,13 @@ if n == 1 && blockCnt == 1 %for first block
     Screen('FillRect', w, ex.backgroundColor);
     Screen('DrawDots', w, [xc/2 yc], ex.fixSize, [255 255 255], [], 2);
     Screen('DrawDots', w, [xc*3/2 yc], ex.fixSize, [255 255 255], [], 2);
+   
+% Draw nonius lines 
+    Screen('DrawLines', w, [xlineLl, xlineLr; ylineLBot, ylineLTop], ex.lineW, [255 255 255]);
+    Screen('DrawLines', w, [xlineRl, xlineRr; ylineRBot, ylineRTop], ex.lineW, [255 255 255]);
+    Screen('DrawLines', w, [xhorilineLl, xhorilineLr; yhoriline, yhoriline],ex.lineW, [255 255 255]);
+    Screen('DrawLines', w, [xhorilineRl, xhorilineRr; yhoriline, yhoriline], ex.lineW, [255 255 255]);
+
     Screen(w, 'Flip', 0);
     WaitSecs(ex.initialFixation);
 end
@@ -532,8 +573,6 @@ for c = 1:length(ex.condShuffle)
                     Screen('DrawTexture',w,ph1Raperture);
                     
                 end
-                Screen('DrawDots', w, [xc/2 yc], ex.fixSize, [255 255 255], [], 2);
-                Screen('DrawDots', w, [xc*3/2 yc], ex.fixSize, [255 255 255], [], 2);
             end
             
         elseif contains(condName, 'Meanbg')
@@ -584,8 +623,6 @@ for c = 1:length(ex.condShuffle)
                     Screen('DrawTexture',w,coRaperture);
                     
                 end
-                Screen('DrawDots', w, [xc/2 yc], ex.fixSize, [255 255 255], [], 2);
-                Screen('DrawDots', w, [xc*3/2 yc], ex.fixSize, [255 255 255], [], 2);
             end
         elseif contains(condName, 'Lightbg')
             Screen('FillRect', w, ex.stim.backgroundLum);
@@ -631,8 +668,6 @@ for c = 1:length(ex.condShuffle)
                     Screen('DrawTexture', w, ex.rectSWaveID(condNum,l, cntConds(condNum)),[],ex.rectLRect);
                     Screen('DrawTexture',w,ph2Raperture);
                 end
-                Screen('DrawDots', w, [xc/2 yc], ex.fixSize, [255 255 255], [], 2);
-                Screen('DrawDots', w, [xc*3/2 yc], ex.fixSize, [255 255 255], [], 2);
             end
         elseif contains(condName, 'Noph') %
             Screen('FillRect', w, ex.stim.backgroundLum);
@@ -651,10 +686,18 @@ for c = 1:length(ex.condShuffle)
                     Screen('DrawTexture', w, ex.lcSWaveID(oriNum),[],ex.lcRRect);
                     Screen('DrawTexture',w,coRaperture);
                 end
-                Screen('DrawDots', w, [xc/2 yc], ex.fixSize, [255 255 255], [], 2);
-                Screen('DrawDots', w, [xc*3/2 yc], ex.fixSize, [255 255 255], [], 2);
             end
         end
+        %% Fixation   
+        % Draw nonius lines
+        Screen('DrawLines', w, [xlineLl, xlineLr; ylineLBot, ylineLTop], ex.lineW, [255 255 255]);
+        Screen('DrawLines', w, [xlineRl, xlineRr; ylineRBot, ylineRTop], ex.lineW, [255 255 255]);
+        %Draw horizontal lines
+        Screen('DrawLines', w, [xhorilineLl, xhorilineLr; yhoriline, yhoriline],ex.lineW, [255 255 255]);
+        Screen('DrawLines', w, [xhorilineRl, xhorilineRr; yhoriline, yhoriline], ex.lineW, [255 255 255]);
+        
+        Screen('DrawDots', w, [xc/2 yc], ex.fixSize, [255 255 255], [], 2);
+        Screen('DrawDots', w, [xc*3/2 yc], ex.fixSize, [255 255 255], [], 2);
         
         %%%%%%%%%%% FLIP %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         if n == 1
@@ -698,8 +741,19 @@ for c = 1:length(ex.condShuffle)
         if (cnt/2 == 1 && GetSecs-time >= 1) && c ~= length(ex.condShuffle)
             
             %             [ex.respT(cnt),~,~] =KbWait(deviceNumber,2);
-            DrawFormattedText(w,'Press Space whenever you feel ready'... % : press 1 as soon as letter J appears on the screen,\n\n and press 2 as soon as letter K appears on the screen. \n\n Press Space to start'...
-                ,'center', 'center',[0 0 0]);
+            DrawFormattedText(w,'Press Space whenever \n\n you feel ready',xc/4, yc/2,[0 0 0]); %left instruction
+            DrawFormattedText(w,'Press Space whenever \n\n you feel ready',xc+xc/4, yc/2,[0 0 0]); %right instruction
+            %% Fixation
+            % Draw nonius lines
+            Screen('DrawLines', w, [xlineLl, xlineLr; ylineLBot, ylineLTop], ex.lineW, [255 255 255]);
+            Screen('DrawLines', w, [xlineRl, xlineRr; ylineRBot, ylineRTop], ex.lineW, [255 255 255]);
+            %Draw horizontal lines
+            Screen('DrawLines', w, [xhorilineLl, xhorilineLr; yhoriline, yhoriline],ex.lineW, [255 255 255]);
+            Screen('DrawLines', w, [xhorilineRl, xhorilineRr; yhoriline, yhoriline], ex.lineW, [255 255 255]);
+
+            Screen('DrawDots', w, [xc/2 yc], ex.fixSize, [255 255 255], [], 2);
+            Screen('DrawDots', w, [xc*3/2 yc], ex.fixSize, [255 255 255], [], 2);
+            
             Screen(w, 'Flip', 0);
             [~,~,~] =KbWait(deviceNumber,2);
             %             KbTriggerWait(KbName('Space'), deviceNumber);
