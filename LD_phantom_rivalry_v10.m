@@ -1,10 +1,10 @@
 function LD_phantom_rivalry_v9_FT(subject, session, debug, lumRange)
 
 %In this version, we add multiple velocities
-subject = 'sub-01'; 
-lumRange = 0.02;
-session = 1;                                                                                                                           
-debug = 0;
+% subject = 'sub-01'; 
+% lumRange = 0.02;
+% session = 1;                                                                                                                           
+% debug = 0;
 
 
 ex.version = 'v10';
