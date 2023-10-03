@@ -451,8 +451,8 @@ while 1
     %%%% FLIP
     Screen(w, 'Flip', 0);
 end
-vertOffsets = [vertOffsets; ex.vertOffsetL];
-horiOffsets = [horiOffsets; ex.horiOffsetL];
+vertOffsets = [ex.vertOffsetL; vertOffsets];
+horiOffsets = [ex.horiOffsetL; horiOffsets];
 
 %%%%%%%%%%%%%%%%%%
 % DONE! WRAP UP
