@@ -115,7 +115,7 @@ ex.horiLineWdeg = 0.7;
 ex.conds = {'MinbgPairLeftVel3','MinbgTopLeftVel3', 'MinbgBotLeftVel3','MeanbgPairLeftVel3', 'MeanbgTopLeftVel3', 'MeanbgBotLeftVel3', 'LightbgPairLeftVel3', 'LightbgTopLeftVel3','LightbgBotLeftVel3', 'NophLeft' ...%,
     ... %, Here, the Left/Right indicator in the condition name corresponds to the phantom grating pair location on the screen 
     }; 
-ex.repsPerRun = [4 2 2 8 2 2 4 2 2 8];              % repetitions of each condition per run
+ex.repsPerRun = [5 2 2 8 2 2 5 2 2 8];              % repetitions of each condition per run
 condIdx = [1,7]; %[1:length(ex.conds)]; %%conditions we are interested to keep
 ex.conds = ex.conds(condIdx);
 ex.repsPerRun = ex.repsPerRun(condIdx);
@@ -453,9 +453,9 @@ Screen('FillRect',ph2Raperture, [255 255 255 0], [xc-(1/2)*(ex.probeWidth - xc)+
     yhorilineR = yc+vertOffsets(2);
     
 %% %%%% initial window - wait for backtick
-DrawFormattedText(w,'Fixate the fixation dot as best as you can. \n\n After each perceptual change, \n\n report using the following digits \n\n 1: The central grating (probe) is fully visible \n\n 2: The probe is partially visible \n\n 3: The probe is fully faded/invisible \n\n Press Space to start'... % :  '...
+DrawFormattedText(w,'What is your initial percept \n\n at the probe location? \n\n 1: The probe, \n\n 2: The phantom \n\n 3: Nothing \n\n Press Space to start'... % :  '...
     ,xc/5+horiOffsets(1), yc/2+vertOffsets(1),[0 0 0]);
-DrawFormattedText(w,'Fixate the fixation dot as best as you can. \n\n After each perceptual change, \n\n report using the following digits \n\n 1: The central grating (probe) is fully visible \n\n 2: The probe is partially visible \n\n 3: The probe is fully faded/invisible \n\n Press Space to start'... % :  '...
+DrawFormattedText(w,'What is your initial percept \n\n at the probe location? \n\n 1: The probe, \n\n 2: The phantom \n\n 3: Nothing \n\n Press Space to start'... % :  '...
     ,xc+xc/5+horiOffsets(2), yc/2+vertOffsets(2),[0 0 0]);
 Screen(w, 'Flip', 0);
 %WaitSecs(2);
@@ -789,4 +789,48 @@ ex.runTime = GetSecs - ex.startRun;
 ShowCursor;
 Screen('Close');
 Screen('CloseAll');
-fclose all;      
+fclose all; 
+
+
+conditions = ex.conds;
+condNums = ex.condShuffle;
+
+trstarts = ex.flipTime(1,1:end)-ex.startRun; %trial start time relative to experiment start time
+trends = ex.flipTime(end,1:end)-ex.startRun;
+responseType = [1, 2, 3];
+
+respDat = nan(50,length(responseType), ex.repsPerRun(1), ex.numConds); %response time data better organized
+respFreq = nan(length(responseType), ex.repsPerRun(1), ex.numConds); %response frequency data better organized
+
+cnt = zeros(length(condNums),1);
+
+for i =1:length(condNums)
+    condNum = condNums(i);
+    cnt(condNum) = cnt(condNum)+1; %counting rep number
+    tstart = trstarts(i);
+    trend = trends(i);
+    respTimes = ex.responseTimes(ex.responseTimes > tstart &  ex.responseTimes < trend);
+    if nnz(respTimes)
+    resps = ex.correctResp(ex.responseTimes > tstart &  ex.responseTimes < trend);
+    respDat(1,resps(1),cnt(condNum), condNum) = respTimes(1);
+    for n = 1:length(resps)-1
+        for t = 2:length(resps)
+            if (resps(n) ~= resps(t)) & (n+1 == t) 
+                respDat(n+1,resps(n+1),cnt(condNum), condNum) = respTimes(n+1);
+                break
+            else
+                respDat(n+1,resps(n+1),cnt(condNum), condNum) = NaN;
+         
+            end
+        end
+    end
+
+    respFreq(:,cnt(condNum), condNum) = sum(~isnan(respDat(:,:,cnt(condNum), condNum)),1); %n = response number (only one response per row across all response types), resps(n) = response type,
+    end   
+end
+
+totalFreq = sum(sum(respFreq, 2, 'omitnan'),3);
+
+fprintf('Switch Frequency for Probe percept = %f\n', 100*totalFreq(1)/(sum(totalFreq)))
+fprintf('Switch Frequency for Phantom percept = %f\n', 100*totalFreq(2)/(sum(totalFreq)))
+fprintf('Switch Frequency for Nothing percept = %f\n', 100*totalFreq(3)/(sum(totalFreq)))
