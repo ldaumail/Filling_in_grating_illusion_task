@@ -536,8 +536,8 @@ for c = 1:length(ex.condShuffle)
                 if contains(condName, 'Left')
                     if contains(condName, 'Pair')
                         offset = ex.stimLongDriftPos(condNum,l, cntConds(condNum),n)-ex.stimLongDriftPos(condNum,l, cntConds(condNum),1); %baseline correct the position since every image already hase a spatial phase shift in the sinewave
-                        ex.rectLRect =  CenterRectOnPoint([0 0 ex.rawGaborWidth ex.rawGaborHeight],xc-xc/2,yc+offset+vertOffsets(1));
-                        ex.lcLRect =  CenterRectOnPoint([0 0 ex.rawProbeWidth ex.rawProbeHeight],xc+xc/2,yc+ex.lcstim.distFromFix+vertOffsets(2));
+                        ex.rectLRect =  CenterRectOnPoint([0 0 ex.rawGaborWidth ex.rawGaborHeight],xc-xc/2+horiOffsets(1),yc+offset+vertOffsets(1));
+                        ex.lcLRect =  CenterRectOnPoint([0 0 ex.rawProbeWidth ex.rawProbeHeight],xc+xc/2+horiOffsets(2),yc+ex.lcstim.distFromFix+vertOffsets(2));
                         % stim
                         
                         Screen('DrawTexture', w, ex.rectSWaveID(condNum,l, cntConds(condNum)),[],ex.rectLRect);
@@ -546,8 +546,8 @@ for c = 1:length(ex.condShuffle)
 
                     elseif contains(condName, 'Top')
                         offset = ex.stimLongDriftPos(condNum,l, cntConds(condNum),n)-ex.stimLongDriftPos(condNum,l, cntConds(condNum),1); %baseline correct the position since every image already hase a spatial phase shift in the sinewave
-                        ex.rectLRect =  CenterRectOnPoint([0 0 ex.rawGaborWidth ex.rawGaborHeight],xc-xc/2,yc+offset+vertOffsets(1));
-                        ex.lcLRect =  CenterRectOnPoint([0 0 ex.rawProbeWidth ex.rawProbeHeight],xc+xc/2,yc+ex.lcstim.distFromFix+vertOffsets(2));
+                        ex.rectLRect =  CenterRectOnPoint([0 0 ex.rawGaborWidth ex.rawGaborHeight],xc-xc/2+horiOffsets(1),yc+offset+vertOffsets(1));
+                        ex.lcLRect =  CenterRectOnPoint([0 0 ex.rawProbeWidth ex.rawProbeHeight],xc+xc/2+horiOffsets(2),yc+ex.lcstim.distFromFix+vertOffsets(2));
                         % stim
                         
                         Screen('DrawTexture', w, ex.rectSWaveID(condNum,l, cntConds(condNum)),[],ex.rectLRect);
@@ -556,8 +556,8 @@ for c = 1:length(ex.condShuffle)
 
                     elseif contains(condName, 'Bot')
                         offset = ex.stimLongDriftPos(condNum,l,cntConds(condNum),n)-ex.stimLongDriftPos(condNum,l,cntConds(condNum),1); %baseline correct the position since every image already hase a spatial phase shift in the sinewave
-                        ex.rectLRect =  CenterRectOnPoint([0 0 ex.rawGaborWidth ex.rawGaborHeight],xc-xc/2,yc+offset+vertOffsets(1));
-                        ex.lcLRect =  CenterRectOnPoint([0 0 ex.rawProbeWidth ex.rawProbeHeight],xc+xc/2,yc+ex.lcstim.distFromFix+vertOffsets(2));
+                        ex.rectLRect =  CenterRectOnPoint([0 0 ex.rawGaborWidth ex.rawGaborHeight],xc-xc/2+horiOffsets(1),yc+offset+vertOffsets(1));
+                        ex.lcLRect =  CenterRectOnPoint([0 0 ex.rawProbeWidth ex.rawProbeHeight],xc+xc/2+horiOffsets(2),yc+ex.lcstim.distFromFix+vertOffsets(2));
                         % stim
                         
                         Screen('DrawTexture', w, ex.rectSWaveID(condNum,l, cntConds(condNum)),[],ex.rectLRect);
@@ -567,8 +567,8 @@ for c = 1:length(ex.condShuffle)
 
                 elseif contains(condName, 'Right')
                     offset = ex.stimLongDriftPos(condNum,l,cntConds(condNum),n)-ex.stimLongDriftPos(condNum,l,cntConds(condNum),1); %baseline correct the position since every image already hase a spatial phase shift in the sinewave
-                    ex.rectLRect =  CenterRectOnPoint([0 0 ex.rawGaborWidth ex.rawGaborHeight],xc+xc/2,yc+offset+vertOffsets(2));
-                    ex.lcRRect =  CenterRectOnPoint([0 0 ex.rawProbeWidth ex.rawProbeHeight],xc-xc/2-ex.lcstim.distFromFix,yc+vertOffsets(1));
+                    ex.rectLRect =  CenterRectOnPoint([0 0 ex.rawGaborWidth ex.rawGaborHeight],xc+xc/2+horiOffsets(2),yc+offset+vertOffsets(2));
+                    ex.lcRRect =  CenterRectOnPoint([0 0 ex.rawProbeWidth ex.rawProbeHeight],xc-xc/2-ex.lcstim.distFromFix+horiOffsets(1),yc+vertOffsets(1));
                     % stim
                     Screen('DrawTexture', w, ex.rectSWaveID(condNum,l, cntConds(condNum)),[],ex.rectLRect);
                     Screen('DrawTexture', w, ex.lcSWaveID(oriNum),[],ex.lcRRect);
@@ -584,8 +584,8 @@ for c = 1:length(ex.condShuffle)
                 if contains(condName, 'Left')
                     if contains(condName, 'Pair')
                         offset = ex.stimLongDriftPos(condNum,l,cntConds(condNum),n)-ex.stimLongDriftPos(condNum,l,cntConds(condNum),1); %baseline correct the position since every image already hase a spatial phase shift in the sinewave
-                        ex.rectLRect =  CenterRectOnPoint([0 0 ex.rawGaborWidth ex.rawGaborHeight],xc-xc/2,yc+offset+vertOffsets(1));
-                        ex.lcLRect =  CenterRectOnPoint([0 0 ex.rawProbeWidth ex.rawProbeHeight],xc+xc/2,yc+ex.lcstim.distFromFix+vertOffsets(2));
+                        ex.rectLRect =  CenterRectOnPoint([0 0 ex.rawGaborWidth ex.rawGaborHeight],xc-xc/2+horiOffsets(1),yc+offset+vertOffsets(1));
+                        ex.lcLRect =  CenterRectOnPoint([0 0 ex.rawProbeWidth ex.rawProbeHeight],xc+xc/2+horiOffsets(2),yc+ex.lcstim.distFromFix+vertOffsets(2));
                         
                         % stim
                         Screen('DrawTexture', w, ex.lcSWaveID(oriNum),[],ex.lcLRect);
@@ -594,8 +594,8 @@ for c = 1:length(ex.condShuffle)
 
                      elseif contains(condName, 'Top')
                          offset = ex.stimLongDriftPos(condNum,l, cntConds(condNum),n)-ex.stimLongDriftPos(condNum,l, cntConds(condNum),1); %baseline correct the position since every image already hase a spatial phase shift in the sinewave
-                         ex.rectLRect =  CenterRectOnPoint([0 0 ex.rawGaborWidth ex.rawGaborHeight],xc-xc/2,yc+offset+vertOffsets(1));
-                         ex.lcLRect =  CenterRectOnPoint([0 0 ex.rawProbeWidth ex.rawProbeHeight],xc+xc/2,yc+ex.lcstim.distFromFix+vertOffsets(2));
+                         ex.rectLRect =  CenterRectOnPoint([0 0 ex.rawGaborWidth ex.rawGaborHeight],xc-xc/2+horiOffsets(1),yc+offset+vertOffsets(1));
+                         ex.lcLRect =  CenterRectOnPoint([0 0 ex.rawProbeWidth ex.rawProbeHeight],xc+xc/2+horiOffsets(2),yc+ex.lcstim.distFromFix+vertOffsets(2));
                          
                          % stim
                          Screen('DrawTexture', w, ex.lcSWaveID(oriNum),[],ex.lcLRect);
@@ -604,8 +604,8 @@ for c = 1:length(ex.condShuffle)
 
                      elseif contains(condName, 'Bot')
                          offset = ex.stimLongDriftPos(condNum,l, cntConds(condNum),n)-ex.stimLongDriftPos(condNum,l, cntConds(condNum),1); %baseline correct the position since every image already hase a spatial phase shift in the sinewave
-                         ex.rectLRect =  CenterRectOnPoint([0 0 ex.rawGaborWidth ex.rawGaborHeight],xc-xc/2,yc+offset+vertOffsets(1));
-                         ex.lcLRect =  CenterRectOnPoint([0 0 ex.rawProbeWidth ex.rawProbeHeight],xc+xc/2,yc+ex.lcstim.distFromFix+vertOffsets(2));
+                         ex.rectLRect =  CenterRectOnPoint([0 0 ex.rawGaborWidth ex.rawGaborHeight],xc-xc/2+horiOffsets(1),yc+offset+vertOffsets(1));
+                         ex.lcLRect =  CenterRectOnPoint([0 0 ex.rawProbeWidth ex.rawProbeHeight],xc+xc/2+horiOffsets(2),yc+ex.lcstim.distFromFix+vertOffsets(2));
                          
                          % stim
                          Screen('DrawTexture', w, ex.lcSWaveID(oriNum),[],ex.lcLRect);
@@ -616,8 +616,8 @@ for c = 1:length(ex.condShuffle)
                          
                 elseif contains(condName, 'Right')
                     offset = ex.stimLongDriftPos(condNum,l, cntConds(condNum),n)-ex.stimLongDriftPos(condNum,l, cntConds(condNum),1); %baseline correct the position since every image already hase a spatial phase shift in the sinewave
-                    ex.rectLRect =  CenterRectOnPoint([0 0 ex.rawGaborWidth ex.rawGaborHeight],xc+xc/2,yc+offset+vertOffsets(2));
-                    ex.lcRRect =  CenterRectOnPoint([0 0 ex.rawProbeWidth ex.rawProbeHeight],xc-xc/2-ex.lcstim.distFromFix,yc+vertOffsets(1));
+                    ex.rectLRect =  CenterRectOnPoint([0 0 ex.rawGaborWidth ex.rawGaborHeight],xc+xc/2+horiOffsets(2),yc+offset+vertOffsets(2));
+                    ex.lcRRect =  CenterRectOnPoint([0 0 ex.rawProbeWidth ex.rawProbeHeight],xc-xc/2-ex.lcstim.distFromFix+horiOffsets(1),yc+vertOffsets(1));
                     
                     % stim
                     Screen('DrawTexture', w, ex.lcSWaveID(oriNum),[],ex.lcRRect);
@@ -633,8 +633,8 @@ for c = 1:length(ex.condShuffle)
                 if contains(condName, 'Left')
                     if contains(condName,'Pair')
                         offset = ex.stimLongDriftPos(condNum,l, cntConds(condNum),n)-ex.stimLongDriftPos(condNum,l, cntConds(condNum),1); %baseline correct the position since every image already hase a spatial phase shift in the sinewave
-                        ex.rectLRect =  CenterRectOnPoint([0 0 ex.rawGaborWidth ex.rawGaborHeight],xc-xc/2,yc+offset+vertOffsets(1));
-                        ex.lcLRect =  CenterRectOnPoint([0 0 ex.rawProbeWidth ex.rawProbeHeight],xc+xc/2,yc+ex.lcstim.distFromFix+vertOffsets(2));
+                        ex.rectLRect =  CenterRectOnPoint([0 0 ex.rawGaborWidth ex.rawGaborHeight],xc-xc/2+horiOffsets(1),yc+offset+vertOffsets(1));
+                        ex.lcLRect =  CenterRectOnPoint([0 0 ex.rawProbeWidth ex.rawProbeHeight],xc+xc/2+horiOffsets(2),yc+ex.lcstim.distFromFix+vertOffsets(2));
                         
                         % stim
                         Screen('DrawTexture', w, ex.lcSWaveID(oriNum),[],ex.lcLRect);
@@ -643,8 +643,8 @@ for c = 1:length(ex.condShuffle)
 
                     elseif contains(condName,'Top')
                         offset = ex.stimLongDriftPos(condNum,l, cntConds(condNum),n)-ex.stimLongDriftPos(condNum,l, cntConds(condNum),1); %baseline correct the position since every image already hase a spatial phase shift in the sinewave
-                        ex.rectLRect =  CenterRectOnPoint([0 0 ex.rawGaborWidth ex.rawGaborHeight],xc-xc/2,yc+offset+vertOffsets(1));
-                        ex.lcLRect =  CenterRectOnPoint([0 0 ex.rawProbeWidth ex.rawProbeHeight],xc+xc/2,yc+ex.lcstim.distFromFix+vertOffsets(2));
+                        ex.rectLRect =  CenterRectOnPoint([0 0 ex.rawGaborWidth ex.rawGaborHeight],xc-xc/2+horiOffsets(1),yc+offset+vertOffsets(1));
+                        ex.lcLRect =  CenterRectOnPoint([0 0 ex.rawProbeWidth ex.rawProbeHeight],xc+xc/2+horiOffsets(2),yc+ex.lcstim.distFromFix+vertOffsets(2));
                         
                         % stim
                         Screen('DrawTexture', w, ex.lcSWaveID(oriNum),[],ex.lcLRect);
@@ -652,8 +652,8 @@ for c = 1:length(ex.condShuffle)
                         Screen('DrawTexture',w,ph2LTaperture);
                     elseif contains(condName,'Bot')
                         offset = ex.stimLongDriftPos(condNum,l, cntConds(condNum),n)-ex.stimLongDriftPos(condNum,l, cntConds(condNum),1); %baseline correct the position since every image already hase a spatial phase shift in the sinewave
-                        ex.rectLRect =  CenterRectOnPoint([0 0 ex.rawGaborWidth ex.rawGaborHeight],xc-xc/2,yc+offset+vertOffsets(1));
-                        ex.lcLRect =  CenterRectOnPoint([0 0 ex.rawProbeWidth ex.rawProbeHeight],xc+xc/2,yc+ex.lcstim.distFromFix+vertOffsets(2));
+                        ex.rectLRect =  CenterRectOnPoint([0 0 ex.rawGaborWidth ex.rawGaborHeight],xc-xc/2+horiOffsets(1),yc+offset+vertOffsets(1));
+                        ex.lcLRect =  CenterRectOnPoint([0 0 ex.rawProbeWidth ex.rawProbeHeight],xc+xc/2+horiOffsets(2),yc+ex.lcstim.distFromFix+vertOffsets(2));
                         
                         % stim
                         Screen('DrawTexture', w, ex.lcSWaveID(oriNum),[],ex.lcLRect);
@@ -662,8 +662,8 @@ for c = 1:length(ex.condShuffle)
                     end
                 elseif contains(condName, 'Right')
                     offset = ex.stimLongDriftPos(condNum,l, cntConds(condNum),n)-ex.stimLongDriftPos(condNum,l, cntConds(condNum),1); %baseline correct the position since every image already hase a spatial phase shift in the sinewave
-                    ex.rectLRect =  CenterRectOnPoint([0 0 ex.rawGaborWidth ex.rawGaborHeight],xc+xc/2,yc+offset+vertOffsets(2));
-                    ex.lcRRect =  CenterRectOnPoint([0 0 ex.rawProbeWidth ex.rawProbeHeight],xc-xc/2-ex.lcstim.distFromFix,yc+vertOffsets(1));
+                    ex.rectLRect =  CenterRectOnPoint([0 0 ex.rawGaborWidth ex.rawGaborHeight],xc+xc/2+horiOffsets(2),yc+offset+vertOffsets(2));
+                    ex.lcRRect =  CenterRectOnPoint([0 0 ex.rawProbeWidth ex.rawProbeHeight],xc-xc/2-ex.lcstim.distFromFix+horiOffsets(1),yc+vertOffsets(1));
                     
                     % stim
                     Screen('DrawTexture', w, ex.lcSWaveID(oriNum),[],ex.lcRRect);
@@ -676,14 +676,14 @@ for c = 1:length(ex.condShuffle)
             if nnz(find(ex.longFormStimOnSecs(n)))
                 
                 if contains(condName, 'Left')
-                    ex.lcLRect =  CenterRectOnPoint([0 0 ex.rawProbeWidth ex.rawProbeHeight],xc+xc/2,yc+ex.lcstim.distFromFix+vertOffsets(2));
+                    ex.lcLRect =  CenterRectOnPoint([0 0 ex.rawProbeWidth ex.rawProbeHeight],xc+xc/2+horiOffsets(2),yc+ex.lcstim.distFromFix+vertOffsets(2));
                     
                     % stim
                     Screen('DrawTexture', w, ex.lcSWaveID(oriNum),[],ex.lcLRect);
                     Screen('DrawTexture',w,coLPaperture);
 
                 elseif contains(condName, 'Right')
-                    ex.lcRRect =  CenterRectOnPoint([0 0 ex.rawProbeWidth ex.rawProbeHeight],xc-xc/2-ex.lcstim.distFromFix,yc+vertOffsets(1));
+                    ex.lcRRect =  CenterRectOnPoint([0 0 ex.rawProbeWidth ex.rawProbeHeight],xc-xc/2-ex.lcstim.distFromFix+horiOffsets(1),yc+vertOffsets(1));
                     % stim
                     Screen('DrawTexture', w, ex.lcSWaveID(oriNum),[],ex.lcRRect);
                     Screen('DrawTexture',w,coRaperture);
