@@ -1,4 +1,4 @@
-function LD_phantom_rivalry_v11(subject, session, debug, lumRange, vertOffsets, horiOffsets)
+function LD_initial_percept_testv11(subject, session, debug, lumRange, vertOffsets, horiOffsets)
 
 %In this version, we add multiple velocities
 % subject = 'sub-01'; 
@@ -79,7 +79,7 @@ ex.initialFixation = 6;        % in seconds
 ex.finalFixation = 2;          % in seconds
 ex.trialFixation = 1;          % in seconds
 %ex.stimsPerBlock = 4.5;      % number of back-and-forth laps of the stimulus drift
-ex.blockLength = 30; %ex.trialFixation+ ceil(ex.stimDur*ex.stimsPerBlock);           % in seconds
+ex.blockLength = 5; %ex.trialFixation+ ceil(ex.stimDur*ex.stimsPerBlock);           % in seconds
 ex.betweenBlocks = 2;          % in seconds
 ex.flipsPerSec = 60;  % 60;         % number of phase changes we want from the visual stimulus, and thus the number of times we want to change visual stimulation on the screen
 ex.flipWin = 1/ex.flipsPerSec;         % in seconds then actually in 1 sec the stimuli will change 12 times 
@@ -780,11 +780,11 @@ end
 
 ex.runTime = GetSecs - ex.startRun;
 
-savedir = fullfile(ex.root,'data',sprintf('%s_%s/',subject,ex.version));
-if ~exist(savedir); mkdir(savedir); end
-savename = fullfile(savedir, strcat(sprintf('/%s_binocular_rivalry_%s_date%s_fix',subject,ex.version,num2str(ex.date)), '.mat'));
-%save(savename,'ex');
-save(savename,'ex','-v7.3')
+% savedir = fullfile(ex.root,'data',sprintf('%s_%s/',subject,ex.version));
+% if ~exist(savedir); mkdir(savedir); end
+% savename = fullfile(savedir, strcat(sprintf('/%s_binocular_rivalry_%s_date%s_fix',subject,ex.version,num2str(ex.date)), '.mat'));
+% %save(savename,'ex');
+% save(savename,'ex','-v7.3')
 
 ShowCursor;
 Screen('Close');
