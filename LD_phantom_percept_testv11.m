@@ -1,4 +1,4 @@
-function LD_initial_percept_testv11(subject, session, debug, lumRange, vertOffsets, horiOffsets)
+function LD_phantom_percept_testv11(subject, session, debug, vertOffsets, horiOffsets)
 
 %In this version, we add multiple velocities
 % subject = 'sub-01'; 
@@ -79,7 +79,7 @@ ex.initialFixation = 6;        % in seconds
 ex.finalFixation = 2;          % in seconds
 ex.trialFixation = 1;          % in seconds
 %ex.stimsPerBlock = 4.5;      % number of back-and-forth laps of the stimulus drift
-ex.blockLength = 5; %ex.trialFixation+ ceil(ex.stimDur*ex.stimsPerBlock);           % in seconds
+ex.blockLength = 15; %ex.trialFixation+ ceil(ex.stimDur*ex.stimsPerBlock);           % in seconds
 ex.betweenBlocks = 2;          % in seconds
 ex.flipsPerSec = 60;  % 60;         % number of phase changes we want from the visual stimulus, and thus the number of times we want to change visual stimulation on the screen
 ex.flipWin = 1/ex.flipsPerSec;         % in seconds then actually in 1 sec the stimuli will change 12 times 
@@ -87,7 +87,7 @@ ex.flipWin = 1/ex.flipsPerSec;         % in seconds then actually in 1 sec the s
 
 %%%% Opposite eye low contrast grating (probe)
 ex.lcstim.spatialFreqDeg = 2;
-ex.lcstim.luminanceRange = lumRange; %0.2; %0.03;%linspace(0.01,0.20,10);%[0.05, 0.10, 0.15];                                                 % in %, maybe?? %here the number of stimulus contrast levels is the number of different conditions
+ex.lcstim.luminanceRange = 0.2; %0.03;%linspace(0.01,0.20,10);%[0.05, 0.10, 0.15];                                                 % in %, maybe?? %here the number of stimulus contrast levels is the number of different conditions
 ex.lcstim.contrastMultiplicator = ex.lcstim.luminanceRange/2;  % for sine wave 0.5 = 100% contrast, 0.2 = 40%
 ex.lcstim.contrastOffset = 0.425;
 ex.lcstim.maxLum = 255*(ex.lcstim.contrastOffset+ex.lcstim.contrastMultiplicator);
@@ -115,8 +115,8 @@ ex.horiLineWdeg = 0.7;
 ex.conds = {'MinbgPairLeftVel3','MinbgTopLeftVel3', 'MinbgBotLeftVel3','MeanbgPairLeftVel3', 'MeanbgTopLeftVel3', 'MeanbgBotLeftVel3', 'LightbgPairLeftVel3', 'LightbgTopLeftVel3','LightbgBotLeftVel3', 'NophLeft' ...%,
     ... %, Here, the Left/Right indicator in the condition name corresponds to the phantom grating pair location on the screen 
     }; 
-ex.repsPerRun = [4 2 2 8 2 2 4 2 2 8];              % repetitions of each condition per run
-condIdx = [1,7]; %[1:length(ex.conds)]; %%conditions we are interested to keep
+ex.repsPerRun = [2 2 2 2 2 2 2 2 2 2];              % repetitions of each condition per run
+condIdx = [1,4,7]; %[1:length(ex.conds)]; %%conditions we are interested to keep
 ex.conds = ex.conds(condIdx);
 ex.repsPerRun = ex.repsPerRun(condIdx);
 ex.numConds = length(ex.conds);
@@ -453,9 +453,9 @@ Screen('FillRect',ph2Raperture, [255 255 255 0], [xc-(1/2)*(ex.probeWidth - xc)+
     yhorilineR = yc+vertOffsets(2);
     
 %% %%%% initial window - wait for backtick
-DrawFormattedText(w,'Fixate the fixation dot as best as you can. \n\n After each perceptual change, \n\n report using the following digits \n\n 1: The central grating (probe) is fully visible \n\n 2: The probe is partially visible \n\n 3: The probe is fully faded/invisible \n\n Press Space to start'... % :  '...
+DrawFormattedText(w,'Do you perceive any type \n\n of motion within the gap? \n\n Press Space to start'... % :  '...
     ,xc/5+horiOffsets(1), yc/2+vertOffsets(1),[0 0 0]);
-DrawFormattedText(w,'Fixate the fixation dot as best as you can. \n\n After each perceptual change, \n\n report using the following digits \n\n 1: The central grating (probe) is fully visible \n\n 2: The probe is partially visible \n\n 3: The probe is fully faded/invisible \n\n Press Space to start'... % :  '...
+DrawFormattedText(w,'Do you perceive any type \n\n of motion within the gap? \n\n Press Space to start'... % :  '...
     ,xc+xc/5+horiOffsets(2), yc/2+vertOffsets(2),[0 0 0]);
 Screen(w, 'Flip', 0);
 %WaitSecs(2);
@@ -541,7 +541,7 @@ for c = 1:length(ex.condShuffle)
                         % stim
                         
                         Screen('DrawTexture', w, ex.rectSWaveID(condNum,l, cntConds(condNum)),[],ex.rectLRect);
-                        Screen('DrawTexture', w, ex.lcSWaveID(oriNum),[],ex.lcLRect);
+%                         Screen('DrawTexture', w, ex.lcSWaveID(oriNum),[],ex.lcLRect);
                         Screen('DrawTexture',w,ph1LPaperture);
 
                     elseif contains(condName, 'Top')
@@ -551,7 +551,7 @@ for c = 1:length(ex.condShuffle)
                         % stim
                         
                         Screen('DrawTexture', w, ex.rectSWaveID(condNum,l, cntConds(condNum)),[],ex.rectLRect);
-                        Screen('DrawTexture', w, ex.lcSWaveID(oriNum),[],ex.lcLRect);
+%                         Screen('DrawTexture', w, ex.lcSWaveID(oriNum),[],ex.lcLRect);
                         Screen('DrawTexture',w,ph1LTaperture);
 
                     elseif contains(condName, 'Bot')
@@ -561,7 +561,7 @@ for c = 1:length(ex.condShuffle)
                         % stim
                         
                         Screen('DrawTexture', w, ex.rectSWaveID(condNum,l, cntConds(condNum)),[],ex.rectLRect);
-                        Screen('DrawTexture', w, ex.lcSWaveID(oriNum),[],ex.lcLRect);
+%                         Screen('DrawTexture', w, ex.lcSWaveID(oriNum),[],ex.lcLRect);
                         Screen('DrawTexture',w,ph1LBaperture);
                     end
 
@@ -571,7 +571,7 @@ for c = 1:length(ex.condShuffle)
                     ex.lcRRect =  CenterRectOnPoint([0 0 ex.rawProbeWidth ex.rawProbeHeight],xc-xc/2-ex.lcstim.distFromFix+horiOffsets(1),yc+vertOffsets(1));
                     % stim
                     Screen('DrawTexture', w, ex.rectSWaveID(condNum,l, cntConds(condNum)),[],ex.rectLRect);
-                    Screen('DrawTexture', w, ex.lcSWaveID(oriNum),[],ex.lcRRect);
+%                     Screen('DrawTexture', w, ex.lcSWaveID(oriNum),[],ex.lcRRect);
                     Screen('DrawTexture',w,ph1Raperture);
                     
                 end
@@ -588,7 +588,7 @@ for c = 1:length(ex.condShuffle)
                         ex.lcLRect =  CenterRectOnPoint([0 0 ex.rawProbeWidth ex.rawProbeHeight],xc+xc/2+horiOffsets(2),yc+ex.lcstim.distFromFix+vertOffsets(2));
                         
                         % stim
-                        Screen('DrawTexture', w, ex.lcSWaveID(oriNum),[],ex.lcLRect);
+%                         Screen('DrawTexture', w, ex.lcSWaveID(oriNum),[],ex.lcLRect);
                         Screen('DrawTexture', w, ex.rectSWaveID(condNum,l, cntConds(condNum)),[],ex.rectLRect);
                         Screen('DrawTexture',w,coLPaperture);
 
@@ -598,7 +598,7 @@ for c = 1:length(ex.condShuffle)
                          ex.lcLRect =  CenterRectOnPoint([0 0 ex.rawProbeWidth ex.rawProbeHeight],xc+xc/2+horiOffsets(2),yc+ex.lcstim.distFromFix+vertOffsets(2));
                          
                          % stim
-                         Screen('DrawTexture', w, ex.lcSWaveID(oriNum),[],ex.lcLRect);
+%                          Screen('DrawTexture', w, ex.lcSWaveID(oriNum),[],ex.lcLRect);
                          Screen('DrawTexture', w, ex.rectSWaveID(condNum,l, cntConds(condNum)),[],ex.rectLRect);
                          Screen('DrawTexture',w,coLTaperture);
 
@@ -608,7 +608,7 @@ for c = 1:length(ex.condShuffle)
                          ex.lcLRect =  CenterRectOnPoint([0 0 ex.rawProbeWidth ex.rawProbeHeight],xc+xc/2+horiOffsets(2),yc+ex.lcstim.distFromFix+vertOffsets(2));
                          
                          % stim
-                         Screen('DrawTexture', w, ex.lcSWaveID(oriNum),[],ex.lcLRect);
+%                          Screen('DrawTexture', w, ex.lcSWaveID(oriNum),[],ex.lcLRect);
                          Screen('DrawTexture', w, ex.rectSWaveID(condNum,l, cntConds(condNum)),[],ex.rectLRect);
                          Screen('DrawTexture',w,coLBaperture);
 
@@ -620,7 +620,7 @@ for c = 1:length(ex.condShuffle)
                     ex.lcRRect =  CenterRectOnPoint([0 0 ex.rawProbeWidth ex.rawProbeHeight],xc-xc/2-ex.lcstim.distFromFix+horiOffsets(1),yc+vertOffsets(1));
                     
                     % stim
-                    Screen('DrawTexture', w, ex.lcSWaveID(oriNum),[],ex.lcRRect);
+%                     Screen('DrawTexture', w, ex.lcSWaveID(oriNum),[],ex.lcRRect);
                     Screen('DrawTexture', w, ex.rectSWaveID(condNum,l, cntConds(condNum)),[],ex.rectLRect);
                     Screen('DrawTexture',w,coRaperture);
                     
@@ -637,7 +637,7 @@ for c = 1:length(ex.condShuffle)
                         ex.lcLRect =  CenterRectOnPoint([0 0 ex.rawProbeWidth ex.rawProbeHeight],xc+xc/2+horiOffsets(2),yc+ex.lcstim.distFromFix+vertOffsets(2));
                         
                         % stim
-                        Screen('DrawTexture', w, ex.lcSWaveID(oriNum),[],ex.lcLRect);
+%                         Screen('DrawTexture', w, ex.lcSWaveID(oriNum),[],ex.lcLRect);
                         Screen('DrawTexture', w, ex.rectSWaveID(condNum,l, cntConds(condNum)),[],ex.rectLRect);
                         Screen('DrawTexture',w,ph2LPaperture);
 
@@ -647,7 +647,7 @@ for c = 1:length(ex.condShuffle)
                         ex.lcLRect =  CenterRectOnPoint([0 0 ex.rawProbeWidth ex.rawProbeHeight],xc+xc/2+horiOffsets(2),yc+ex.lcstim.distFromFix+vertOffsets(2));
                         
                         % stim
-                        Screen('DrawTexture', w, ex.lcSWaveID(oriNum),[],ex.lcLRect);
+%                         Screen('DrawTexture', w, ex.lcSWaveID(oriNum),[],ex.lcLRect);
                         Screen('DrawTexture', w, ex.rectSWaveID(condNum,l, cntConds(condNum)),[],ex.rectLRect);
                         Screen('DrawTexture',w,ph2LTaperture);
                     elseif contains(condName,'Bot')
@@ -656,7 +656,7 @@ for c = 1:length(ex.condShuffle)
                         ex.lcLRect =  CenterRectOnPoint([0 0 ex.rawProbeWidth ex.rawProbeHeight],xc+xc/2+horiOffsets(2),yc+ex.lcstim.distFromFix+vertOffsets(2));
                         
                         % stim
-                        Screen('DrawTexture', w, ex.lcSWaveID(oriNum),[],ex.lcLRect);
+%                         Screen('DrawTexture', w, ex.lcSWaveID(oriNum),[],ex.lcLRect);
                         Screen('DrawTexture', w, ex.rectSWaveID(condNum,l, cntConds(condNum)),[],ex.rectLRect);
                         Screen('DrawTexture',w,ph2LBaperture);
                     end
@@ -666,7 +666,7 @@ for c = 1:length(ex.condShuffle)
                     ex.lcRRect =  CenterRectOnPoint([0 0 ex.rawProbeWidth ex.rawProbeHeight],xc-xc/2-ex.lcstim.distFromFix+horiOffsets(1),yc+vertOffsets(1));
                     
                     % stim
-                    Screen('DrawTexture', w, ex.lcSWaveID(oriNum),[],ex.lcRRect);
+%                     Screen('DrawTexture', w, ex.lcSWaveID(oriNum),[],ex.lcRRect);
                     Screen('DrawTexture', w, ex.rectSWaveID(condNum,l, cntConds(condNum)),[],ex.rectLRect);
                     Screen('DrawTexture',w,ph2Raperture);
                 end
