@@ -199,7 +199,7 @@ while 1
     
     %%%% FLIP
     Screen(w, 'Flip', 0);
-    WaitSecs(0.2);
+    WaitSecs(0.5);
     %% LEFT SQUARE
     
     % Line coordinates
@@ -244,13 +244,41 @@ while 1
             
         end
     end
-    
+    %right grid lines 
+        % Grid lines
+    for c = 1:3
+        xshift = 2*ex.lineH*(c-1);
+        for r=1:3
+            yshift = 2*ex.lineW*(r-1);
+            %lower right cross/grid
+            Screen('DrawLines', w, [xRforLl+xshift, xRforLr+xshift; yRforLBot+yshift, yRforLTop+yshift], ex.lineTh, ex.lineColor);
+            Screen('DrawLines', w, [xRbackRl+xshift, xRbackRr+xshift; yRbackRTop+yshift, yRbackRBot+yshift], ex.lineTh, ex.lineColor);
+            %Upper right grid
+            Screen('DrawLines', w, [xRforLl+xshift, xRforLr+xshift; yRforLBot-yshift, yRforLTop-yshift], ex.lineTh, ex.lineColor);
+            Screen('DrawLines', w, [xRbackRl+xshift, xRbackRr+xshift; yRbackRTop-yshift, yRbackRBot-yshift], ex.lineTh, ex.lineColor);
+            
+        end
+    end
+    for c = 1:3
+        xshift = 2*ex.lineH*(c-1);
+        for r=1:3
+            yshift = 2*ex.lineW*(r-1);
+            %lower left cross/grid
+            Screen('DrawLines', w, [xRforLl-xshift, xRforLr-xshift; yRforLBot+yshift, yRforLTop+yshift], ex.lineTh, ex.lineColor);
+            Screen('DrawLines', w, [xRbackRl-xshift, xRbackRr-xshift; yRbackRTop+yshift, yRbackRBot+yshift], ex.lineTh, ex.lineColor);
+            
+            %Upper left grid
+            Screen('DrawLines', w, [xRforLl-xshift, xRforLr-xshift; yRforLBot-yshift, yRforLTop-yshift], ex.lineTh, ex.lineColor);
+            Screen('DrawLines', w, [xRbackRl-xshift, xRbackRr-xshift; yRbackRTop-yshift, yRbackRBot-yshift], ex.lineTh, ex.lineColor);
+            
+        end
+    end
     % Draw the square
     Screen('FrameRect', w, [0 0 0], squareRectLeft, ex.lineTh);
-    
+    Screen('FrameRect', w, [0 0 0], squareRectRight, ex.lineTh); 
     %%%% FLIP
     Screen(w, 'Flip', 0);
-    WaitSecs(0.2);
+    WaitSecs(0.5);
     Screen(w, 'Flip', 0);
     KbWait(deviceNumber,2)
     %%%% check for responses
