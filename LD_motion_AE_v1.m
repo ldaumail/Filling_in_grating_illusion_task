@@ -458,9 +458,9 @@ Screen('FillRect',ph2Raperture, [255 255 255 0], [xc-(1/2)*(ex.probeWidth - xc)+
     yhorilineR = yc+vertOffsets(2);
     
 %% %%%% initial window - wait for backtick
-DrawFormattedText(w,'Fixate the fixation dot as best as you can. \n\n After each drifting stimulus disappears, \n\n report using the following digits \n\n 1: The central grating (probe) apears to go up \n\n 2: The probe is not moving at all  \n\n Press Space to start'... % :  '...
+DrawFormattedText(w,'Fixate the fixation dot as best as you can. \n\n After each drifting stimulus disappears, \n\n report using the following digits \n\n 1: The central grating (probe) \n\n appears to go up \n\n 2: The probe is not moving at all  \n\n Press Space to start'... % :  '...
     ,xc/5+horiOffsets(1), yc/2+vertOffsets(1),[0 0 0]);
-DrawFormattedText(w,'Fixate the fixation dot as best as you can. \n\n After each drifting stimulus disappears, \n\n report using the following digits \n\n 1: The central grating (probe) apears to go up \n\n 2: The probe is not moving at all  \n\n Press Space to start'... % :  '...
+DrawFormattedText(w,'Fixate the fixation dot as best as you can. \n\n After each drifting stimulus disappears, \n\n report using the following digits \n\n 1: The central grating (probe) \n\n appears to go up \n\n 2: The probe is not moving at all  \n\n Press Space to start'... % :  '...
     ,xc+xc/5+horiOffsets(2), yc/2+vertOffsets(2),[0 0 0]);
 Screen(w, 'Flip', 0);
 %WaitSecs(2);
@@ -726,7 +726,7 @@ for c = 1:length(ex.condShuffle)
             time = GetSecs;
             cnt = cnt+1;
         end
-        if (cnt/2 == 1 && GetSecs-time >= 0)
+        if (cnt/2 == 1 && GetSecs-time >= 0) && c ~= length(ex.condShuffle)
             KbQueueStart(); % response time
             ex.lcLRect =  CenterRectOnPoint([0 0 ex.rawProbeWidth ex.rawProbeHeight],xc+xc/2+horiOffsets(2),yc+ex.lcstim.distFromFix+vertOffsets(2));
             % stim
