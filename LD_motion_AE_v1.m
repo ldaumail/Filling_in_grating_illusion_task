@@ -87,12 +87,12 @@ ex.flipWin = 1/ex.flipsPerSec;         % in seconds then actually in 1 sec the s
 
 %%%% Opposite eye low contrast grating (probe)
 % ex.lcstim.spatialFreqDeg = 2;
-% ex.lcstim.luminanceRange = ex.stim.luminanceRange; %0.2; %0.03;%linspace(0.01,0.20,10);%[0.05, 0.10, 0.15];                                                 % in %, maybe?? %here the number of stimulus contrast levels is the number of different conditions
-% ex.lcstim.contrastMultiplicator = ex.lcstim.luminanceRange/2;  % for sine wave 0.5 = 100% contrast, 0.2 = 40%
-% ex.lcstim.contrastOffset = 0.425;
-% ex.lcstim.maxLum = 255*(ex.lcstim.contrastOffset+ex.lcstim.contrastMultiplicator);
-% ex.lcstim.minLum = 255*(ex.lcstim.contrastOffset-ex.lcstim.contrastMultiplicator);
-% ex.lcstim.contrast = (ex.lcstim.maxLum-ex.lcstim.minLum)./(ex.lcstim.maxLum+ex.lcstim.minLum);
+ex.lcstim.luminanceRange = 0.04; %0.2; %0.03;%linspace(0.01,0.20,10);%[0.05, 0.10, 0.15];                                                 % in %, maybe?? %here the number of stimulus contrast levels is the number of different conditions
+ex.lcstim.contrastMultiplicator = ex.lcstim.luminanceRange/2;  % for sine wave 0.5 = 100% contrast, 0.2 = 40%
+ex.lcstim.contrastOffset = 0.425;
+ex.lcstim.maxLum = 255*(ex.lcstim.contrastOffset+ex.lcstim.contrastMultiplicator);
+ex.lcstim.minLum = 255*(ex.lcstim.contrastOffset-ex.lcstim.contrastMultiplicator);
+ex.lcstim.contrast = (ex.lcstim.maxLum-ex.lcstim.minLum)./(ex.lcstim.maxLum+ex.lcstim.minLum);
 % ex.lcstim.orientation = [45 135];
 ex.lcstim.gaborHDeg = 16;                                                  % in degrees of visual angle
 ex.lcstim.gaborWDeg = 3;
@@ -309,7 +309,7 @@ phase = ex.stim.phases(c,l,r,1);
 ex.lcSWave = nan(length(ex.stim.contrastOffset),ex.rawProbeHeight,ex.rawProbeWidth);
 for l = 1:length(ex.stim.contrastOffset)
     ex.lcSWave(l,:,:) = makeSineGrating(ex.rawProbeHeight,ex.rawProbeWidth,ex.stim.spatialFreqDeg,...
-        ex.stim.orientation,phase,ex.stim.contrastOffset(l),ex.stim.contrastMultiplicator,...
+        ex.stim.orientation,phase,ex.lcstim.contrastOffset,ex.lcstim.contrastMultiplicator,...
         ex.ppd);
     ex.lcSWaveID(l) = Screen('MakeTexture', w, squeeze(ex.lcSWave(l,:,:)));
 end
