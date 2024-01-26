@@ -56,7 +56,7 @@ ex.stim.orientation = [90]; %[90 180];                                          
 ex.stim.degFromFix = .6;                                              % in degrees of visual angle
 ex.stim.gaborHDeg = 8;                                                  % in degrees of visual angle
 ex.stim.gaborWDeg = 16;
-ex.stim.gapSize = 5;
+ex.stim.gapSizeDeg = 5;
 %ex.stim.rectGaborWDeg = 8;
 ex.stim.contrast = 0.15;%linspace(0.01,0.20,10);%[0.05, 0.10, 0.15];                                                 % in %, maybe?? %here the number of stimulus contrast levels is the number of different conditions
 ex.stim.contrastMultiplicator = ex.stim.contrast/2;  % for sine wave 0.5 = 100% contrast, 0.2 = 40%
@@ -223,6 +223,7 @@ end
 %%%% scale the stim params for the screen
 ex.ppd = pi* rect(3) / (atan(ex.screenWidth/ex.viewingDist/2)) / 360;
 ex.fixSize = round(ex.fixSizeDeg*ex.ppd);
+ex.gapSize = round(ex.stim.gapSizeDeg*ex.ppd);
 ex.gaborHeight = round(ex.stim.gaborHDeg*ex.ppd);                 % in pixels, the size of our objects
 ex.gaborWidth = round(ex.stim.gaborWDeg*ex.ppd);                 % in pixels, the size of our objects 
 ex.rawGaborHeight = ex.gaborHeight*3;
@@ -340,15 +341,15 @@ for c = 1:length(ex.condShuffle)
     timeOn = 325; %325 is the number of frames also used in Expt 1
     ex.timeOn = timeOn;
     guideFlipCnt = 1;
-
+    %%%% draw sine wave grating stimulus %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    phaperture=Screen('OpenOffscreenwindow', w, grays(thisCond,:));
+    Screen('FillRect',phaperture, [255 255 255 0], [xc-(1/2)*ex.gaborWidth yc-(ex.gaborHeight+ex.gapSize/2) xc+ex.gaborWidth/2 yc-(ex.gapSize)/2]);
+    Screen('FillRect',phaperture, [255 255 255 0], [xc-(1/2)*ex.gaborWidth yc+(ex.gapSize)/2 xc+ex.gaborWidth/2 yc+(ex.gaborHeight+ex.gapSize/2)]);
+    
     %flip through the block and following between block time
     while n <= length(ex.trialFlips)
         ex.longFormBlocks(n)
-        %%%% draw sine wave grating stimulus %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-        phaperture=Screen('OpenOffscreenwindow', w, grays(thisCond,:));
-        Screen('FillRect',phaperture, [255 255 255 0], [xc-(1/2)*ex.gaborWidth yc-(ex.gaborHeight+ex.stim.gapSize/2) xc+ex.gaborWidth/2 yc-ex.stim.gapSize/2]);
-        Screen('FillRect',phaperture, [255 255 255 0], [xc-(1/2)*ex.gaborWidth yc+ex.stim.gapSize/2 xc+ex.gaborWidth/2 yc+(ex.gaborHeight+ex.stim.gapSize/2)]);
-
+ 
 %             Screen('FillRect', w, grays(thisCond,:));
             if nnz(find(ex.longFormStimOnSecs(n)))
 
