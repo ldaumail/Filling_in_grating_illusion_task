@@ -1,4 +1,4 @@
-function LD_phantom_dark_white_v2(subject, session, debug)
+function LD_phantom_grating_compare_v1(subject, session, debug)
 
 %In this version, we add multiple velocities
 % subject = 'Dave';                                                                                                                                                                                                                                                     
@@ -6,8 +6,8 @@ function LD_phantom_dark_white_v2(subject, session, debug)
 % debug = 1;
 
 
-ex.version = 'v2';
-global EyeData rect w xc yc eye_used 
+ex.version = 'v1';
+% global EyeData rect w xc yc eye_used 
 %%%% resolution 
 if debug == 1
     % eyetracking on (1) or off (0)
@@ -56,7 +56,7 @@ ex.stim.orientation = [90]; %[90 180];                                          
 ex.stim.degFromFix = .6;                                              % in degrees of visual angle
 ex.stim.gaborHDeg = 8;                                                  % in degrees of visual angle
 ex.stim.gaborWDeg = 16;
-ex.stim.gapSizeDeg = 3;
+ex.stim.gapSizeDeg = 5;
 %ex.stim.rectGaborWDeg = 8;
 ex.stim.contrast = 0.15;%linspace(0.01,0.20,10);%[0.05, 0.10, 0.15];                                                 % in %, maybe?? %here the number of stimulus contrast levels is the number of different conditions
 ex.stim.contrastMultiplicator = ex.stim.contrast/2;  % for sine wave 0.5 = 100% contrast, 0.2 = 40%
@@ -89,31 +89,15 @@ ex.conds = {'MinbgPairVel3','MaxbgPairVel3','MeanbgPairVel3',...%,'MinbgTopVel3'
 ex.numConds = length(ex.conds);
 % with line of code below we will have 1 condition per block, randomized. we might need to change that
 % later, to have the conditions randomized within each block
-ex.repsPerRun = 20;              % repetitions of each condition per run
+ex.repsPerRun = 1;              % repetitions of each condition per run
 ex.numBlocks = ex.numConds*ex.repsPerRun;
 
 ex.condShuffle = [];
 for i =1:ex.repsPerRun
     ex.condShuffle = [ex.condShuffle, Shuffle([1:ex.numConds])];
 end
-% for i =1:ex.repsPerRun
-%     ex.condShuffle = [ex.condShuffle, Shuffle([ex.numConds/2+1:ex.numConds])];
-% end
 
-ex.totalTime = [];
-for t =1:length(ex.blockLength) %there is a different block length for every drifting speed
-    if t == 1
-        ex.totalTime = sum([ex.totalTime, ex.initialFixation + (ex.numBlocks/length(ex.blockLength) * (ex.blockLength(t) + ex.betweenBlocks))]);
-    elseif t <length(ex.blockLength) && t > 1
-             ex.totalTime = sum([ex.totalTime, (ex.numBlocks/length(ex.blockLength) * (ex.blockLength(t) + ex.betweenBlocks))]); 
-    elseif t == length(ex.blockLength)
-        ex.totalTime = sum([ex.totalTime, ((ex.numBlocks/length(ex.blockLength)-1) * (ex.blockLength(t) + ex.betweenBlocks)) + ex.blockLength(t) + ex.finalFixation]);
-    end
-end
-ex.allFlips = (0:ex.flipWin:ex.totalTime);
-ex.allFlips = ex.allFlips(1:end-1);
-ex.trialFlips = (0:ex.flipWin:ex.blockLength(1)+ex.betweenBlocks);
-ex.trialFlips = ex.trialFlips(1:end-1);
+
 %%%% fixation 
 ex.fixSizeDeg =  .25;            % in degrees, the size of the biggest white dot in the fixation
 
@@ -124,12 +108,6 @@ ex.fontSize = 26;
 %% %%%%%%%%%%%%%%%%%
    % timing model  %
    %%%%%%%%%%%%%%%%%
-
-ex.onSecs = [ones(1,ex.blockLength(t)) zeros(1,ex.betweenBlocks)];
-ex.longFormBlocks = Expand(ex.onSecs,ex.flipsPerSec,1); %1 when block, 0 when between block
-length(ex.longFormBlocks)
-ex.stimOnSecs = [zeros(1,ex.trialFixation) ones(1,ex.blockLength(t)-ex.trialFixation) zeros(1,ex.betweenBlocks)];
-ex.longFormStimOnSecs = Expand(ex.stimOnSecs,ex.flipsPerSec,1); %1 when stim on, 0 when fixation or between blocks
 
 % %% create the timing model of stimulus conditions for this particular run
 % clear i
@@ -162,8 +140,6 @@ Screen('BlendFunction', w, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 %gamma correction, file prepared for room 425
 if ex.gammaCorrection 
   %load gamma correction file
-%   ex.whichCLUT = '/Users/tonglab/Desktop/monitor_calibration/425dell_22-12-09/phase2_photometry_22-12-09.mat';
-%   load(ex.whichCLUT);
   load('/Users/tonglab/Desktop/monitor_calibration/425dell_22-12-09/phase2_photometry_22-12-09.mat');
   Screen('LoadNormalizedGammaTable', w, inverseCLUT);
 end
@@ -173,8 +149,11 @@ slack = frameInt/2;
 frameRate =  1/frameInt;%Screen('NominalFrameRate',w);
 %%% Still red dot for 1 sec before trial starts
 ex.stillDotPhase = zeros(1,ex.flipsPerSec*ex.trialFixation);
-
-flipTimes = [0:frameInt*frameRate/ex.flipsPerSec:ex.blockLength(1)-ex.trialFixation]; %multiply frameInt by 60/12 = 5 to flip the image every 5 frames
+% flipTimes = [0:frameInt*frameRate/ex.flipsPerSec:ex.stimDur(s)]; %multiply frameInt by 60/12 = 5 to flip the image every 5 frames
+%     flipTimes = flipTimes(1:length(flipTimes)-1);
+%     flipt = sprintf('flipTimes%d',s);
+%     ex.(flipt) = flipTimes;
+flipTimes = [0:frameInt*frameRate/ex.flipsPerSec:ex.stimDur(1)]:%[0:frameInt*frameRate/ex.flipsPerSec:ex.blockLength(1)-ex.trialFixation]; %multiply frameInt by 60/12 = 5 to flip the image every 5 frames
 ex.stim.flipTimes = flipTimes(1:length(flipTimes)-1);
 ex.stim.tempPhase1 = nan(ex.numConds,ex.repsPerRun);
 ex.stim.tempPhase2 = nan(ex.numConds,ex.repsPerRun);
@@ -287,12 +266,12 @@ gray3 = repmat(mean(squeeze(ex.rectSWave(1,1,1,:))), [1,3]);
 
 %% Eyetracking parameters
 
-if ET 
-    EyelinkSetup(0);
-    eye_used = Eyelink('EyeAvailable');
-%     ex.ShowRealTimeGaze = [  ]; % [] or [ something ]
-%     ex.nGazetoShow = [ 60 ]; % current~past N fixations
-end
+% if ET 
+%     EyelinkSetup(0);
+%     eye_used = Eyelink('EyeAvailable');
+% %     ex.ShowRealTimeGaze = [  ]; % [] or [ something ]
+% %     ex.nGazetoShow = [ 60 ]; % current~past N fixations
+% end
 %% %%%% initial window - wait for backtick
 DrawFormattedText(w,'Follow the oscillating grating or visual phantom within the gap at the center of the screen \n\n as best as you can using the red dot as a guide, even after the red dot is gone. \n\n Do your best not to blink during a trial. \n\n Press Space to start'... % :  '...
     ,'center', 'center',[0 0 0]);
@@ -347,7 +326,7 @@ for c = 1:length(ex.condShuffle)
     Screen('FillRect',phaperture, [255 255 255 0], [xc-(1/2)*ex.gaborWidth yc+(ex.gapSize)/2 xc+ex.gaborWidth/2 yc+(ex.gaborHeight+ex.gapSize/2)]);
     
     %flip through the block and following between block time
-    while n <= length(ex.trialFlips)
+    while(1) %n <= length(ex.trialFlips)
         ex.longFormBlocks(n)
  
 %             Screen('FillRect', w, grays(thisCond,:));
@@ -377,25 +356,17 @@ for c = 1:length(ex.condShuffle)
         if n == 1
             [VBLT, ex.startTrial, FlipT, missed] = Screen(w, 'Flip', 0);%[VBLTimestamp StimulusOnsetTime FlipTimestamp Missed] = Screen('Flip', windowPtr [, when] [, dontclear]...
             flipTimes = ex.startTrial;
-            %%%%% send messages to Eyelink for event times
-            if ET == 1
-                Eyelink('Message', char(sprintf('Cond %s', condName)));
-                Eyelink('Message', 'TRIALID %d', c);
-                Eyelink('Message', 'STIM_ONSET');
-            end
+
         else
             [VBLT,flipTime, FlipT, missed] = Screen(w, 'Flip',ex.startTrial + ex.trialFlips(n) - slack); %,   %%% ex.flipTime(n,c)
             flipTimes = [flipTimes, flipTime];
-            if ET == 1 && n == bLength*ex.flipsPerSec+1
-                Eyelink('Message', 'STIM_OFFSET');
-            end
-            
+
         end
         
-        if nnz(onOffs(n)) == 1
-            time = GetSecs;
-            cnt = cnt+1;
-        end
+        %         if nnz(onOffs(n)) == 1
+        %             time = GetSecs;
+        %             cnt = cnt+1;
+        %         end
         if (cnt/2 == 1 && GetSecs-time >= 1) && c ~= length(ex.condShuffle)
             DrawFormattedText(w,'Press Space whenever you feel ready'... % : press 1 as soon as letter J appears on the screen,\n\n and press 2 as soon as letter K appears on the screen. \n\n Press Space to start'...
                 ,'center', 'center',[0 0 0]);
@@ -403,10 +374,18 @@ for c = 1:length(ex.condShuffle)
             KbTriggerWait(KbName('Space'), deviceNumber);
             cnt = 0;
         end
+        
+        KbQueueFlush();
         n = n+1;
+        if (n == length(ex.flipTimes1)+1) % for any other block , reset frame index when previous trial ends
+            n = 1;
+        end
+        if t > ex.nTrials
+            break;
+        end
     end
-     ex.flipTime(:,c) = flipTimes;
-     n = 1;
+    ex.flipTime(:,c) = flipTimes;
+    n = 1;
 end
 
 %     if n == 1382%360%421%420%359%1382%1561%
@@ -432,26 +411,26 @@ Screen('CloseAll');
 fclose all;                                                                                                                           
 
 
-if ET
-    Eyelink('StopRecording');   
-    Eyelink('CloseFile');
-        %download edf file
-        Eyelink('Command', 'set_idle_mode');
-    try
-        fprintf('Receiving data file ''%s''\n',  EyeData.edfFile);
-        status = Eyelink('ReceiveFile');
-        
-        if status > 0
-            fprintf('ReceiveFile status %d\n', status);
-        end
-        if 2==exist(EyeData.edfFile, 'file')
-            fprintf('Data file ''%s'' can be found in ''%s''\n',  EyeData.edfFile, pwd );
-        end
-    catch
-        fprintf('Problem receiving data file ''%s''\n',  EyeData.edfFile);
-    end
-    
-    Eyelink('Shutdown');
+% if ET
+%     Eyelink('StopRecording');   
+%     Eyelink('CloseFile');
+%         %download edf file
+%         Eyelink('Command', 'set_idle_mode');
+%     try
+%         fprintf('Receiving data file ''%s''\n',  EyeData.edfFile);
+%         status = Eyelink('ReceiveFile');
+%         
+%         if status > 0
+%             fprintf('ReceiveFile status %d\n', status);
+%         end
+%         if 2==exist(EyeData.edfFile, 'file')
+%             fprintf('Data file ''%s'' can be found in ''%s''\n',  EyeData.edfFile, pwd );
+%         end
+%     catch
+%         fprintf('Problem receiving data file ''%s''\n',  EyeData.edfFile);
+%     end
+%     
+%     Eyelink('Shutdown');
 %     savename = fullfile(savedir, strcat(sprintf('/s%s_smooth_pursuit_%s_date%s_fix_eyeDat',subject,ex.version,num2str(ex.date)), '.mat'));
 %     save(savename, 'EyeData')
 end 

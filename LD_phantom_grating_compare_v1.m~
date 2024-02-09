@@ -1,4 +1,4 @@
-function LD_phantom_dark_white_v2(subject, session, debug)
+function LD_phantom_grating_compare_v1(subject, session, debug)
 
 %In this version, we add multiple velocities
 % subject = 'Dave';                                                                                                                                                                                                                                                     
@@ -6,7 +6,7 @@ function LD_phantom_dark_white_v2(subject, session, debug)
 % debug = 1;
 
 
-ex.version = 'v2';
+ex.version = 'v1';
 global EyeData rect w xc yc eye_used 
 %%%% resolution 
 if debug == 1
@@ -56,7 +56,7 @@ ex.stim.orientation = [90]; %[90 180];                                          
 ex.stim.degFromFix = .6;                                              % in degrees of visual angle
 ex.stim.gaborHDeg = 8;                                                  % in degrees of visual angle
 ex.stim.gaborWDeg = 16;
-ex.stim.gapSizeDeg = 3;
+ex.stim.gapSizeDeg = 5;
 %ex.stim.rectGaborWDeg = 8;
 ex.stim.contrast = 0.15;%linspace(0.01,0.20,10);%[0.05, 0.10, 0.15];                                                 % in %, maybe?? %here the number of stimulus contrast levels is the number of different conditions
 ex.stim.contrastMultiplicator = ex.stim.contrast/2;  % for sine wave 0.5 = 100% contrast, 0.2 = 40%
@@ -89,16 +89,13 @@ ex.conds = {'MinbgPairVel3','MaxbgPairVel3','MeanbgPairVel3',...%,'MinbgTopVel3'
 ex.numConds = length(ex.conds);
 % with line of code below we will have 1 condition per block, randomized. we might need to change that
 % later, to have the conditions randomized within each block
-ex.repsPerRun = 20;              % repetitions of each condition per run
+ex.repsPerRun = 1;              % repetitions of each condition per run
 ex.numBlocks = ex.numConds*ex.repsPerRun;
 
 ex.condShuffle = [];
 for i =1:ex.repsPerRun
     ex.condShuffle = [ex.condShuffle, Shuffle([1:ex.numConds])];
 end
-% for i =1:ex.repsPerRun
-%     ex.condShuffle = [ex.condShuffle, Shuffle([ex.numConds/2+1:ex.numConds])];
-% end
 
 ex.totalTime = [];
 for t =1:length(ex.blockLength) %there is a different block length for every drifting speed
@@ -162,8 +159,6 @@ Screen('BlendFunction', w, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 %gamma correction, file prepared for room 425
 if ex.gammaCorrection 
   %load gamma correction file
-%   ex.whichCLUT = '/Users/tonglab/Desktop/monitor_calibration/425dell_22-12-09/phase2_photometry_22-12-09.mat';
-%   load(ex.whichCLUT);
   load('/Users/tonglab/Desktop/monitor_calibration/425dell_22-12-09/phase2_photometry_22-12-09.mat');
   Screen('LoadNormalizedGammaTable', w, inverseCLUT);
 end
