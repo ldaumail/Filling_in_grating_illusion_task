@@ -149,12 +149,10 @@ slack = frameInt/2;
 frameRate =  1/frameInt;%Screen('NominalFrameRate',w);
 %%% Still red dot for 1 sec before trial starts
 ex.stillDotPhase = zeros(1,ex.flipsPerSec*ex.trialFixation);
-% flipTimes = [0:frameInt*frameRate/ex.flipsPerSec:ex.stimDur(s)]; %multiply frameInt by 60/12 = 5 to flip the image every 5 frames
-%     flipTimes = flipTimes(1:length(flipTimes)-1);
-%     flipt = sprintf('flipTimes%d',s);
-%     ex.(flipt) = flipTimes;
-flipTimes = [0:frameInt*frameRate/ex.flipsPerSec:ex.stimDur(1)]:%[0:frameInt*frameRate/ex.flipsPerSec:ex.blockLength(1)-ex.trialFixation]; %multiply frameInt by 60/12 = 5 to flip the image every 5 frames
-ex.stim.flipTimes = flipTimes(1:length(flipTimes)-1);
+flipTimes = [0:frameInt*frameRate/ex.flipsPerSec:ex.blockLength(1)];
+% flipTimes = [0:frameInt*frameRate/ex.flipsPerSec:ex.stimDur(1)];%[0:frameInt*frameRate/ex.flipsPerSec:ex.blockLength(1)-ex.trialFixation]; %multiply frameInt by 60/12 = 5 to flip the image every 5 frames
+flipTimes = flipTimes(1:length(flipTimes)-1);
+ex.stim.flipTimes = flipTimes;
 ex.stim.tempPhase1 = nan(ex.numConds,ex.repsPerRun);
 ex.stim.tempPhase2 = nan(ex.numConds,ex.repsPerRun);
 ex.stim.oscillation1 = nan(ex.numConds,ex.repsPerRun,length(ex.stim.flipTimes));
@@ -227,9 +225,11 @@ xc = rect(3)/2; % rect and center, with the flexibility to resize & shift center
 yc = rect(4)/2; %+e.vertOffset;
 
 %% create drifting red dots position
-clear flipTimes
-flipTimes = [0:frameInt*frameRate/ex.flipsPerSec:ex.blockLength(1)+ex.betweenBlocks]; %multiply frameInt by 60/12 = 5 to flip the image every 5 frames
-flipTimes = flipTimes(1:length(flipTimes)-1);
+% clear flipTimes
+% flipTimes = [0:frameInt*frameRate/ex.flipsPerSec:ex.blockLength(1)]; %multiply frameInt by 60/12 = 5 to flip the image every 5 frames
+% flipTimes = [0:frameInt*frameRate/ex.flipsPerSec:ex.stimDur(1)];
+% flipTimes = flipTimes(1:length(flipTimes)-1);
+% ex.flipTimes = flipTimes;
 ex.stimDriftPosDeg = nan(ex.numConds,ex.repsPerRun,length(ex.stim.oscillation1(1,1,:)));
 ex.stimDriftPos = nan(ex.numConds,ex.repsPerRun,length(ex.stim.oscillation1(1,1,:)));
 ex.stimLongDriftPos = nan(ex.numConds,ex.repsPerRun,length(flipTimes));
@@ -239,9 +239,8 @@ for c = 1:ex.numConds
         ex.stimDriftPosDeg(c,r,:) = (ex.stim.oscillation1(c,r,:).*ex.stim.cycles(1).*1/(2*ex.stim.spatialFreqDeg)+ ex.stim.oscillation2(c,r,:).*ex.stim.cycles(2).*1/(2*ex.stim.spatialFreqDeg))/2;
         ex.stimFixSpatialPhase = 0; %-(1/(8*ex.stim.spatialFreqDeg))*ex.ppd;%(1/(4*ex.stim.spatialFreqDeg))*ex.ppd;
         ex.stimDriftPos(c,r,:) = ex.stimDriftPosDeg(c,r,:).*ex.ppd +ex.stimFixSpatialPhase;
-        ex.stimStillDotPhase = ex.stimDriftPos(c,r,1);
-        ex.stimLongDriftPos(c,r,:) = [repmat(ex.stimStillDotPhase,1,ex.flipsPerSec*ex.trialFixation) squeeze(ex.stimDriftPos(c,r,:))' ... %drift for 1.25 (5/4) periods of oscilation
-            zeros(1,ex.betweenBlocks*ex.flipsPerSec)];
+%         ex.stimStillDotPhase = ex.stimDriftPos(c,r,1);
+        ex.stimLongDriftPos(c,r,:) = squeeze(ex.stimDriftPos(c,r,:))';
     end
 end
 
@@ -292,9 +291,9 @@ blockCnt = 1;
 cnt = 0; %stim onset/ stime offset count
 cntCond = zeros(length(ex.conds),1);
 grays = [gray1; gray2; gray3];
-onOffs = [diff(ex.longFormBlocks) 0];
-bLength = ex.blockLength(1);
-ex.flipTime = nan(length(ex.trialFlips),length(ex.condShuffle));
+% onOffs = [diff(ex.longFormBlocks) 0];
+% bLength = ex.blockLength(1);
+% ex.flipTime = nan(length(ex.trialFlips),length(ex.condShuffle));
 %%% initial fixation
 if n == 1 && blockCnt == 1 %for first block
     ex.tasktstart = clock;
@@ -327,46 +326,26 @@ for c = 1:length(ex.condShuffle)
     
     %flip through the block and following between block time
     while(1) %n <= length(ex.trialFlips)
-        ex.longFormBlocks(n)
- 
-%             Screen('FillRect', w, grays(thisCond,:));
-            if nnz(find(ex.longFormStimOnSecs(n)))
-
-                    xOffset = ex.stimLongDriftPos(thisCond,cntCond(thisCond),n)-ex.stimLongDriftPos(thisCond,cntCond(thisCond),1); %baseline correct the position since every image already hase a spatial phase shift in the sinewave
-                    ex.rectLRect =  CenterRectOnPoint([0 0 ex.rawGaborWidth ex.rawGaborHeight],xc+xOffset,yc);
-                    % stim
-                    Screen('DrawTexture', w, ex.rectSWaveID(thisCond,cntCond(thisCond)),[],ex.rectLRect);
-                    Screen('DrawTexture',w,phaperture);
-
-            end
-            if guideFlipCnt <= timeOn - length(ex.fixCol1Grad)
-                
-                xOffset = ex.stimLongDriftPos(thisCond,cntCond(thisCond),n);
-                Screen('FillOval', w,[255 0 0], [xc+xOffset-round(ex.fixSize/2) yc-round(ex.fixSize/2) xc+xOffset+round(ex.fixSize/2) yc+round(ex.fixSize/2)]);%black fixation solid circle
-            elseif guideFlipCnt > timeOn - length(ex.fixCol1Grad) && guideFlipCnt < timeOn
-                
-                xOffset = ex.stimLongDriftPos(thisCond,cntCond(thisCond),n);
-                Screen('FillOval', w,[ex.fixCol1Grad(guideFlipCnt-timeOn+length(ex.fixCol1Grad)) ex.fixCol2Grad(guideFlipCnt-timeOn+length(ex.fixCol1Grad)) ex.fixCol2Grad(guideFlipCnt-timeOn+length(ex.fixCol1Grad))], [xc+xOffset-round(ex.fixSize/2) yc-round(ex.fixSize/2) xc+xOffset+round(ex.fixSize/2) yc+round(ex.fixSize/2)]);% fixation solid circle
-            elseif guideFlipCnt == length(ex.trialFlips)%bLength*ex.flipsPerSec+1 %make sure to reset the flipCnt once the trial ended, so that the red dot doe not reappear before the end of the trial
-                guideFlipCnt = 0;
-            end
-            guideFlipCnt = guideFlipCnt+1;
-   
+        
+        xOffset = ex.stimLongDriftPos(thisCond,cntCond(thisCond),n)-ex.stimLongDriftPos(thisCond,cntCond(thisCond),1); %baseline correct the position since every image already hase a spatial phase shift in the sinewave
+        ex.rectLRect =  CenterRectOnPoint([0 0 ex.rawGaborWidth ex.rawGaborHeight],xc+xOffset,yc);
+        % stim
+        Screen('DrawTexture', w, ex.rectSWaveID(thisCond,cntCond(thisCond)),[],ex.rectLRect);
+        Screen('DrawTexture',w,phaperture);
+        
+        
         %%%%%%%%%%% FLIP %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         if n == 1
             [VBLT, ex.startTrial, FlipT, missed] = Screen(w, 'Flip', 0);%[VBLTimestamp StimulusOnsetTime FlipTimestamp Missed] = Screen('Flip', windowPtr [, when] [, dontclear]...
             flipTimes = ex.startTrial;
-
+            
         else
-            [VBLT,flipTime, FlipT, missed] = Screen(w, 'Flip',ex.startTrial + ex.trialFlips(n) - slack); %,   %%% ex.flipTime(n,c)
+            [VBLT,flipTime, FlipT, missed] = Screen(w, 'Flip',ex.startTrial + ex.stim.flipTimes(n) - slack); %,   %%% ex.flipTime(n,c)
             flipTimes = [flipTimes, flipTime];
-
+            
         end
         
-        %         if nnz(onOffs(n)) == 1
-        %             time = GetSecs;
-        %             cnt = cnt+1;
-        %         end
+
         if (cnt/2 == 1 && GetSecs-time >= 1) && c ~= length(ex.condShuffle)
             DrawFormattedText(w,'Press Space whenever you feel ready'... % : press 1 as soon as letter J appears on the screen,\n\n and press 2 as soon as letter K appears on the screen. \n\n Press Space to start'...
                 ,'center', 'center',[0 0 0]);
@@ -375,22 +354,14 @@ for c = 1:length(ex.condShuffle)
             cnt = 0;
         end
         
-        KbQueueFlush();
         n = n+1;
-        if (n == length(ex.flipTimes1)+1) % for any other block , reset frame index when previous trial ends
+        if (n == length(ex.stimLongDriftPos(thisCond,cntCond(thisCond),:))+1) % for any other block , reset frame index when previous trial ends
             n = 1;
         end
-        if t > ex.nTrials
-            break;
-        end
     end
-    ex.flipTime(:,c) = flipTimes;
-    n = 1;
 end
 
-%     if n == 1382%360%421%420%359%1382%1561%
-%         break;
-%     end
+
 
 %%%%%%%%%%%%%%%%%%
 % done! wrap up  %
