@@ -75,10 +75,9 @@ ex.stim.cycles = [1 1]; %number of cycles per lap
 ex.stimDur = (ex.stim.cycles./ex.stim.cycPerSec)*2;        % in seconds. 1.77 sec refers to sine wave grating 1.77 = 2cycles/1.13cyc.sec-1 mutiplied by 2 for back and forth
 ex.initialFixation = 6;        % in seconds
 ex.finalFixation = 2;          % in seconds
-ex.trialFixation = 1;          % in seconds
 %ex.stimDur = (ex.stim.cycles./ex.stim.cycPerSec)*2;        % in seconds. 1.77 sec refers to sine wave grating 1.77 = 2cycles/1.13cyc.sec-1 mutiplied by 2 for back and forth
 %ex.stimsPerBlock = 4.5;      % number of back-and-forth laps of the stimulus drift
-ex.blockLength = ex.trialFixation + 16; %ex.trialFixation+ ceil(ex.stimDur*ex.stimsPerBlock);           % in seconds
+ex.blockLength = 10; %ex.trialFixation+ ceil(ex.stimDur*ex.stimsPerBlock);           % in seconds
 ex.betweenBlocks = 2;          % in seconds
 ex.flipsPerSec = 60;  % 60;         % number of phase changes we want from the visual stimulus, and thus the number of times we want to change visual stimulation on the screen
 ex.flipWin = 1/ex.flipsPerSec;         % in seconds then actually in 1 sec the stimuli will change 12 times 
@@ -150,8 +149,7 @@ end
 frameInt = Screen('GetFlipInterval',w);
 slack = frameInt/2;
 frameRate =  1/frameInt;%Screen('NominalFrameRate',w);
-%%% Still red dot for 1 sec before trial starts
-ex.stillDotPhase = zeros(1,ex.flipsPerSec*ex.trialFixation);
+
 flipTimes = [0:frameInt*frameRate/ex.flipsPerSec:ex.blockLength(1)];
 % flipTimes = [0:frameInt*frameRate/ex.flipsPerSec:ex.stimDur(1)];%[0:frameInt*frameRate/ex.flipsPerSec:ex.blockLength(1)-ex.trialFixation]; %multiply frameInt by 60/12 = 5 to flip the image every 5 frames
 flipTimes = flipTimes(1:length(flipTimes)-1);
