@@ -29,6 +29,12 @@ end
 [keyboardIndices, productNames, ~] = GetKeyboardIndices ;
 deviceNumber = keyboardIndices(1);
 responseKeys = zeros(1,256);
+responseKeys(KbName('0'))=1; % button box 1
+responseKeys(KbName('1'))=1; % button box 1
+responseKeys(KbName('2'))=1; % button box 2
+responseKeys(KbName('3'))=1; % button box 1
+responseKeys(KbName('4'))=1; % button box 1
+responseKeys(KbName('5'))=1; % button box 1
 responseKeys(KbName('Return'))=1; % button box 3
 responseKeys(KbName('ENTER'))=1; % button box 3
 
@@ -286,7 +292,9 @@ c = 1; %condition
 % t =1; %trial number
 blockCnt = 1;
 cntCond = zeros(length(ex.conds),1);
-
+ex.responseTimes=[];
+ex.resp = [];
+ex.trialStartTime = [];
 %%% initial fixation
 if n == 1 && blockCnt == 1 %for first block
     ex.tasktstart = clock;
@@ -320,7 +328,7 @@ while(1) %n <= length(ex.trialFlips)
     if n == 1
         [VBLT, ex.startTrial, FlipT, missed] = Screen(w, 'Flip', 0);%[VBLTimestamp StimulusOnsetTime FlipTimestamp Missed] = Screen('Flip', windowPtr [, when] [, dontclear]...
         flipTimes = ex.startTrial;
-        
+        ex.trialStartTime = [ex.trialStartTime, ex.startTrial];
     else
         [VBLT,flipTime, FlipT, missed] = Screen(w, 'Flip',ex.startTrial + ex.stim.flipTimes(n) - slack); %,   %%% ex.flipTime(n,c)
         flipTimes = [flipTimes, flipTime];
@@ -330,7 +338,30 @@ while(1) %n <= length(ex.trialFlips)
     
     KbQueueStop();
     [pressed, firstPress]= KbQueueCheck();
-    if (pressed && ismember(find(firstPress,1), [KbName('Return') KbName('ENTER')]))
+    if (pressed == 1) && (firstPress(KbName('0')) > 0 || firstPress( KbName('1')) > 0 || firstPress(KbName('2')) > 0 || firstPress(KbName('3')) > 0 || firstPress(KbName('4')) > 0 || firstPress(KbName('5')) > 0) %%
+
+            if (firstPress(KbName('0')) > 0)
+                ex.resp = [ex.resp, 0];
+                ex.responseTimes = [ex.responseTimes, firstPress(KbName('0')) - ex.startRun];
+                
+            elseif (firstPress(KbName('1')) > 0)
+                ex.resp = [ex.resp, 1];
+                ex.responseTimes = [ex.responseTimes, firstPress(KbName('1')) - ex.startRun];   
+            elseif (firstPress(KbName('2')) > 0)
+                ex.resp = [ex.resp, 2];
+                ex.responseTimes = [ex.responseTimes, firstPress(KbName('2')) - ex.startRun];
+            elseif (firstPress(KbName('3')) > 0)
+                ex.resp = [ex.resp, 3];
+                ex.responseTimes = [ex.responseTimes, firstPress(KbName('3')) - ex.startRun];
+            elseif (firstPress(KbName('4')) > 0)
+                ex.resp = [ex.resp, 4];
+                ex.responseTimes = [ex.responseTimes, firstPress(KbName('4')) - ex.startRun];
+            elseif (firstPress(KbName('5')) > 0)
+                ex.resp = [ex.resp, 5];
+                ex.responseTimes = [ex.responseTimes, firstPress(KbName('5')) - ex.startRun];
+            end
+            pressed = 0;
+    elseif (pressed && ismember(find(firstPress,1), [KbName('Return') KbName('ENTER')]))
         n = 1;
         c = c+1;
     end

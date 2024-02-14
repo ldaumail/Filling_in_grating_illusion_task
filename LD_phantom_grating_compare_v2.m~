@@ -29,6 +29,12 @@ end
 [keyboardIndices, productNames, ~] = GetKeyboardIndices ;
 deviceNumber = keyboardIndices(1);
 responseKeys = zeros(1,256);
+responseKeys(KbName('0'))=1; % button box 1
+responseKeys(KbName('1'))=1; % button box 1
+responseKeys(KbName('2'))=1; % button box 2
+responseKeys(KbName('3'))=1; % button box 1
+responseKeys(KbName('4'))=1; % button box 1
+responseKeys(KbName('5'))=1; % button box 1
 responseKeys(KbName('Return'))=1; % button box 3
 responseKeys(KbName('ENTER'))=1; % button box 3
 
@@ -267,14 +273,7 @@ yT = rect(4)/2 - (ex.stim.gapSizeDeg+ex.stim.gaborHDeg)*ex.ppd/2; % stimulus loc
 yB = rect(4)/2+ (ex.stim.gapSizeDeg+ex.stim.gaborHDeg)*ex.ppd/2; % stimulus located 4 degrees below screen center
 % yC = rect(4)/2; % stimulus located on screen center
 %% %%%% initial window - wait for backtick
-DrawFormattedText(w,'Look at the blank gap and use the low contrast grating as an anchor. Press:',...
-    '\n\n 0 if you don t see any pattern,',...
-    '\n\n 1 if you experience a very faint impression of grating pattern (does not connect all the way through).',...
-    '\n\n 2.faint impression of grating pattern',...
-    '\n\n 3. Moderate impression of grating pattern, but somewhat weaker than the physical grating',...
-    'n\n\ 4. Strong impression of grating pattern',...
-    'n\n\ 5. Vivid impression of grating pattern, as strong as the physical grating',...
-    '\n\n Press Space to start'... % :  '...
+DrawFormattedText(w,'Look at the blank gap and use the low contrast grating as an anchor. Press: \n\n 0. if you don t see any pattern, \n\n 1. if you experience a very faint impression of grating pattern (does not connect all the way through) \n\n 2. faint impression of grating pattern \n\n 3. Moderate impression of grating pattern \n\n 4. Strong impression of grating pattern, but somewhat weaker than the physical grating \n\n 5. Vivid impression of grating pattern, as strong as the physical grating \n\n Press Space to start'... % :  '...
     ,'center', 'center',[0 0 0]);
 Screen(w, 'Flip', 0);
 %WaitSecs(2);
@@ -337,7 +336,20 @@ while(1) %n <= length(ex.trialFlips)
     
     KbQueueStop();
     [pressed, firstPress]= KbQueueCheck();
-    if (pressed && ismember(find(firstPress,1), [KbName('Return') KbName('ENTER')]))
+    if (pressed == 1) && (firstPress(KbName('0')) > 0 || firstPress( KbName('1')) > 0 || firstPress(KbName('2')) > 0 || firstPress(KbName('3')) > 0 || firstPress(KbName('4')) > 0 || firstPress(KbName('5')) > 0) %%
+
+            if (firstPress(KbName('0')) > 0)
+                ex.resp = [ex.resp, 1];
+                ex.responseTimes = [ex.responseTimes, firstPress(KbName('0')) - ex.startRun];
+                
+            elseif (firstPress(KbName('1')) > 0)
+                ex.resp = [ex.resp, 2];
+                ex.responseTimes = [ex.responseTimes, firstPress(KbName('0')) - ex.startRun];
+            elseif (firstPress(KbName('1')) > 0)
+                ex.resp = [ex.resp, 2];
+                ex.responseTimes = [ex.responseTimes, firstPress(KbName('0')) - ex.startRun];
+            end
+    elseif (pressed && ismember(find(firstPress,1), [KbName('Return') KbName('ENTER')]))
         n = 1;
         c = c+1;
     end
