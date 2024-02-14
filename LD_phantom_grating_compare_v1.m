@@ -28,6 +28,9 @@ end
 %%%% keyboard
 [keyboardIndices, productNames, ~] = GetKeyboardIndices ;
 deviceNumber = keyboardIndices(1);
+responseKeys = zeros(1,256);
+responseKeys(KbName('Return'))=1; % button box 3
+responseKeys(KbName('ENTER'))=1; % button box 3
 
 Screen('Preference', 'SkipSyncTests', 0);
 
@@ -203,74 +206,42 @@ ex.fixSize = round(ex.fixSizeDeg*ex.ppd);
 ex.gapSize = round(ex.stim.gapSizeDeg*ex.ppd);
 ex.gaborHeight = round(ex.stim.gaborHDeg*ex.ppd);                 % in pixels, the size of our objects
 ex.gaborWidth = round(ex.stim.gaborWDeg*ex.ppd);                 % in pixels, the size of our objects 
-ex.rawGaborHeight = ex.gaborHeight*3;
-ex.rawGaborWidth = ex.gaborWidth*2;
+ex.rawGaborHeight = ex.gaborHeight;
+ex.rawGaborWidth = ex.gaborWidth;
 
 %% Create only one big sinewave grating image saved for each repetition and each condition
 
-ex.rectSWave = nan(ex.numConds, ex.repsPerRun,ex.rawGaborHeight,ex.rawGaborWidth);
-ex.rectSWaveID = nan(ex.numConds, ex.repsPerRun);
-clear c r
+ex.rectSWave = nan(ex.rawGaborHeight,ex.rawGaborWidth,length(ex.stim.oscillation1(1,1,:)), ex.repsPerRun, ex.numConds);
+ex.rectSWaveID = nan(length(ex.stim.oscillation1(1,1,:)),ex.repsPerRun,ex.numConds);
+clear c r f
 for c =1:ex.numConds %-1 %-1 because we only need images for the first 2 conditions
     for r = 1:ex.repsPerRun %only save the first image of each trial, that we will move during the trial
-        phase = ex.stim.phases(c,r,1);
-        ex.rectSWave(c,r,:,:) = makeSineGrating(ex.rawGaborHeight,ex.rawGaborWidth,ex.stim.spatialFreqDeg,...
-            ex.stim.orientation,phase,ex.stim.contrastOffset(1),ex.stim.contrastMultiplicator,...
-            ex.ppd);
-        ex.rectSWaveID(c,r) = Screen('MakeTexture', w, squeeze(ex.rectSWave(c,r,:,:)));
+        for f = 1:length(ex.stim.oscillation1(1,1,:))
+            phase = ex.stim.phases(c,r,f);
+            ex.rectSWave(:,:,f,r,c) = makeSineGrating(ex.rawGaborHeight,ex.rawGaborWidth,ex.stim.spatialFreqDeg,...
+                ex.stim.orientation,phase,ex.stim.contrastOffset(1),ex.stim.contrastMultiplicator,...
+                ex.ppd);
+            ex.rectSWaveID(f,r,c) = Screen('MakeTexture', w, squeeze(ex.rectSWave(:,:,f,r,c)));
+        end
     end
 end
 %% Sine wave gratings locations (in the task loop since it changes)
 xc = rect(3)/2; % rect and center, with the flexibility to resize & shift center - change vars to zero if not used.
 yc = rect(4)/2; %+e.vertOffset;
 
-%% create drifting red dots position
-% clear flipTimes
-% flipTimes = [0:frameInt*frameRate/ex.flipsPerSec:ex.blockLength(1)]; %multiply frameInt by 60/12 = 5 to flip the image every 5 frames
-% flipTimes = [0:frameInt*frameRate/ex.flipsPerSec:ex.stimDur(1)];
-% flipTimes = flipTimes(1:length(flipTimes)-1);
-% ex.flipTimes = flipTimes;
-ex.stimDriftPosDeg = nan(ex.numConds,ex.repsPerRun,length(ex.stim.oscillation1(1,1,:)));
-ex.stimDriftPos = nan(ex.numConds,ex.repsPerRun,length(ex.stim.oscillation1(1,1,:)));
-ex.stimLongDriftPos = nan(ex.numConds,ex.repsPerRun,length(flipTimes));
-clear c r
-for c = 1:ex.numConds 
-    for r = 1:ex.repsPerRun
-        ex.stimDriftPosDeg(c,r,:) = (ex.stim.oscillation1(c,r,:).*ex.stim.cycles(1).*1/(2*ex.stim.spatialFreqDeg)+ ex.stim.oscillation2(c,r,:).*ex.stim.cycles(2).*1/(2*ex.stim.spatialFreqDeg))/2;
-        ex.stimFixSpatialPhase = 0; %-(1/(8*ex.stim.spatialFreqDeg))*ex.ppd;%(1/(4*ex.stim.spatialFreqDeg))*ex.ppd;
-        ex.stimDriftPos(c,r,:) = ex.stimDriftPosDeg(c,r,:).*ex.ppd +ex.stimFixSpatialPhase;
-%         ex.stimStillDotPhase = ex.stimDriftPos(c,r,1);
-        ex.stimLongDriftPos(c,r,:) = squeeze(ex.stimDriftPos(c,r,:))';
-    end
-end
-
-% figure();
-% subplot(4,1,1)
-% plot(squeeze(ex.stimDriftPosDeg(1,1,:)))
-% subplot(4,1,2)
-% plot(squeeze(ex.stimDriftPosDeg(1,2,:)))
-% subplot(4,1,3)
-% plot(squeeze(ex.stimDriftPosDeg(1,3,:)))
-% subplot(4,1,4)
-% plot(squeeze(ex.stimDriftPosDeg(1,4,:)))
-% ylabel('Stimulus position (dva)')
-% xlabel('Flip #')
-
-
 %% Create rectangular masks for the gratings
 gray1 = repmat(min(min(squeeze(ex.rectSWave(1,1,:,:)),[],1)), [1,3]);
 gray2 = repmat(max(max(squeeze(ex.rectSWave(1,1,:,:)),[],1)), [1,3]);
 gray3 = repmat(mean(squeeze(ex.rectSWave(1,1,1,:))), [1,3]);
+grays = [gray1; gray2; gray3];
 
+%% stim location
+xL = rect(3)/2-rect(3)/4; % % = stimulus located on the left side of the screen
+xR = rect(3)/2+rect(3)/4; % = stimulus located on the right side of the screen
 
-%% Eyetracking parameters
-
-% if ET 
-%     EyelinkSetup(0);
-%     eye_used = Eyelink('EyeAvailable');
-% %     ex.ShowRealTimeGaze = [  ]; % [] or [ something ]
-% %     ex.nGazetoShow = [ 60 ]; % current~past N fixations
-% end
+yT = rect(4)/2 - (ex.stim.gapSizeDeg+ex.stim.gaborHDeg)*ex.ppd/2; % stimulus located 4 degrees above screen center
+yB = rect(4)/2+ (ex.stim.gapSizeDeg+ex.stim.gaborHDeg)*ex.ppd/2; % stimulus located 4 degrees below screen center
+% yC = rect(4)/2; % stimulus located on screen center
 %% %%%% initial window - wait for backtick
 DrawFormattedText(w,'Follow the oscillating grating or visual phantom within the gap at the center of the screen \n\n as best as you can using the red dot as a guide, even after the red dot is gone. \n\n Do your best not to blink during a trial. \n\n Press Space to start'... % :  '...
     ,'center', 'center',[0 0 0]);
@@ -285,15 +256,12 @@ KbTriggerWait(KbName('Space'), deviceNumber);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %%%%%%% START task TASK/FLIPPING
-
+KbQueueCreate(deviceNumber,responseKeys);
 n = 1;
+c = 1;
 blockCnt = 1;
-cnt = 0; %stim onset/ stime offset count
 cntCond = zeros(length(ex.conds),1);
-grays = [gray1; gray2; gray3];
-% onOffs = [diff(ex.longFormBlocks) 0];
-% bLength = ex.blockLength(1);
-% ex.flipTime = nan(length(ex.trialFlips),length(ex.condShuffle));
+
 %%% initial fixation
 if n == 1 && blockCnt == 1 %for first block
     ex.tasktstart = clock;
@@ -303,61 +271,40 @@ if n == 1 && blockCnt == 1 %for first block
     WaitSecs(ex.initialFixation);
 end
 %%% Launch the task
-for c = 1:length(ex.condShuffle)
-    cnt = cnt+1;
-
+while(1) %n <= length(ex.trialFlips)
+    KbQueueStart();
     thisCond = ex.condShuffle(c);
-    cntCond(thisCond) = cntCond(thisCond)+1;
     condName = conditions(thisCond).name{:};
-    %%for each condition, we specify the parameters values before we flip
-    %%over the gratings phases
-    %screen background color
-
-    ex.fixCol1Grad = linspace(255,grays(thisCond,1),90);% make red dot disapear in 90 flips = 1.5 sec ; logspace(log10(255),log10(gray(1)));
-    ex.fixCol2Grad = linspace(0,grays(thisCond,1),90);
-    
-    timeOn = 325; %325 is the number of frames also used in Expt 1
-    ex.timeOn = timeOn;
-    guideFlipCnt = 1;
+    Screen('FillRect', w, grays(c,:))
     %%%% draw sine wave grating stimulus %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    phaperture=Screen('OpenOffscreenwindow', w, grays(thisCond,:));
-    Screen('FillRect',phaperture, [255 255 255 0], [xc-(1/2)*ex.gaborWidth yc-(ex.gaborHeight+ex.gapSize/2) xc+ex.gaborWidth/2 yc-(ex.gapSize)/2]);
-    Screen('FillRect',phaperture, [255 255 255 0], [xc-(1/2)*ex.gaborWidth yc+(ex.gapSize)/2 xc+ex.gaborWidth/2 yc+(ex.gaborHeight+ex.gapSize/2)]);
+    ex.rectTRect =  CenterRectOnPoint([0 0 ex.rawGaborWidth ex.rawGaborHeight],xc,yT);
+    ex.rectBRect =  CenterRectOnPoint([0 0 ex.rawGaborWidth ex.rawGaborHeight],xc,yB);
+    % stim
+    Screen('DrawTexture', w, ex.rectSWaveID(n,1,thisCond),[],ex.rectTRect);
+    Screen('DrawTexture', w, ex.rectSWaveID(n,1,thisCond),[],ex.rectBRect);
     
-    %flip through the block and following between block time
-    while(1) %n <= length(ex.trialFlips)
+    
+    %%%%%%%%%%% FLIP %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    if n == 1
+        [VBLT, ex.startTrial, FlipT, missed] = Screen(w, 'Flip', 0);%[VBLTimestamp StimulusOnsetTime FlipTimestamp Missed] = Screen('Flip', windowPtr [, when] [, dontclear]...
+        flipTimes = ex.startTrial;
         
-        xOffset = ex.stimLongDriftPos(thisCond,cntCond(thisCond),n)-ex.stimLongDriftPos(thisCond,cntCond(thisCond),1); %baseline correct the position since every image already hase a spatial phase shift in the sinewave
-        ex.rectLRect =  CenterRectOnPoint([0 0 ex.rawGaborWidth ex.rawGaborHeight],xc+xOffset,yc);
-        % stim
-        Screen('DrawTexture', w, ex.rectSWaveID(thisCond,cntCond(thisCond)),[],ex.rectLRect);
-        Screen('DrawTexture',w,phaperture);
+    else
+        [VBLT,flipTime, FlipT, missed] = Screen(w, 'Flip',ex.startTrial + ex.stim.flipTimes(n) - slack); %,   %%% ex.flipTime(n,c)
+        flipTimes = [flipTimes, flipTime];
         
-        
-        %%%%%%%%%%% FLIP %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-        if n == 1
-            [VBLT, ex.startTrial, FlipT, missed] = Screen(w, 'Flip', 0);%[VBLTimestamp StimulusOnsetTime FlipTimestamp Missed] = Screen('Flip', windowPtr [, when] [, dontclear]...
-            flipTimes = ex.startTrial;
-            
-        else
-            [VBLT,flipTime, FlipT, missed] = Screen(w, 'Flip',ex.startTrial + ex.stim.flipTimes(n) - slack); %,   %%% ex.flipTime(n,c)
-            flipTimes = [flipTimes, flipTime];
-            
-        end
-        
-
-        if (cnt/2 == 1 && GetSecs-time >= 1) && c ~= length(ex.condShuffle)
-            DrawFormattedText(w,'Press Space whenever you feel ready'... % : press 1 as soon as letter J appears on the screen,\n\n and press 2 as soon as letter K appears on the screen. \n\n Press Space to start'...
-                ,'center', 'center',[0 0 0]);
-            Screen(w, 'Flip', 0);
-            KbTriggerWait(KbName('Space'), deviceNumber);
-            cnt = 0;
-        end
-        
-        n = n+1;
-        if (n == length(ex.stimLongDriftPos(thisCond,cntCond(thisCond),:))+1) % for any other block , reset frame index when previous trial ends
-            n = 1;
-        end
+    end
+    
+    
+    KbQueueStop();
+    [pressed, firstPress]= KbQueueCheck();
+    if (pressed && ismember(find(firstPress,1), [KbName('Return') KbName('ENTER')]))
+        n = 1;
+        c = c+1;
+    end
+    n = n+1;
+    if (n == length(ex.rectSWaveID(:,1,1))+1) % for any other block , reset frame index when previous trial ends
+        n = 1;
     end
 end
 
