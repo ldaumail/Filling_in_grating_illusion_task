@@ -1,4 +1,4 @@
-function LD_phantom_grating_compare_v1(subject, session, debug)
+function LD_phantom_grating_compare_v2(subject, session, debug)
 
 %In this version, we add multiple velocities
 % subject = 'Dave';                                                                                                                                                                                                                                                     
@@ -6,7 +6,7 @@ function LD_phantom_grating_compare_v1(subject, session, debug)
 % debug = 1;
 
 
-ex.version = 'v1';
+ex.version = 'v2';
 % global EyeData rect w xc yc eye_used 
 %%%% resolution 
 if debug == 1
@@ -52,9 +52,10 @@ ex.root = pwd;
 ex.date = datestr(now,30);
 
 gray1 = [108.3751  108.3751  108.3751];%repmat(min(min(squeeze(ex.rectSWave(:,:,1,1)),[],1)), [1,3]);
-gray2 = [146.6244  146.6244  146.6244];%repmat(max(max(squeeze(ex.rectSWave(:,:,1,1)),[],1)), [1,3]);
-gray3 = [127.4992  127.4992  127.4992];%repmat(mean(squeeze(ex.rectSWave(1,:,1,1))), [1,3]);
-grays = [gray1; gray2; gray3];
+% gray2 = [146.6244  146.6244  146.6244];
+% gray3 = [127.4992  127.4992  127.4992];
+% grays = [gray1; gray2; gray3];
+grays = gray1;
 ex.stim.backgroundLum = grays;
 %%%% 2D sine wave grating inducers properties
 ex.stim.spatialFreqDeg = 0.5/2; %0.286;                                          % cycles per degree of visual angle
@@ -67,7 +68,7 @@ ex.stim.gapSizeDeg = 5;
 % ex.stim.contrastMultiplicator = ex.stim.contrast/2;  % for sine wave 0.5 = 100% contrast, 0.2 = 40%
 % ex.stim.contrastOffset = .5; %.5 .5 0];                                  % for procedural gabor
 ex.stim.contrast = 0.15;
-ex.stim.contrastOffset = [(ex.stim.backgroundLum(1,1)./255)./(1-ex.stim.contrast), (ex.stim.backgroundLum(2,1)./255)./(1+ex.stim.contrast), ex.stim.backgroundLum(3,1)./255];%+ex.stim.contrast/2;
+ex.stim.contrastOffset = [(ex.stim.backgroundLum(1,1)./255)./(1-ex.stim.contrast)]; %(ex.stim.backgroundLum(2,1)./255)./(1+ex.stim.contrast), ex.stim.backgroundLum(3,1)./255];%+ex.stim.contrast/2;
 ex.stim.luminanceRange = 2*ex.stim.contrast*ex.stim.contrastOffset;
 ex.stim.contrastMultiplicator = ex.stim.luminanceRange./2;  % for sine wave
 
@@ -77,6 +78,16 @@ ex.stim.contrast = (ex.stim.maxLum-ex.stim.minLum)./(ex.stim.maxLum+ex.stim.minL
 ex.stim.cycPerSec = [1,1.4]; %drifting speed in cycles of grating per sec
 ex.stim.cycles = [1 1]; %number of cycles per lap
 
+% Test stimulus
+ex.test.spatialFreqDeg = 0.5/2; %0.286;                                          % cycles per degree of visual angle
+ex.test.orientation = [90]; %[90 180];                                                % in degrees
+ex.test.degFromFix = .6;                                              % in degrees of visual angle
+ex.test.gaborHDeg = 8;                                                  % in degrees of visual angle
+ex.test.gaborWDeg = 16;                                
+ex.test.contrast = 0.02;
+ex.test.contrastOffset = [(ex.stim.backgroundLum(1,1)./255)./(1+ex.test.contrast)]; %(ex.stim.backgroundLum(2,1)./255)./(1+ex.stim.contrast), ex.stim.backgroundLum(3,1)./255];%+ex.stim.contrast/2;
+ex.test.luminanceRange = 2*ex.test.contrast*ex.test.contrastOffset;
+ex.test.contrastMultiplicator = ex.test.luminanceRange./2;  % for sine wave
 
 %%%% sine wave grating timing (within block scale)
 ex.stimDur = (ex.stim.cycles./ex.stim.cycPerSec)*2;        % in seconds. 1.77 sec refers to sine wave grating 1.77 = 2cycles/1.13cyc.sec-1 mutiplied by 2 for back and forth
@@ -88,7 +99,7 @@ ex.flipsPerSec = 60;  % 60;         % number of phase changes we want from the v
 ex.flipWin = 1/ex.flipsPerSec;         % in seconds then actually in 1 sec the stimuli will change 12 times 
 %%%% conditions & layout (across blocks scale)
 
-ex.conds = {'MinbgPairVel3','MaxbgPairVel3','MeanbgPairVel3',...%,'MinbgTopVel3','MinbgBotVel3', 'MeanbgTopVel3','MeanbgBotVel3'
+ex.conds = {'MinbgPairVel3' ...%'MaxbgPairVel3','MeanbgPairVel3',...%,'MinbgTopVel3','MinbgBotVel3', 'MeanbgTopVel3','MeanbgBotVel3'
     ... %,'MeanbgRedDotVel2',
     }; 
 ex.numConds = length(ex.conds);
@@ -212,7 +223,7 @@ ex.gaborWidth = round(ex.stim.gaborWDeg*ex.ppd);                 % in pixels, th
 ex.rawGaborHeight = ex.gaborHeight;
 ex.rawGaborWidth = ex.gaborWidth;
 
-%% Create only one big sinewave grating image saved for each repetition and each condition
+%% Create a sinewave grating image saved for each drift phase and each condition
 
 ex.rectSWave = nan(ex.rawGaborHeight,ex.rawGaborWidth,length(ex.stim.flipTimes), ex.numConds);
 ex.rectSWaveID = nan(length(ex.stim.flipTimes),ex.numConds);
@@ -228,6 +239,22 @@ for c =1:ex.numConds %-1 %-1 because we only need images for the first 2 conditi
     end
     %     end
 end
+
+%% Creat low contrast sinewave
+
+ex.testSWave = nan(ex.rawGaborHeight,ex.rawGaborWidth,length(ex.stim.flipTimes), ex.numConds);
+ex.testSWaveID = nan(length(ex.stim.flipTimes),ex.numConds);
+clear c f
+% for c =1:ex.numConds %-1 %-1 because we only need images for the first 2 conditions
+
+phase = ex.stim.phases(1,1);
+ex.testSWave = makeSineGrating(ex.rawGaborHeight,ex.rawGaborWidth,ex.stim.spatialFreqDeg,...
+    ex.stim.orientation,phase,ex.test.contrastOffset,ex.test.contrastMultiplicator,...
+    ex.ppd);
+ex.testSWaveID = Screen('MakeTexture', w, squeeze(ex.testSWave));
+
+% end
+
 %% Sine wave gratings locations (in the task loop since it changes)
 xc = rect(3)/2; % rect and center, with the flexibility to resize & shift center - change vars to zero if not used.
 yc = rect(4)/2; %+e.vertOffset;
@@ -240,7 +267,7 @@ yT = rect(4)/2 - (ex.stim.gapSizeDeg+ex.stim.gaborHDeg)*ex.ppd/2; % stimulus loc
 yB = rect(4)/2+ (ex.stim.gapSizeDeg+ex.stim.gaborHDeg)*ex.ppd/2; % stimulus located 4 degrees below screen center
 % yC = rect(4)/2; % stimulus located on screen center
 %% %%%% initial window - wait for backtick
-DrawFormattedText(w,'Follow the oscillating grating or visual phantom within the gap at the center of the screen \n\n as best as you can using the red dot as a guide, even after the red dot is gone. \n\n Do your best not to blink during a trial. \n\n Press Space to start'... % :  '...
+DrawFormattedText(w,'Look at the blank gap and use the low contrast grating as an anchor. Press: \n\n 0. if you don t see any pattern, \n\n 1. if you experience a very faint impression of grating pattern (does not connect all the way through) \n\n 2. faint impression of grating pattern \n\n 3. Moderate impression of grating pattern \n\n 4. Strong impression of grating pattern, but somewhat weaker than the physical grating \n\n 5. Vivid impression of grating pattern, as strong as the physical grating \n\n Press Space to start'... % :  '...
     ,'center', 'center',[0 0 0]);
 Screen(w, 'Flip', 0);
 %WaitSecs(2);
@@ -278,14 +305,16 @@ while(1) %n <= length(ex.trialFlips)
     if ex.locShuffle(c) == 1
         ex.rectTRect =  CenterRectOnPoint([0 0 ex.rawGaborWidth ex.rawGaborHeight],xR,yT);
         ex.rectBRect =  CenterRectOnPoint([0 0 ex.rawGaborWidth ex.rawGaborHeight],xR,yB);
+        ex.rectCRect =  CenterRectOnPoint([0 0 ex.rawGaborWidth ex.gapSize],xL,yc);
     elseif ex.locShuffle(c) == 2
         ex.rectTRect =  CenterRectOnPoint([0 0 ex.rawGaborWidth ex.rawGaborHeight],xL,yT);
         ex.rectBRect =  CenterRectOnPoint([0 0 ex.rawGaborWidth ex.rawGaborHeight],xL,yB);
+        ex.rectCRect =  CenterRectOnPoint([0 0 ex.rawGaborWidth ex.gapSize],xR,yc);
     end
     % stim
     Screen('DrawTexture', w, ex.rectSWaveID(n,thisCond),[],ex.rectTRect);
     Screen('DrawTexture', w, ex.rectSWaveID(n,thisCond),[],ex.rectBRect);
-    
+    Screen('DrawTexture', w, ex.testSWaveID,[],ex.rectCRect);
     
     %%%%%%%%%%% FLIP %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     if n == 1
