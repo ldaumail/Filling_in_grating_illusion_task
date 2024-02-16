@@ -84,7 +84,7 @@ ex.test.degFromFix = .6;                                              % in degre
 ex.test.gaborHDeg = 8;                                                  % in degrees of visual angle
 ex.test.gaborWDeg = 16;                                
 ex.test.contrast = 0.02;
-ex.test.contrastOffset = [(ex.test.backgroundLum(1,1)./255)./(1+ex.test.contrast),(ex.test.backgroundLum(2,1)./255)./(1+ex.test.contrast), (ex.test.backgroundLum(3,1)./255)./(1+ex.test.contrast)]; %(ex.stim.backgroundLum(2,1)./255)./(1+ex.stim.contrast), ex.stim.backgroundLum(3,1)./255];%+ex.stim.contrast/2;
+ex.test.contrastOffset = [(ex.test.backgroundLum(1,1)./255)./(1+ex.test.contrast),(ex.test.backgroundLum(2,1)./255)./(1-ex.test.contrast), ex.test.backgroundLum(3,1)./255]; %(ex.stim.backgroundLum(2,1)./255)./(1+ex.stim.contrast), ex.stim.backgroundLum(3,1)./255];%+ex.stim.contrast/2;
 ex.test.luminanceRange = 2*ex.test.contrast*ex.test.contrastOffset;
 ex.test.contrastMultiplicator = ex.test.luminanceRange./2;  % for sine wave
 
@@ -230,7 +230,7 @@ for c =1:ex.numConds %-1 %-1 because we only need images for the first 2 conditi
     for f = 1:length(ex.stim.flipTimes)
         phase = ex.stim.phases(c,f);
         ex.rectSWave(:,:,f,c) = makeSineGrating(ex.rawGaborHeight,ex.rawGaborWidth,ex.stim.spatialFreqDeg,...
-            ex.stim.orientation,phase,ex.stim.contrastOffset,ex.stim.contrastMultiplicator,...
+            ex.stim.orientation,phase,ex.stim.contrastOffset(c),ex.stim.contrastMultiplicator(c),...
             ex.ppd);
         ex.rectSWaveID(f,c) = Screen('MakeTexture', w, squeeze(ex.rectSWave(:,:,f,c)));
     end
@@ -238,9 +238,9 @@ for c =1:ex.numConds %-1 %-1 because we only need images for the first 2 conditi
 end
 
 %% Background luminances 
-gray1 = repmat(min(min(squeeze(ex.rectSWave(:,:,1,1)),[],1)), [1,3]);
-gray2 = repmat(max(max(squeeze(ex.rectSWave(:,:,1,1)),[],1)), [1,3]);
-gray3 = repmat(mean(squeeze(ex.rectSWave(1,:,1,1))), [1,3]);
+gray1 = repmat(min(min(squeeze(ex.rectSWave(1,1,:,:)),[],1)), [1,3]);
+gray2 = repmat(max(max(squeeze(ex.rectSWave(1,1,:,:)),[],1)), [1,3]);
+gray3 = repmat(mean(squeeze(ex.rectSWave(1,1,1,:))), [1,3]);
 
 ex.stim.backgroundLum = [gray1;gray2;gray3];
 %% Creat low contrast sinewave
@@ -252,9 +252,9 @@ for c =1:ex.numConds %-1 %-1 because we only need images for the first 2 conditi
     
     phase = ex.stim.phases(1,1);
     ex.testSWave(:,:,c) = makeSineGrating(ex.rawGaborHeight,ex.rawGaborWidth,ex.stim.spatialFreqDeg,...
-        ex.stim.orientation,phase,ex.test.contrastOffset(c),ex.test.contrastMultiplicator(c),...
+        ex.stim.orientation,phase,ex.test.contrastOffset,ex.test.contrastMultiplicator,...
         ex.ppd);
-    ex.testSWaveID(c) = Screen('MakeTexture', w, squeeze(ex.testSWave(:,:,c)));
+    ex.testSWaveID(c) = Screen('MakeTexture', w, squeeze(ex.testSWave));
     
 end
 
@@ -319,7 +319,7 @@ while(1) %n <= length(ex.trialFlips)
     % stim
     Screen('DrawTexture', w, ex.rectSWaveID(n,thisCond),[],ex.rectTRect);
     Screen('DrawTexture', w, ex.rectSWaveID(n,thisCond),[],ex.rectBRect);
-    Screen('DrawTexture', w, ex.testSWaveID(thisCond),[],ex.rectCRect);
+    Screen('DrawTexture', w, ex.testSWaveID,[],ex.rectCRect);
     
     %%%%%%%%%%% FLIP %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     if n == 1
