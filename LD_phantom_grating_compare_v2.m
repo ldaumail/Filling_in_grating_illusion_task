@@ -249,13 +249,13 @@ ex.testSWave = nan(ex.rawGaborHeight,ex.rawGaborWidth,length(ex.stim.flipTimes),
 ex.testSWaveID = nan(length(ex.stim.flipTimes),ex.numConds);
 clear c f
 for c =1:ex.numConds %-1 %-1 because we only need images for the first 2 conditions
-    
-    phase = ex.stim.phases(1,1);
-    ex.testSWave(:,:,c) = makeSineGrating(ex.rawGaborHeight,ex.rawGaborWidth,ex.stim.spatialFreqDeg,...
+    for f = 1:length(ex.stim.flipTimes)
+    phase = ex.stim.phases(c,f)+180;
+    ex.testSWave(:,:,f,c) = makeSineGrating(ex.rawGaborHeight,ex.rawGaborWidth,ex.stim.spatialFreqDeg,...
         ex.stim.orientation,phase,ex.test.contrastOffset(c),ex.test.contrastMultiplicator(c),...
         ex.ppd);
-    ex.testSWaveID(c) = Screen('MakeTexture', w, squeeze(ex.testSWave(:,:,c)));
-    
+    ex.testSWaveID(f,c) = Screen('MakeTexture', w, squeeze(ex.testSWave(:,:,f,c)));
+    end
 end
 
 %% Sine wave gratings locations (in the task loop since it changes)
@@ -319,8 +319,9 @@ while(1) %n <= length(ex.trialFlips)
     % stim
     Screen('DrawTexture', w, ex.rectSWaveID(n,thisCond),[],ex.rectTRect);
     Screen('DrawTexture', w, ex.rectSWaveID(n,thisCond),[],ex.rectBRect);
-    Screen('DrawTexture', w, ex.testSWaveID(thisCond),[],ex.rectCRect);
-    
+    Screen('DrawTexture', w, ex.testSWaveID(n,thisCond),[],ex.rectCRect);
+    DrawFormattedText(w,' 0. No pattern, 1. Very faint 2. Faint impression 3. Moderate impression 4. Strong impression  5. As strong as the physical grating'... % :  '...
+    ,282,1020,[0 0 0]);
     %%%%%%%%%%% FLIP %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     if n == 1
         [VBLT, ex.startTrial, FlipT, missed] = Screen(w, 'Flip', 0);%[VBLTimestamp StimulusOnsetTime FlipTimestamp Missed] = Screen('Flip', windowPtr [, when] [, dontclear]...

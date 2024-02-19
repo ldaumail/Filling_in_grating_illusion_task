@@ -238,11 +238,8 @@ ex.rectSWaveID = nan(ex.numConds, ex.repsPerRun);
 clear c r
 for c =1:ex.numConds %-1 %-1 because we only need images for the first 2 conditions
     for r = 1:ex.repsPerRun % only save the first image of each trial, that we will move during the trial
-        if c == 1 || c == 3 || c == 5
-            phase = ex.stim.phases(c,r,1)+90;
-        elseif c == 2 || c == 4 || c == 6
-            phase = ex.stim.phases(c,r,1)-90;
-        end
+        if c == 1 || c == 3
+        phase = ex.stim.phases(c,r,1)+90;
         ex.rectSWave(c,r,:,:) = makeSineGrating(ex.rawGaborHeight,ex.rawGaborWidth,ex.stim.spatialFreqDeg,...
             ex.stim.orientation,phase,ex.stim.contrastOffset,ex.stim.contrastMultiplicator,...
             ex.ppd);
@@ -264,12 +261,11 @@ clear c r
 for c = 1:ex.numConds 
     for r = 1:ex.repsPerRun
         ex.dotDriftPosDeg(c,r,:) = (ex.stim.oscillation1(c,r,:).*ex.stim.cycles(1).*1/(2*ex.stim.spatialFreqDeg)+ ex.stim.oscillation2(c,r,:).*ex.stim.cycles(2).*1/(2*ex.stim.spatialFreqDeg))/2;
-        %         if c == 1 || c == 3
-        %             ex.dotFixSpatialPhase = -(1/(4*ex.stim.spatialFreqDeg))*ex.ppd; %-(1/(8*ex.stim.spatialFreqDeg))*ex.ppd;%
-        %         elseif c == 2 || c == 4
-        %             ex.dotFixSpatialPhase = +(1/(4*ex.stim.spatialFreqDeg))*ex.ppd;
-        %         end
-        ex.dotFixSpatialPhase = 0;
+%         if c == 1 || c == 3
+%             ex.dotFixSpatialPhase = -(1/(4*ex.stim.spatialFreqDeg))*ex.ppd; %-(1/(8*ex.stim.spatialFreqDeg))*ex.ppd;%
+%         elseif c == 2 || c == 4
+%             ex.dotFixSpatialPhase = +(1/(4*ex.stim.spatialFreqDeg))*ex.ppd;
+%         end
         ex.dotDriftPos(c,r,:) = ex.dotDriftPosDeg(c,r,:).*ex.ppd +ex.dotFixSpatialPhase;
         ex.dotStillDotPhase = ex.dotDriftPos(c,r,1);
         ex.dotLongDriftPos(c,r,:) = [repmat(ex.dotStillDotPhase,1,ex.flipsPerSec*ex.trialFixation) squeeze(ex.dotDriftPos(c,r,:))' ... %drift for 1.25 (5/4) periods of oscilation
