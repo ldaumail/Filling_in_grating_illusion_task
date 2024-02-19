@@ -102,7 +102,7 @@ ex.conds = {'MinbgPairOn','MaxbgPairOn','MeanbgPairDark'};
 ex.numConds = length(ex.conds);
 % with line of code below we will have 1 condition per block, randomized. we might need to change that
 % later, to have the conditions randomized within each block
-ex.repsPerRun = 5;              % repetitions of each condition per run
+ex.repsPerRun = 4;              % repetitions of each condition per run
 ex.nTrials = ex.numConds*ex.repsPerRun;
 ex.numBlocks = ex.numConds*ex.repsPerRun;
 
@@ -270,7 +270,7 @@ yT = rect(4)/2 - (ex.stim.gapSizeDeg+ex.stim.gaborHDeg)*ex.ppd/2; % stimulus loc
 yB = rect(4)/2+ (ex.stim.gapSizeDeg+ex.stim.gaborHDeg)*ex.ppd/2; % stimulus located 4 degrees below screen center
 % yC = rect(4)/2; % stimulus located on screen center
 %% %%%% initial window - wait for backtick
-DrawFormattedText(w,'Look at the blank gap and use the low contrast grating as an anchor. Press: \n\n 0. if you don t see any pattern, \n\n 1. if you experience a very faint impression of grating pattern (does not connect all the way through) \n\n 2. faint impression of grating pattern \n\n 3. Moderate impression of grating pattern \n\n 4. Strong impression of grating pattern, but somewhat weaker than the physical grating \n\n 5. Vivid impression of grating pattern, as strong as the physical grating \n\n Press Space to start'... % :  '...
+DrawFormattedText(w,'Look at the blank gap and use the low contrast grating as an anchor  (feel free to look back and forth). Press: \n\n 0. If you don t see any pattern, \n\n 1. If you experience a very faint impression of grating pattern (does not connect all the way through) \n\n 2. Moderate impression of grating pattern (1/2 as strong) \n\n 3. Strong impression of grating pattern, but somewhat weaker than the physical grating \n\n 4. Vivid impression of grating pattern, as strong as the physical grating \n\n 5. Impression is stronger than the grating pattern \n\n Press Space to start'... % :  '...
     ,'center', 'center',[0 0 0]);
 Screen(w, 'Flip', 0);
 %WaitSecs(2);
@@ -320,8 +320,8 @@ while(1) %n <= length(ex.trialFlips)
     Screen('DrawTexture', w, ex.rectSWaveID(n,thisCond),[],ex.rectTRect);
     Screen('DrawTexture', w, ex.rectSWaveID(n,thisCond),[],ex.rectBRect);
     Screen('DrawTexture', w, ex.testSWaveID(n,thisCond),[],ex.rectCRect);
-    DrawFormattedText(w,' 0. No pattern, 1. Very faint 2. Faint impression 3. Moderate impression 4. Strong impression  5. As strong as the physical grating'... % :  '...
-    ,282,1020,[0 0 0]);
+    DrawFormattedText(w,' 0. No pattern, 1. Very faint impression 2. Moderate impression (50%) 3. Strong impression  4. As strong as the physical grating 5. Stronger than the pattern'... % :  '...
+    ,50,1020,[0 0 0]);
     %%%%%%%%%%% FLIP %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     if n == 1
         [VBLT, ex.startTrial, FlipT, missed] = Screen(w, 'Flip', 0);%[VBLTimestamp StimulusOnsetTime FlipTimestamp Missed] = Screen('Flip', windowPtr [, when] [, dontclear]...
