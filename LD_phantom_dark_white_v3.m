@@ -316,6 +316,8 @@ end
 for c = 1:ex.numConds
     ex.dotLongDriftPos(c,:,:) = ex.dotLongDriftPos(c,randIdx(c,:),:);
     ex.stimLongDriftPos(c,:,:) = ex.stimLongDriftPos(c,randIdx(c,:),:);
+    ex.rectSWave(c,:,:,:) = ex.rectSWave(c,randIdx(c,:),:,:);
+    ex.rectSWaveID(c,:) = ex.rectSWaveID(c,randIdx(c,:));
 end
 %% Background luminances 
 gray1 = repmat(min(min(squeeze(ex.rectSWave(1,1,:,:)),[],1)), [1,3]);
