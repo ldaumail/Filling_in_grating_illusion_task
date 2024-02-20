@@ -176,22 +176,22 @@ ex.stillDotPhase = zeros(1,ex.flipsPerSec*ex.trialFixation);
 flipTimes = [0:frameInt*frameRate/ex.flipsPerSec:ex.blockLength(1)-ex.trialFixation]; %multiply frameInt by 60/12 = 5 to flip the image every 5 frames
 ex.stim.flipTimes = flipTimes(1:length(flipTimes)-1);
 
-% dot oscillations
-ex.stim.tempPhase1 = nan(ex.numConds,ex.repsPerRun);
-ex.stim.tempPhase2 = nan(ex.numConds,ex.repsPerRun);
-ex.stim.oscillation1 = nan(ex.numConds,ex.repsPerRun,length(ex.stim.flipTimes));
-ex.stim.oscillation2 = nan(ex.numConds,ex.repsPerRun,length(ex.stim.flipTimes));
-ex.stim.phases = nan(ex.numConds,ex.repsPerRun,length(ex.stim.flipTimes));
+% dot and stimulus oscillations
+ex.stim.tempPhase1 = nan(ex.repsPerRun,1);
+ex.stim.tempPhase2 = nan(ex.repsPerRun,1);
+ex.stim.oscillation1 = nan(ex.repsPerRun,length(ex.stim.flipTimes));
+ex.stim.oscillation2 = nan(ex.repsPerRun,length(ex.stim.flipTimes));
+ex.stim.phases = nan(ex.repsPerRun,length(ex.stim.flipTimes));
 
 clear c r
 for c =1:ex.numConds
     for r = 1:ex.repsPerRun
-        ex.stim.tempPhase1(c,r) = rand(1,1)*2*pi;
-        ex.stim.tempPhase2(c,r) = rand(1,1)*2*pi;
-        ex.stim.oscillation1(c,r,:) = cos(2*pi*(1/ex.stimDur(1))*ex.stim.flipTimes+ex.stim.tempPhase1(c,r));
-        ex.stim.oscillation2(c,r,:) = cos(2*pi*(1/ex.stimDur(2))*ex.stim.flipTimes+ex.stim.tempPhase2(c,r));
+        ex.stim.tempPhase1(r) = rand(1,1)*2*pi;
+        ex.stim.tempPhase2(r) = rand(1,1)*2*pi;
+        ex.stim.oscillation1(r,:) = cos(2*pi*(1/ex.stimDur(1))*ex.stim.flipTimes+ex.stim.tempPhase1(r));
+        ex.stim.oscillation2(r,:) = cos(2*pi*(1/ex.stimDur(2))*ex.stim.flipTimes+ex.stim.tempPhase2(r));
         ex.stim.spatialPhase = 0;
-        ex.stim.phases(c,r,:) = (ex.stim.oscillation1(c,r,:).*180*ex.stim.cycles(1)+ ex.stim.oscillation2(c,r,:).*180*ex.stim.cycles(2))/2 + ex.stim.spatialPhase; %./ex.stimDur-2*pi*flipTimes./ex.stimDur make it oscillatory
+        ex.stim.phases(r,:) = (ex.stim.oscillation1(r,:).*180*ex.stim.cycles(1)+ ex.stim.oscillation2(r,:).*180*ex.stim.cycles(2))/2 + ex.stim.spatialPhase; %./ex.stimDur-2*pi*flipTimes./ex.stimDur make it oscillatory
     end
 end
 
@@ -239,9 +239,9 @@ clear c r
 for c =1:ex.numConds %-1 %-1 because we only need images for the first 2 conditions
     for r = 1:ex.repsPerRun % only save the first image of each trial, that we will move during the trial
         if c == 1 || c == 3 || c == 5
-            phase = ex.stim.phases(c,r,1)+90;
+            phase = ex.stim.phases(r,1)+90;
         elseif c == 2 || c == 4 || c == 6
-            phase = ex.stim.phases(c,r,1)-90;
+            phase = ex.stim.phases(r,1)-90;
         end
         ex.rectSWave(c,r,:,:) = makeSineGrating(ex.rawGaborHeight,ex.rawGaborWidth,ex.stim.spatialFreqDeg,...
             ex.stim.orientation,phase,ex.stim.contrastOffset,ex.stim.contrastMultiplicator,...
@@ -257,18 +257,13 @@ yc = rect(4)/2; %+e.vertOffset;
 clear flipTimes
 flipTimes = [0:frameInt*frameRate/ex.flipsPerSec:ex.blockLength(1)+ex.betweenBlocks]; %multiply frameInt by 60/12 = 5 to flip the image every 5 frames
 flipTimes = flipTimes(1:length(flipTimes)-1);
-ex.dotDriftPosDeg = nan(ex.numConds,ex.repsPerRun,length(ex.stim.oscillation1(1,1,:)));
-ex.dotDriftPos = nan(ex.numConds,ex.repsPerRun,length(ex.stim.oscillation1(1,1,:)));
+ex.dotDriftPosDeg = nan(ex.numConds,ex.repsPerRun,length(ex.stim.oscillation1(1,:)));
+ex.dotDriftPos = nan(ex.numConds,ex.repsPerRun,length(ex.stim.oscillation1(1,:)));
 ex.dotLongDriftPos = nan(ex.numConds,ex.repsPerRun,length(flipTimes));
 clear c r
 for c = 1:ex.numConds 
     for r = 1:ex.repsPerRun
-        ex.dotDriftPosDeg(c,r,:) = (ex.stim.oscillation1(c,r,:).*ex.stim.cycles(1).*1/(2*ex.stim.spatialFreqDeg)+ ex.stim.oscillation2(c,r,:).*ex.stim.cycles(2).*1/(2*ex.stim.spatialFreqDeg))/2;
-        %         if c == 1 || c == 3
-        %             ex.dotFixSpatialPhase = -(1/(4*ex.stim.spatialFreqDeg))*ex.ppd; %-(1/(8*ex.stim.spatialFreqDeg))*ex.ppd;%
-        %         elseif c == 2 || c == 4
-        %             ex.dotFixSpatialPhase = +(1/(4*ex.stim.spatialFreqDeg))*ex.ppd;
-        %         end
+        ex.dotDriftPosDeg(c,r,:) = (ex.stim.oscillation1(r,:).*ex.stim.cycles(1).*1/(2*ex.stim.spatialFreqDeg)+ ex.stim.oscillation2(r,:).*ex.stim.cycles(2).*1/(2*ex.stim.spatialFreqDeg))/2;
         ex.dotFixSpatialPhase = 0;
         ex.dotDriftPos(c,r,:) = ex.dotDriftPosDeg(c,r,:).*ex.ppd +ex.dotFixSpatialPhase;
         ex.dotStillDotPhase = ex.dotDriftPos(c,r,1);
@@ -276,6 +271,8 @@ for c = 1:ex.numConds
             zeros(1,ex.betweenBlocks*ex.flipsPerSec)];
     end
 end
+
+
 
 % figure();
 % subplot(4,1,1)
@@ -293,13 +290,13 @@ end
 clear flipTimes
 flipTimes = [0:frameInt*frameRate/ex.flipsPerSec:ex.blockLength(1)+ex.betweenBlocks]; %multiply frameInt by 60/12 = 5 to flip the image every 5 frames
 flipTimes = flipTimes(1:length(flipTimes)-1);
-ex.stimDriftPosDeg = nan(ex.numConds,ex.repsPerRun,length(ex.stim.oscillation1(1,1,:)));
-ex.stimDriftPos = nan(ex.numConds,ex.repsPerRun,length(ex.stim.oscillation1(1,1,:)));
+ex.stimDriftPosDeg = nan(ex.numConds,ex.repsPerRun,length(ex.stim.oscillation1(1,:)));
+ex.stimDriftPos = nan(ex.numConds,ex.repsPerRun,length(ex.stim.oscillation1(1,:)));
 ex.stimLongDriftPos = nan(ex.numConds,ex.repsPerRun,length(flipTimes));
 clear c r
 for c = 1:ex.numConds 
     for r = 1:ex.repsPerRun
-        ex.stimDriftPosDeg(c,r,:) = (ex.stim.oscillation1(c,r,:).*ex.stim.cycles(1).*1/(2*ex.stim.spatialFreqDeg)+ ex.stim.oscillation2(c,r,:).*ex.stim.cycles(2).*1/(2*ex.stim.spatialFreqDeg))/2;
+        ex.stimDriftPosDeg(c,r,:) = (ex.stim.oscillation1(r,:).*ex.stim.cycles(1).*1/(2*ex.stim.spatialFreqDeg)+ ex.stim.oscillation2(r,:).*ex.stim.cycles(2).*1/(2*ex.stim.spatialFreqDeg))/2;
         ex.stimFixSpatialPhase = 0; %-(1/(8*ex.stim.spatialFreqDeg))*ex.ppd;%(1/(4*ex.stim.spatialFreqDeg))*ex.ppd;
         ex.stimDriftPos(c,r,:) = ex.stimDriftPosDeg(c,r,:).*ex.ppd +ex.stimFixSpatialPhase;
         ex.stimStillDotPhase = ex.stimDriftPos(c,r,1);
@@ -308,7 +305,18 @@ for c = 1:ex.numConds
     end
 end
 
+%% create indices to randomize the 20 oscillation patterns and re-order the oscillation patterns for each condition
 
+randIdx = repmat(linspace(1,ex.repsPerRun,ex.repsPerRun),ex.numConds,1);
+for c = 1:ex.numConds 
+    randIdx(c,:) = Shuffle(randIdx(c,:));
+end
+
+%% Reorganize dot and stim drifts with random positions
+for c = 1:ex.numConds
+    ex.dotLongDriftPos(c,:,:) = ex.dotLongDriftPos(c,randIdx(c,:),:);
+    ex.stimLongDriftPos(c,:,:) = ex.stimLongDriftPos(c,randIdx(c,:),:);
+end
 %% Background luminances 
 gray1 = repmat(min(min(squeeze(ex.rectSWave(1,1,:,:)),[],1)), [1,3]);
 gray2 = repmat(max(max(squeeze(ex.rectSWave(1,1,:,:)),[],1)), [1,3]);
