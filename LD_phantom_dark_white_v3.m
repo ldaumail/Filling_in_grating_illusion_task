@@ -13,7 +13,7 @@ if debug == 1
     % eyetracking on (1) or off (0)
     ET = 0;
     ex.screenWidth = 53.1;             % in cm; %laptop=27.5,office=43, %19=%T3b, miniHelm=39;
-    ex.viewingDist = 53.5;             % in cm; 3Tb/office=43, miniHelm=57;
+    ex.viewingDist = 55.5;             % in cm; 3Tb/office=43, miniHelm=57;
 	ex.resolution = SetResolution(max(Screen('Screens')),1600,900,60); % laptop 1920,1080/ 2880, 1800 ,0
     ex.gammaCorrection = 0;       % make sure this = 1 when you're at the scanner!
 else
