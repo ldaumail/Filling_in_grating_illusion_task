@@ -270,7 +270,7 @@ yT = rect(4)/2 - (ex.stim.gapSizeDeg+ex.stim.gaborHDeg)*ex.ppd/2; % stimulus loc
 yB = rect(4)/2+ (ex.stim.gapSizeDeg+ex.stim.gaborHDeg)*ex.ppd/2; % stimulus located 4 degrees below screen center
 % yC = rect(4)/2; % stimulus located on screen center
 %% %%%% initial window - wait for backtick
-DrawFormattedText(w,'Look at the blank gap and use the low contrast grating as an anchor  (feel free to look back and forth). Press: \n\n 0. If you don t see any pattern, \n\n 1. If you experience a very faint impression of grating pattern (does not connect all the way through) \n\n 2. Moderate impression of grating pattern (1/2 as strong) \n\n 3. Strong impression of grating pattern, but somewhat weaker than the physical grating \n\n 4. Vivid impression of grating pattern, as strong as the physical grating \n\n 5. Impression is stronger than the grating pattern \n\n Press Space to start'... % :  '...
+DrawFormattedText(w,'Look at the blank gap and use the low contrast grating as an anchor  (feel free to look back and forth). Press: \n\n 0. If you don t see any pattern, \n\n 1. If you experience a very faint impression of grating pattern (does not connect all the way through) \n\n 2. Moderate impression of grating pattern (1/2 as strong as the physical grating) \n\n 3. Strong impression of grating pattern, but somewhat weaker than the physical grating \n\n 4. Vivid impression of grating pattern, as strong as the physical grating \n\n 5. Impression is stronger than the grating pattern \n\n Press Space to start'... % :  '...
     ,'center', 'center',[0 0 0]);
 Screen(w, 'Flip', 0);
 %WaitSecs(2);
