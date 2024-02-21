@@ -307,17 +307,17 @@ end
 
 %% create indices to randomize the 20 oscillation patterns and re-order the oscillation patterns for each condition
 
-randIdx = repmat(linspace(1,ex.repsPerRun,ex.repsPerRun),ex.numConds,1);
+ex.randIdx = repmat(linspace(1,ex.repsPerRun,ex.repsPerRun),ex.numConds,1);
 for c = 1:ex.numConds 
-    randIdx(c,:) = Shuffle(randIdx(c,:));
+    ex.randIdx(c,:) = Shuffle(ex.randIdx(c,:));
 end
 
 %% Reorganize dot and stim drifts with random positions
 for c = 1:ex.numConds
-    ex.dotLongDriftPos(c,:,:) = ex.dotLongDriftPos(c,randIdx(c,:),:);
-    ex.stimLongDriftPos(c,:,:) = ex.stimLongDriftPos(c,randIdx(c,:),:);
-    ex.rectSWave(c,:,:,:) = ex.rectSWave(c,randIdx(c,:),:,:);
-    ex.rectSWaveID(c,:) = ex.rectSWaveID(c,randIdx(c,:));
+    ex.dotLongDriftPos(c,:,:) = ex.dotLongDriftPos(c,ex.randIdx(c,:),:);
+    ex.stimLongDriftPos(c,:,:) = ex.stimLongDriftPos(c,ex.randIdx(c,:),:);
+    ex.rectSWave(c,:,:,:) = ex.rectSWave(c,ex.randIdx(c,:),:,:);
+    ex.rectSWaveID(c,:) = ex.rectSWaveID(c,ex.randIdx(c,:));
 end
 %% Background luminances 
 gray1 = repmat(min(min(squeeze(ex.rectSWave(1,1,:,:)),[],1)), [1,3]);
