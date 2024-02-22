@@ -383,7 +383,7 @@ end
 
 ex.runTime = GetSecs - ex.startRun;
 ex.rectSWave = [];
-ex.testSWave = [];
+
 savedir = fullfile(ex.root,'data',sprintf('on_between/s%s_%s/',subject,ex.version));
 if ~exist(savedir); mkdir(savedir); end
 savename = fullfile(savedir, strcat(sprintf('/s%s_percept_test_%s_date%s_fix',subject,ex.version,num2str(ex.date)), '.mat'));
