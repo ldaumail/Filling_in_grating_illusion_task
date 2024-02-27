@@ -3,7 +3,7 @@ function EyelinkSetup(ini)
 %connected, and instantiates the eyelink object as 'el'.
 %Modified from IdenLocGabor 01/22/2015
 
-global el w rect xc yc EyeData
+global el w rect xc yc EyeData ex
 
 if ini == 0
 tmp = EyelinkInit(0);
@@ -28,7 +28,7 @@ Eyelink('Command', 'link_sample_data = LEFT,RIGHT,GAZE,AREA');
 Eyelink('Command', 'file_sample_data = LEFT,RIGHT,GAZE,AREA');
 
 
-EyeData.edfFile=sprintf('demo_fix.edf'); % overwrite the edf each time. or it would full the hard drive of eyelink computer
+EyeData.edfFile=sprintf('%s_%s_%s.edf',ex.initials, ex.subject, ex.session);%sprintf('demo_fix.edf'); % overwrite the edf each time. or it would full the hard drive of eyelink computer
 Eyelink('Openfile', EyeData.edfFile);
 
 % Calibrate the eye tracker

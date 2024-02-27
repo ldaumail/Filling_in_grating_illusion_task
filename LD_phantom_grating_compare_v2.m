@@ -13,7 +13,7 @@ if debug == 1
     % eyetracking on (1) or off (0)
     ET = 0;
     ex.screenWidth = 53.1;             % in cm; %laptop=27.5,office=43, %19=%T3b, miniHelm=39;
-    ex.viewingDist = 55.5;             % in cm; 3Tb/office=43, miniHelm=57;
+    ex.viewingDist = 53.5;             % in cm; 3Tb/office=43, miniHelm=57;
 	ex.resolution = SetResolution(max(Screen('Screens')),1600,900,60); % laptop 1920,1080/ 2880, 1800 ,0
     ex.gammaCorrection = 0;       % make sure this = 1 when you're at the scanner!
 else
@@ -328,7 +328,7 @@ while(1) %n <= length(ex.trialFlips)
         [VBLT, ex.startTrial, FlipT, missed] = Screen(w, 'Flip', 0);%[VBLTimestamp StimulusOnsetTime FlipTimestamp Missed] = Screen('Flip', windowPtr [, when] [, dontclear]...
         flipTimes = ex.startTrial;
         ex.trialStartTime = [ex.trialStartTime, ex.startTrial];
-        ex.condResp = [ex.condResp, thisCond];
+        ex.condResp = [ex.condResp, c];
     else
         [VBLT,flipTime, FlipT, missed] = Screen(w, 'Flip',ex.startTrial + ex.stim.flipTimes(n) - slack); %,   %%% ex.flipTime(n,c)
         flipTimes = [flipTimes, flipTime];
@@ -361,14 +361,16 @@ while(1) %n <= length(ex.trialFlips)
                 ex.responseTimes = [ex.responseTimes, firstPress(KbName('5')) - ex.startRun];
             end
             pressed = 0;
-    elseif (pressed && ismember(find(firstPress,1), [KbName('Return') KbName('ENTER')]))
-        n = 1;
-        c = c+1;
+
     end
      KbQueueFlush();
     n = n+1;
     if (n == length(ex.rectSWaveID(:,1,1))+1) % for any other block , reset frame index when previous trial ends
         n = 1;
+        
+    elseif (pressed && ismember(find(firstPress,1), [KbName('Return') KbName('ENTER')]))
+        n = 1;
+        c = c+1;
     end
     if c > ex.nTrials
         break;

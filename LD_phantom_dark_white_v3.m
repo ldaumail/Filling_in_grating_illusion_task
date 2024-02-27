@@ -1,19 +1,19 @@
-function LD_phantom_dark_white_v3(subject, session, debug)
+function LD_phantom_dark_white_v3(subject, initials, session, debug)
 
 %In this version, we add multiple velocities
 % subject = 'Dave';                                                                                                                                                                                                                                                     
 % session = 1;                                                                                                                           
 % debug = 1;
 
-
+global EyeData rect w xc yc eye_used ex
 ex.version = 'v3';
-global EyeData rect w xc yc eye_used 
+
 %%%% resolution 
 if debug == 1
     % eyetracking on (1) or off (0)
     ET = 0;
     ex.screenWidth = 53.1;             % in cm; %laptop=27.5,office=43, %19=%T3b, miniHelm=39;
-    ex.viewingDist = 55.5;             % in cm; 3Tb/office=43, miniHelm=57;
+    ex.viewingDist = 53.5;             % in cm; 3Tb/office=43, miniHelm=57;
 	ex.resolution = SetResolution(max(Screen('Screens')),1600,900,60); % laptop 1920,1080/ 2880, 1800 ,0
     ex.gammaCorrection = 0;       % make sure this = 1 when you're at the scanner!
 else
@@ -36,6 +36,7 @@ ex.runNum = input('Run number :');
 
 %%% basic naming set-up
 ex.subject = subject;
+ex.initials = initials;
 ex.session = session;
 
 
@@ -87,7 +88,7 @@ ex.conds = {'MinbgPairOn','MinbgPairBetween','MaxbgPairOn','MaxbgPairBetween','M
 ex.numConds = length(ex.conds);
 % with line of code below we will have 1 condition per block, randomized. we might need to change that
 % later, to have the conditions randomized within each block
-ex.repsPerRun = 20;              % repetitions of each condition per run
+ex.repsPerRun = 1; %20;              % repetitions of each condition per run
 ex.numBlocks = ex.numConds*ex.repsPerRun;
 
 ex.condShuffle = [];
