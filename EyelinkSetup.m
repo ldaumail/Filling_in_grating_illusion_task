@@ -28,7 +28,7 @@ Eyelink('Command', 'link_sample_data = LEFT,RIGHT,GAZE,AREA');
 Eyelink('Command', 'file_sample_data = LEFT,RIGHT,GAZE,AREA');
 
 
-EyeData.edfFile=sprintf('%s_%s.edf',ex.initials, ex.session);%sprintf('demo_fix.edf'); % overwrite the edf each time. or it would full the hard drive of eyelink computer
+EyeData.edfFile=sprintf('%s%d_%s.edf',ex.initials,sscanf(ex.subject,'sub-%d'), ex.session);%sprintf('demo_fix.edf'); % overwrite the edf each time. or it would full the hard drive of eyelink computer
 Eyelink('Openfile', EyeData.edfFile);
 
 % Calibrate the eye tracker
