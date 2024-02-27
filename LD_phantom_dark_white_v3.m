@@ -82,7 +82,7 @@ ex.flipWin = 1/ex.flipsPerSec;         % in seconds then actually in 1 sec the s
 
 %%%% conditions & layout (across blocks scale)
 
-ex.conds = {'MinbgPairOn','MinbgPairBetween','MaxbgPairOn','MaxbgPairBetween','MeanbgPairDark','MeanbgPairLight'...%,'MinbgTopVel3','MinbgBotVel3', 'MeanbgTopVel3','MeanbgBotVel3'
+ex.conds = {'MinbgPairOn','MinbgPairBetween','MaxbgPairBetween','MaxbgPairOn','MeanbgPairDark','MeanbgPairLight'...%,'MinbgTopVel3','MinbgBotVel3', 'MeanbgTopVel3','MeanbgBotVel3'
     ... %,'MeanbgRedDotVel2',
     }; 
 ex.numConds = length(ex.conds);
@@ -239,11 +239,11 @@ ex.rectSWaveID = nan(ex.numConds, ex.repsPerRun);
 clear c r
 for c =1:ex.numConds %-1 %-1 because we only need images for the first 2 conditions
     for r = 1:ex.repsPerRun % only save the first image of each trial, that we will move during the trial
-        if c == 1 || c == 4 || c == 5
+        if c == 1 || c == 3 || c == 5
             phase = ex.stim.phases(r,1)+90;%right
-%             phase = ex.stim.phases(r,1)-90; %wrong
-        elseif c == 2 || c == 3 || c == 6
-            phase = ex.stim.phases(r,1)-90; %right
+
+        elseif c == 2 || c == 4 || c == 6
+             phase = ex.stim.phases(r,1)-90; %right
             
         end
         ex.rectSWave(c,r,:,:) = makeSineGrating(ex.rawGaborHeight,ex.rawGaborWidth,ex.stim.spatialFreqDeg,...
